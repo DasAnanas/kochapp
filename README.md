@@ -3,6 +3,11 @@
 **Für den Mac: `Kochapp.html`. Für Windows: `Kochapp.exe`.** Beide Dateien enthalten die Oberfläche und können einzeln weitergegeben werden.
 
 ## Auf dem Mac öffnen
+
+**[Kochapp herunterladen und öffnen](https://github.com/DasAnanas/kochapp/raw/refs/heads/codex/rezept-bearbeiten/Kochapp.html)**
+
+Über den Link die Datei `Kochapp.html` herunterladen und anschließend im Finder doppelklicken. Sie öffnet sich in deinem Standardbrowser. Dies ist die lokal nutzbare Version; eine öffentlich gehostete Website ist noch nicht eingerichtet.
+
 - `Kochapp.html` herunterladen und im Finder doppelklicken (oder über „Öffnen mit“ Safari bzw. Chrome auswählen). Bei GitHub die Datei über „Download raw file“ herunterladen; die Quelltextansicht führt die App nicht aus.
 - Die App läuft im Browser, ohne Installation, Node.js oder lokalen Server. HTML, CSS und JavaScript sind in dieser einen Datei enthalten. Die Schriftarten benötigen Internet; offline werden Systemschriften verwendet.
 - Eigene Rezepte, Vorrat und Wochenplan werden im lokalen Speicher des verwendeten Browsers gespeichert. Verwende denselben Browser und Dateipfad, keinen privaten Modus. Daten aus der Windows-App werden nicht automatisch übernommen.
