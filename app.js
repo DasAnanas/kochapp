@@ -541,7 +541,8 @@
       <div class="plist">${cartHTML(items)}</div>
       <div class="total">Geschätzt (${open.length} Artikel offen): <b>${KA.fmtEUR(listTotal(items))}</b> <span class="muted sm">· Preise sind grobe Richtwerte</span></div>
       <div class="btnrow noprint"><button class="btn ghost" data-act="copy">Kopieren</button><button class="btn ghost" data-act="csv">CSV</button><button class="btn ghost" data-act="print">Drucken</button>
-        ${items.length > open.length ? '<button class="btn ghost" data-act="listreset">Häkchen zurücksetzen</button>' : ''}</div></section>`;
+        ${items.length > open.length ? '<button class="btn ghost" data-act="listreset">Häkchen zurücksetzen</button>' : ''}
+        <button class="btn ghost" data-act="listclean" ${items.length === open.length ? 'disabled' : ''}>Aufräumen</button></div></section>`;
     return pageHead('Einkaufsliste', `${open.length} von ${items.length} Artikeln offen – abhaken, drucken oder bei REWE in den Warenkorb legen.`) + sources + list + (open.length ? orderPanel() : '');
   }
 
@@ -1082,6 +1083,7 @@
         if (S.prefs.assumeStaples && (i.id ? ING[i.id].staple : i.qty == null && isBasic(i.name))) return;
         const std = i.id && i.base > 0; // in Stammdaten-Einheit summierbar
         const key = std ? 'i|' + i.id : 'x|' + KA.norm(i.name) + '|' + (i.unit || '');
+        if ((l.omitted || []).includes(key)) return;
         const a = agg[key] || (agg[key] = { key, id: std ? i.id : null, name: std ? ING[i.id].name : i.name, unit: std ? ING[i.id].unit : i.unit || '', cat: i.id ? ING[i.id].cat : 'SO', qty: 0, from: [] });
         if (std) a.qty += i.base * f; else if (i.qty != null) a.qty += i.qty * f;
         if (!a.from.includes(r.title)) a.from.push(r.title);
@@ -1289,6 +1291,20 @@
       ui.focus = 'extra-in'; update();
     },
     extradel: (el) => { S.extras = S.extras.filter((x) => x !== el.dataset.n); delete S.done['e|' + KA.norm(el.dataset.n)]; update(); },
+    listclean: () => {
+      const completed = new Set(cartItems().filter((i) => !i.checked).map((i) => i.key));
+      if (!completed.size) return;
+      // Zutaten nur aus diesen Listeneinträgen entfernen; Rezepte bleiben unverändert.
+      S.list.forEach((l) => { l.omitted = [...new Set([...(l.omitted || []), ...completed])]; });
+      Object.values(S.blocks).forEach((b) => {
+        if (b) b.items = b.items.filter((i) => !completed.has(i.id && ING[i.id]
+          ? 'i|' + i.id : 'x|' + KA.norm(i.name) + '|' + (i.unit || '')));
+      });
+      S.extras = S.extras.filter((name) => !completed.has('e|' + KA.norm(name)));
+      completed.forEach((key) => { delete S.done[key]; });
+      update();
+      toast(`${completed.size} eingekaufte Artikel entfernt`);
+    },
     listreset: () => { S.done = {}; update(); },
 
     setTime: (el) => { S.prefs.maxTime = Number(el.dataset.v); update(); },
