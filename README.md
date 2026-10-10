@@ -30,7 +30,7 @@ Eigene REST-Endpunkte müssen WebKit-Zugriffe erlauben (CORS); der lokale Bestel
 - `Kochapp.html` herunterladen und im Finder doppelklicken (oder über „Öffnen mit“ Safari bzw. Chrome auswählen). Bei GitHub die Datei über „Download raw file“ herunterladen; die Quelltextansicht führt die App nicht aus.
 - Die App läuft im Browser, ohne Installation, Node.js oder lokalen Server. HTML, CSS und JavaScript sind in dieser einen Datei enthalten. Die Schriftarten benötigen Internet; offline werden Systemschriften verwendet.
 - Eigene Rezepte, Vorrat und Wochenplan werden im lokalen Speicher des verwendeten Browsers gespeichert. Verwende denselben Browser und Dateipfad, keinen privaten Modus. Daten aus der Windows-App werden nicht automatisch übernommen.
-- Demo-Bestellungen und E-Mail funktionieren direkt. Eigene REST-Endpunkte müssen Browserzugriffe erlauben (CORS). Die Option „Über lokalen Proxy“ benötigt weiterhin `node server.js` und das Öffnen von `http://localhost:8080`; sie funktioniert nicht beim direkten Öffnen der HTML-Datei.
+- Zum Füllen des REWE-Warenkorbs wird die lokale Windows-Bridge benötigt (siehe „Bei REWE bestellen“).
 - Nach Änderungen an der Oberfläche mit `python3 desktop/build-html.py` (Windows: `powershell -ExecutionPolicy Bypass -File desktop\build-html.ps1`) neu bauen und die aktualisierte `Kochapp.html` mit ins Repository aufnehmen. Python wird nur zum Bauen benötigt.
 
 Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 10/11 mit WebView2-Laufzeit (in Windows 11 enthalten).
@@ -82,12 +82,7 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
 4. **Einkaufsliste** – die eine Liste der App: abhaken, eigene Artikel ergänzen, kopieren, CSV, drucken, bestellen.
 
 ## Bestell-Schnittstelle (`order.js`)
-Adapter-Modell (`KA.Providers`):
-- **Demo-Shop** – simulierte Bestellung.
-- **Eigener REST-Endpunkt** – sendet JSON (Artikel, Mengen, Einheiten, Schätzpreis, Lieferadresse) per POST/PUT mit konfigurierbarem Auth-Header. „Über lokalen Proxy“ leitet via `server.js` weiter (CORS-frei). Mit Umgebungsvariablen `ORDER_API_URL`, `ORDER_API_KEY`, `ORDER_API_KEY_HEADER` bleibt der Key serverseitig.
-- **E-Mail** – öffnet das Mailprogramm mit der Liste.
-
-Einen konkreten Händler anbinden: in `KA.Providers` einen Eintrag mit `fields`, `preview()` und `submit()` ergänzen und dort das Payload auf das API-Format des Händlers abbilden. Hinweis: Die meisten Supermärkte bieten keine offene Bestell-API; ein eigener Zwischen-Endpunkt oder ein Partnerzugang ist meist nötig.
+Unter „Liste → Bestellen“ steht ausschließlich **REWE** zur Verfügung. Demo-Shop, eigener REST-Endpunkt und E-Mail wurden aus der Anbieterauswahl entfernt. Bereits gespeicherte andere Anbieter werden beim Öffnen automatisch auf REWE umgestellt. Die REWE-Bridge und ihre Konfiguration bleiben unverändert; die Bestellung wird weiterhin selbst auf rewe.de abgeschlossen.
 
 ## Dateien
 `index.html` · `style.css` · `data.js` (50 Rezepte, Lebensmittel, Nährwerte) · `rezepte.js` (weitere ~200 Rezepte fürs Rezeptbuch, Küchen, Bildangaben) · `bilder.js` (Rezept-Illustrationen als SVG) · `logic.js` (Filter, Finder, Planer) · `app.js` (UI) · `order.js` · `server.js` · `start.bat` · `desktop\Program.cs` · `desktop\build.ps1` · `desktop\release.ps1` · `desktop\lib` (WebView2-DLLs, werden mit ausgeliefert)
