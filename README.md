@@ -6,7 +6,7 @@ Link zum Rezeptbuch: [https://kochapp-rezeptbuch.readyberry.chatgpt.site](https:
 
 ## Native Mac-App
 
-**[Kochapp für macOS herunterladen](https://github.com/DasAnanas/kochapp/raw/refs/heads/codex/rezept-bearbeiten/Kochapp-macOS.zip)**
+**[Kochapp für macOS herunterladen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/Kochapp-macOS.zip)**
 
 1. ZIP herunterladen und im Finder doppelklicken, um sie zu entpacken.
 2. `Kochapp.app` in den Ordner „Programme“ ziehen und öffnen.
@@ -21,7 +21,7 @@ Eigene REST-Endpunkte müssen WebKit-Zugriffe erlauben (CORS); der lokale Bestel
 
 ## Auf dem Mac im Browser öffnen
 
-**[Kochapp herunterladen und öffnen](https://github.com/DasAnanas/kochapp/raw/refs/heads/codex/rezept-bearbeiten/Kochapp.html)**
+**[Kochapp herunterladen und öffnen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/Kochapp.html)**
 
 Über den Link die Datei `Kochapp.html` herunterladen und anschließend im Finder doppelklicken. Sie öffnet sich in deinem Standardbrowser. Dies ist die lokal nutzbare Version. Die Browser-Version ohne Download ist über den Link ganz oben erreichbar.
 
