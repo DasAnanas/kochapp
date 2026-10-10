@@ -194,6 +194,12 @@ details.pick2{border-top:1px solid var(--line2);padding-top:14px} details.pick2[
 .lh{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.4rem}
 .olines{list-style:none;padding:0;margin:.7rem 0 0;font-size:14px} .olines li{padding:5px 0;border-top:1px solid var(--line2)} .olines li.bad{color:var(--low)}
 .zip-err{color:var(--low);font-weight:600;margin:0;min-height:1.2em}
+/* Eigene Lebensmittel: Verweis-Knöpfe an unbekannten Zutaten und der Dialog */
+.lk{border:0;background:none;padding:0;cursor:pointer;font:600 13px var(--body);color:var(--acc);text-decoration:underline;text-underline-offset:2px}
+.lk:hover{color:var(--acc-h)}
+.fd-open{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin:.6rem 0}
+.fd-web{margin-top:14px} .fd-web .alts button{grid-template-columns:1fr auto}
+#dlg-body .seg{margin:.4rem 0 .2rem} #dlg-body details{margin-top:.6rem}
 pre.json{background:#10171a;color:#cfe8d8;border-radius:10px;padding:.9rem;overflow:auto;max-height:340px;font-size:12px;margin-top:.8rem}
 
 /* ---------- Wochenplan ---------- */
