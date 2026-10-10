@@ -1,11 +1,14 @@
 # Kochapp – Essen organisieren
 
-**Das Ergebnis ist eine einzige Datei: `Kochapp.exe`.** Doppelklick öffnet die App in einem eigenen Fenster – kein Browser, kein Server, keine Installation. Die EXE läuft für sich allein und kann einzeln kopiert oder weitergegeben werden (Windows 10/11 mit WebView2-Laufzeit, in Windows 11 enthalten).
+**➜ [Kochapp.exe herunterladen](https://github.com/DasAnanas/kochapp/releases/latest/download/Kochapp.exe)** (aktuelle Version, Windows 10/11)
+
+Die App ist eine einzige Datei: Doppelklick auf `Kochapp.exe` öffnet sie in einem eigenen Fenster – kein Browser, kein Server, keine Installation. Die EXE läuft für sich allein und kann einzeln kopiert oder weitergegeben werden (benötigt die WebView2-Laufzeit, in Windows 11 enthalten). Alle Versionen stehen unter [Releases](https://github.com/DasAnanas/kochapp/releases).
 
 ## Desktop-App
-- Oberfläche (`index.html`, `style.css`, `*.js`) und die WebView2-Bibliotheken sind in die EXE eingebettet. Die übrigen Dateien in diesem Ordner sind der Quelltext.
+- Oberfläche (`index.html`, `style.css`, `*.js`) und die WebView2-Bibliotheken sind in die EXE eingebettet. Dieses Repository enthält nur den Quelltext; die fertige EXE liegt nicht im Repository, sondern als Release-Download vor (so kollidieren parallele Änderungen nicht an einer Binärdatei).
+- **Neue Version veröffentlichen:** `powershell -ExecutionPolicy Bypass -File desktop\release.ps1` baut die EXE aus dem aktuellen `main` und lädt sie als neues GitHub-Release hoch (benötigt Git und die angemeldete GitHub-CLI `gh`).
 - Das Fenster- und Programmsymbol (Kochtopf) liegt als `desktop\kochapp.ico` vor; `desktop\make-icon.ps1` zeichnet es neu.
-- **Nach Änderungen am Quelltext neu bauen:** `powershell -ExecutionPolicy Bypass -File desktop\build.ps1` (nutzt den in Windows enthaltenen C#-Compiler; die DLLs zum Einbetten liegen in `desktop\lib`).
+- **Lokal bauen (zum Ausprobieren):** `powershell -ExecutionPolicy Bypass -File desktop\build.ps1` erzeugt `Kochapp.exe` im Projektordner (nutzt den in Windows enthaltenen C#-Compiler; die DLLs zum Einbetten liegen in `desktop\lib`).
 - Eigene Rezepte, Einkaufsliste, Vorrat und Wochenplan liegen unter `%LOCALAPPDATA%\Kochapp`.
 - Bestellungen an einen eigenen REST-Endpunkt sendet die App-Hülle selbst (kein CORS). `ORDER_API_URL`, `ORDER_API_KEY` und `ORDER_API_KEY_HEADER` legen Ziel und Key per Umgebungsvariable fest.
 - Externe Links und `mailto:` öffnen im Standardprogramm.
@@ -35,7 +38,7 @@ Adapter-Modell (`KA.Providers`):
 Einen konkreten Händler anbinden: in `KA.Providers` einen Eintrag mit `fields`, `preview()` und `submit()` ergänzen und dort das Payload auf das API-Format des Händlers abbilden. Hinweis: Die meisten Supermärkte bieten keine offene Bestell-API; ein eigener Zwischen-Endpunkt oder ein Partnerzugang ist meist nötig.
 
 ## Dateien
-`index.html` · `style.css` · `data.js` (50 Rezepte, 76 Lebensmittel, Nährwerte) · `logic.js` (Filter, Finder, Planer) · `app.js` (UI) · `order.js` · `server.js` · `start.bat` · `Kochapp.exe` · `desktop\Program.cs` · `desktop\build.ps1` · `desktop\lib` (WebView2-DLLs zum Einbetten)
+`index.html` · `style.css` · `data.js` (50 Rezepte, 76 Lebensmittel, Nährwerte) · `logic.js` (Filter, Finder, Planer) · `app.js` (UI) · `order.js` · `server.js` · `start.bat` · `desktop\Program.cs` · `desktop\build.ps1` · `desktop\release.ps1` · `desktop\lib` (WebView2-DLLs zum Einbetten)
 
 ## Nährwerte aus den Zutaten
 - Die Rezeptseite zeigt die **Nährwerte pro Portion** (Energie, 4 Makro- und 10 Mikronährstoffe, jeweils mit Anteil am Tagesbedarf). Sie werden aus den Zutaten zusammengerechnet – bei mitgelieferten und bei eigenen Rezepten.
