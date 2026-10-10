@@ -35,3 +35,21 @@ test('fremde Origins und fehlerhafte Anfragen werden nicht abgerufen', async () 
   assert.equal((await importEndpoint(new Request('https://kochapp.example/api/import-recipe',{method:'POST',headers:{origin:'https://fremd.example'},body:'{}'}))).status,403);
   assert.equal((await importEndpoint(new Request('https://kochapp.example/api/import-recipe',{method:'POST',body:'bad'}))).status,422);
 });
+
+test('öffentlicher Importdienst erlaubt Preflight für lokale HTML-Dateien', async () => {
+  const request = new Request('https://kochapp.example/api/import-recipe', {method:'OPTIONS',headers:{origin:'null','Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'}});
+  const response = await importEndpoint(request, {allowFileOrigin:true});
+  assert.equal(response.status,204);
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'),'null');
+  assert.equal(response.headers.get('Access-Control-Allow-Headers'),'Content-Type');
+  assert.equal((await importEndpoint(request)).status,403);
+});
+test('lokale Dateien erhalten auch lesbare Importfehler, fremde Websites bleiben gesperrt', async () => {
+  const response = await importEndpoint(new Request('https://kochapp.example/api/import-recipe',{method:'POST',headers:{origin:'null'},body:'bad'}),{allowFileOrigin:true});
+  assert.equal(response.status,422);
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'),'null');
+  assert.equal((await response.json()).error,'Ungültige Anfrage.');
+  const denied = await importEndpoint(new Request('https://kochapp.example/api/import-recipe',{method:'OPTIONS',headers:{origin:'https://fremd.example'}}),{allowFileOrigin:true});
+  assert.equal(denied.status,403);
+  assert.equal(denied.headers.get('Access-Control-Allow-Origin'),null);
+});
