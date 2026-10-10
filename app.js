@@ -35,6 +35,7 @@
   const ui = {
     open: new Set(), nutDay: -1, preview: false, orderResult: null, ordering: false, planError: '', focus: null,
     fcat: 'Alle', flimit: 24, book: 'library', selId: null, detailServ: 2, filter: 'Alle', cuisine: 'Alle', query: '', addMode: 'manual', draft: emptyDraft(),
+    generated: null, generationError: '', generationVariant: 0, generationSig: '',
     scan: null, scanPhase: 'idle', link: { url: '', phase: 'idle' },
   };
 
@@ -346,6 +347,25 @@
         : `<p class="muted">${empty}</p>`}</section>`;
   }
 
+  function generatorCard() {
+    const sig = JSON.stringify([pMode(), S.pantry, S.prefs]);
+    const current = ui.generationSig === sig;
+    const r = current && ui.generated;
+    const available = pMode() !== 'off' && Object.values(pantryEff()).some((n) => n > 0);
+    return `<section class="card" id="pantry-generator"><h2>Neues Rezept aus Vorrat</h2>
+      <p class="muted">Stelle aus deinen vorhandenen Lebensmitteln einen neuen Vorschlag zusammen. Mengen, Ernährungsfilter und Abneigungen werden berücksichtigt. Die Vorschläge entstehen aus festen Kochideen, ohne KI-Dienst.</p>
+      <div class="btnrow"><button class="btn" data-act="generatepantry" ${available ? '' : 'disabled'}>${r ? 'Anderen Vorschlag generieren' : 'Neues Rezept generieren'}</button>
+      <button class="btn ghost" data-act="tab" data-v="pantry">Vorrat bearbeiten →</button></div>
+      ${available ? '' : '<p class="muted sm">Aktiviere den Vorrat und trage zuerst deine Lebensmittel ein.</p>'}
+      ${current && ui.generationError ? `<p role="status">${esc(ui.generationError)}</p>` : ''}
+      ${r ? `<div aria-live="polite"><h3>${esc(r.title)}</h3><p>${r.serv} Portion${r.serv > 1 ? 'en' : ''} · ${r.time} Minuten · Einfach</p>
+        ${r.serv < S.prefs.persons ? '<p class="muted sm">Deine eingetragenen Mengen reichen für weniger als die gewünschte Portionszahl.</p>' : ''}
+        ${pMode() === 'simple' || pIds().some((id) => S.pantry[id] == null) ? '<p class="muted sm">Bei abgehakten Zutaten ohne Mengen prüfen, ob der Vorrat für die vorgeschlagenen Portionen reicht.</p>' : ''}
+        <div class="am-two"><div><h4>Zutaten aus deinem Vorrat</h4>${ingList(r.ings, false)}</div><div><h4>Zubereitung</h4>${stepList(r.steps, false)}</div></div>
+        <p class="muted sm">Wasser wird zusätzlich benötigt; Gewürze sind optional. Der Vorrat wird erst beim Markieren als gekocht abgezogen. Eigene Rezepte werden in diesem Browser gespeichert.</p>
+        <button class="btn" data-act="editgenerated">Als neues Rezept bearbeiten</button></div>` : ''}</section>`;
+  }
+
   // Trefferliste der Rezeptfindung mit Kategorie-Filter; zeigt die ersten ui.flimit Treffer
   function resultGrid(title, results, sel) {
     const cats = BOOK_CATS.filter((c) => results.some((e) => e.r.cat === c));
@@ -367,11 +387,11 @@
     if (mode === 'off') {
       const results = KA.RECIPES.filter((r) => KA.recipeMatches(r, p)).sort((a, b) => a.time - b.time || a.name.localeCompare(b.name, 'de'))
         .map((r) => KA.evalRecipe(r, {}, p.persons || 2, p));
-      if (!results.length) return pageHead('Rezepte finden', 'Passende Gerichte zu deinen Präferenzen.') + pantryBar() + prefsCard() +
+      if (!results.length) return pageHead('Rezepte finden', 'Passende Gerichte zu deinen Präferenzen.') + pantryBar() + generatorCard() + prefsCard() +
         '<section class="card"><h2>Rezepte</h2><p class="muted">Mit deinen Filtern passt aktuell kein Rezept. Lockere die Präferenzen.</p></section>';
       out += selectionCard(sel, {}, 'Einkaufsliste für deine Auswahl', 'Wähle unten Rezepte aus – hier erscheint dann alles, was du dafür einkaufen musst.');
       out += resultGrid('Passende Rezepte', results, sel);
-      return pageHead('Rezepte finden', 'Passende Gerichte zu deinen Präferenzen – alles Nötige kommt auf die Einkaufsliste.') + pantryBar() + prefsCard() + out;
+      return pageHead('Rezepte finden', 'Passende Gerichte zu deinen Präferenzen – alles Nötige kommt auf die Einkaufsliste.') + pantryBar() + generatorCard() + prefsCard() + out;
     }
     if (Object.keys(P).length) {
       const results = KA.findRecipes(P, p);
@@ -395,7 +415,7 @@
       out = `<section class="card"><h2>Rezepte</h2><p class="muted">${mode === 'simple' ? 'Hake zuerst ab, was du da hast' : 'Trage zuerst deinen Vorrat ein'} – die App schlägt dann Rezepte vor, die möglichst viel davon verwenden, und erstellt eine Einkaufsliste für den Rest. Oder nutze die App ganz ohne Vorrat.</p>
         <div class="btnrow"><button class="btn" data-act="tab" data-v="pantry">Zum Vorrat →</button><button class="btn ghost" data-act="pmode" data-v="off">Ohne Vorrat weiter</button></div></section>`;
     }
-    return pageHead('Rezepte aus Vorrat', 'Verwerte, was du da hast – der Rest kommt auf die Einkaufsliste.') + pantryBar() + prefsCard() + out;
+    return pageHead('Rezepte aus Vorrat', 'Verwerte, was du da hast – der Rest kommt auf die Einkaufsliste.') + pantryBar() + generatorCard() + prefsCard() + out;
   }
 
   /* ---------- Tab: Wochenplan ---------- */
@@ -1208,6 +1228,23 @@
 
   const A = {
     tab: (el) => { S.tab = el.dataset.v; ui.book = 'library'; update(); window.scrollTo(0, 0); },
+
+    generatepantry: () => {
+      if (pMode() === 'off') return;
+      const sig = JSON.stringify([pMode(), S.pantry, S.prefs]);
+      if (sig !== ui.generationSig) ui.generationVariant = 0;
+      const result = KA.generatePantryRecipe(pantryEff(), S.prefs, ui.generationVariant++);
+      ui.generationSig = sig; ui.generated = result.recipe || null; ui.generationError = result.error || '';
+      render();
+      if (result.count === 1 && ui.generationVariant > 1) toast('Aktuell passt nur diese Kochidee zu deinem Vorrat und deinen Filtern.');
+    },
+    editgenerated: () => {
+      if (!ui.generated || ui.generationSig !== JSON.stringify([pMode(), S.pantry, S.prefs])) return;
+      if ((ui.draft.title || ui.draft.ings.length || ui.draft.steps.length) && !confirm('Den bisherigen ungespeicherten Rezeptentwurf durch diesen Vorschlag ersetzen?')) return;
+      ui.draft = JSON.parse(JSON.stringify(ui.generated)); ui.addMode = 'manual';
+      S.tab = 'book'; ui.book = 'add'; update(); window.scrollTo(0, 0);
+      toast('Vorschlag prüfen und als eigenes Rezept speichern.');
+    },
 
     /* Rezeptbuch */
     booklib: () => { S.tab = 'book'; ui.book = 'library'; ui.filter = 'Alle'; ui.cuisine = 'Alle'; update(); window.scrollTo(0, 0); },

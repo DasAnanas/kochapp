@@ -316,6 +316,96 @@
     return next;
   };
 
+  /* Neue Vorschläge aus kombinierbaren Vorratszutaten; keine externen Dienste. */
+  let generatedId = 0;
+  KA.generatePantryRecipe = (pantry, prefs, variant = 0) => {
+    const requested = Math.max(1, Math.min(30, Math.floor(Number(prefs.persons) || 2)));
+    const allowed = (id) => {
+      const ing = ING[id];
+      return ing && pantry[id] > 0 && !(prefs.diets || []).some((d) =>
+        DIETS[d] && DIETS[d].excl && DIETS[d].excl.some((f) => ing.flags.includes(f))) &&
+        !(prefs.dislikes || []).map(KA.norm).filter(Boolean).some((d) => (KA.norm(ing.name) + ' ' + id).includes(d));
+    };
+    const pick = (ids, n = 1) => ids.filter(allowed).slice(0, n);
+    const veg = pick(['zucchini', 'paprika', 'karotten', 'brokkoli', 'blumenkohl', 'champignons', 'spinat', 'lauch', 'tomaten'], 3);
+    const fruit = pick(['bananen', 'aepfel', 'beeren'], 2);
+    const protein = pick(['tofu', 'kichererbsen', 'kidneybohnen'], 1);
+    const grams = (id, g) => ING[id].unit === 'Stk' ? g / ING[id].gpu : g;
+    const names = (ids) => ids.map((id) => ING[id].name).join(', ');
+    const candidates = [];
+    function add(title, cat, time, required, optional, steps) {
+      if (!required.length || required.some(([id]) => !allowed(id))) return;
+      // Ganze Portionen, deren wesentliche Zutaten tatsächlich im Vorrat liegen.
+      const serv = Math.min(requested, ...required.map(([id, qty]) => Math.floor((pantry[id] + 1e-8) / qty)));
+      if (serv < 1) return;
+      const i = required.map(([id, qty]) => [id, qty * serv]);
+      optional.forEach(([id, qty]) => {
+        if (!allowed(id) || i.some(([key]) => key === id)) return;
+        const amount = Math.min(qty * serv, pantry[id]);
+        if (amount >= qty * serv * 0.25) i.push([id, amount]);
+      });
+      // Einmalige Kennung, da Nährwerte und Flags pro Rezeptkennung gecacht werden.
+      const r = { id: 'generated-' + (++generatedId), name: title, s: serv, time, diff: 1, i, user: true, types: ['m', 'a', 'f', 's'] };
+      const matches = KA.recipeMatches(r, prefs);
+      delete perServCache[r.id]; delete flagCache[r.id];
+      if (!matches) return;
+      candidates.push({ title, cat, time, serv, diff: 1, cuisine: '', image: '',
+        ings: i.map(([id, qty]) => ({ name: ING[id].name, qty: Math.round(qty * 100) / 100, unit: ING[id].unit })),
+        steps: steps(i.map(([id]) => id)), used: i.length });
+      // Diese temporären Rezepte werden nicht im Bestand gehalten.
+      delete perServCache[r.id]; delete flagCache[r.id];
+    }
+    const vegAmounts = veg.map((id) => [id, grams(id, 100)]);
+    for (const base of pick(['nudeln', 'vollkornnudeln', 'reis', 'quinoa', 'couscous'], 5)) {
+      if (!veg.length && !protein.length) continue;
+      const main = veg.length ? [veg[0], grams(veg[0], 150)] : [protein[0], 150];
+      add(ING[base].name + ' mit ' + ING[main[0]].name, 'Hauptgericht', 30,
+        [[base, 80], main], [...vegAmounts, ...protein.map((id) => [id, 120])], (ids) => [
+          ING[base].name + ' nach Packungsanweisung in Wasser garen.',
+          veg.length ? names(veg.filter((id) => ids.includes(id))) + ' waschen, putzen und klein schneiden. Mit etwas Wasser in einer beschichteten Pfanne zugedeckt 10–15 Minuten garen, bis das Gemüse weich ist. Bei Bedarf Wasser nachgießen.' : 'Eine beschichtete Pfanne mit etwas Wasser erhitzen.',
+          ...protein.filter((id) => ids.includes(id)).map((id) => id === 'tofu' ? 'Tofu würfeln und in der Pfanne mindestens 5 Minuten durcherhitzen.' : ING[id].name + ' abgießen, abspülen und 5 Minuten in der Pfanne durcherhitzen.'),
+          'Die gegarte Beilage unterheben und warm servieren. Nach Wunsch mit vorhandenen Gewürzen abschmecken.'
+        ]);
+    }
+    if (veg.length) {
+      add('Vorrats-Gemüsepfanne mit ' + ING[veg[0]].name, 'Hauptgericht', 25,
+        [[veg[0], grams(veg[0], 200)]], [...vegAmounts, ...protein.map((id) => [id, 150])], (ids) => [
+          names(veg.filter((id) => ids.includes(id))) + ' waschen, putzen und in kleine Stücke schneiden.',
+          'Gemüse mit etwas Wasser in eine beschichtete Pfanne geben. Zugedeckt 10–15 Minuten garen, bis es weich ist; gelegentlich umrühren und bei Bedarf Wasser nachgießen.',
+          ...protein.filter((id) => ids.includes(id)).map((id) => id === 'tofu' ? 'Tofu würfeln, dazugeben und mindestens 5 Minuten durcherhitzen.' : ING[id].name + ' abgießen, abspülen, dazugeben und 5 Minuten durcherhitzen.'),
+          'Warm servieren. Nach Wunsch mit vorhandenen Gewürzen abschmecken.'
+        ]);
+      add('Gemüse-Rührei mit ' + ING[veg[0]].name, 'Hauptgericht', 20,
+        [['eier', 2], [veg[0], grams(veg[0], 100)]], vegAmounts, (ids) => [
+          names(veg.filter((id) => ids.includes(id))) + ' waschen, putzen und klein schneiden.',
+          'In einer beschichteten Pfanne mit wenig Wasser zugedeckt 10 Minuten weich garen. Überschüssiges Wasser verdampfen lassen.',
+          'Eier in einer Schüssel verquirlen und zum Gemüse geben. Bei mittlerer Hitze unter Rühren vollständig stocken lassen, bis kein flüssiges Ei mehr zu sehen ist.',
+          'Sofort servieren und nach Wunsch mit vorhandenen Gewürzen abschmecken.'
+        ]);
+    }
+    if (fruit.length) {
+      add('Haferbrei mit ' + names(fruit), 'Frühstück', 15,
+        [['haferflocken', 60], [fruit[0], grams(fruit[0], 100)]], fruit.slice(1).map((id) => [id, grams(id, 80)]), (ids) => [
+          'Haferflocken mit der dreifachen Menge Wasser aufkochen und unter Rühren 5–10 Minuten weich köcheln lassen.',
+          names(fruit.filter((id) => ids.includes(id))) + ' vorbereiten: frisches Obst waschen oder schälen und klein schneiden. Tiefgekühlte Beeren zum Brei geben und mindestens 2 Minuten sprudelnd mitkochen.',
+          'Frisches Obst unter den warmen Brei heben und servieren.'
+        ]);
+      for (const dairy of pick(['joghurt', 'skyr', 'quark'], 3)) {
+        // TK-Beeren benötigen Erhitzen; deshalb hier nur frisches Obst verwenden.
+        const fresh = fruit.filter((id) => id !== 'beeren');
+        if (!fresh.length) continue;
+        add(ING[dairy].name + ' mit ' + names(fresh), 'Frühstück', 10,
+          [[dairy, 150], [fresh[0], grams(fresh[0], 100)]], fresh.slice(1).map((id) => [id, grams(id, 80)]), (ids) => [
+            names(fresh.filter((id) => ids.includes(id))) + ' waschen oder schälen und klein schneiden.',
+            ING[dairy].name + ' glatt rühren, Obst unterheben und servieren.'
+          ]);
+      }
+    }
+    candidates.sort((a, b) => b.used - a.used || b.serv - a.serv || a.time - b.time);
+    if (!candidates.length) return { error: 'Aus deinem Vorrat lässt sich mit diesen Filtern noch kein passender Vorschlag erstellen. Ergänze zum Beispiel Gemüse mit Reis, Nudeln, Tofu oder Eiern – oder Obst mit Haferflocken bzw. Joghurt. Prüfe auch Mengen, Zeit und Ernährungsfilter.' };
+    return { recipe: candidates[((variant % candidates.length) + candidates.length) % candidates.length], count: candidates.length };
+  };
+
   /* ---------- Wochenplaner ---------- */
   const DAYS = 7;
   KA.DAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
