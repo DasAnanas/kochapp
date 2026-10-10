@@ -1,0 +1,10 @@
+# Windows / Editor
+Thumbs.db
+desktop.ini
+.vs/
+.vscode/
+.claude/
+
+# Build-Zwischenstände
+*.pdb
+*.tmp
