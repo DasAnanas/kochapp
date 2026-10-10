@@ -696,7 +696,6 @@
     $('#mtop').innerHTML = '<b>Kochapp</b><button data-act="bookadd" aria-label="Neues Rezept">+</button>';
     $('#tabbar').innerHTML = TABS.map(([k, , l]) => `<button class="${S.tab === k && !ui.listOpen ? 'on' : ''}" data-act="tab" data-v="${k}">${l}</button>`).join('') +
       `<button class="${ui.listOpen ? 'on' : ''}" data-act="openlist">Liste<i>${open || ''}</i></button>`;
-    $('#fab').innerHTML = ui.listOpen ? '' : `<button class="fab" data-act="openlist">Einkaufsliste<span>${open}</span></button>`;
   }
   function render() {
     const y = window.scrollY;

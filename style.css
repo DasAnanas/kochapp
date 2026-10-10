@@ -49,11 +49,9 @@ main{padding:40px 48px 90px;min-width:0}
 .ph>div{display:flex;flex-direction:column;gap:6px} .ph p{margin:0;color:var(--muted)}
 .search{width:300px;background:var(--card);padding:11px 14px}
 
-.fab{position:fixed;right:28px;bottom:28px;z-index:20;border:0;cursor:pointer;background:var(--ink);color:var(--bg);padding:13px 14px 13px 18px;border-radius:999px;display:flex;gap:10px;align-items:center;font:600 14px var(--body);box-shadow:0 14px 30px -12px rgba(20,35,28,.5)}
-.fab:hover{background:var(--ink2)} .fab span{background:var(--acc);color:var(--acc-ink);border-radius:999px;padding:3px 9px;font-size:12px}
 
 @media (max-width:999px){
-  .shell{grid-template-columns:minmax(0,1fr)} .side,.fab{display:none}
+  .shell{grid-template-columns:minmax(0,1fr)} .side{display:none}
   main{padding:18px 16px 110px}
   h1{font-size:32px} .search{width:100%}
   .mtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
@@ -310,7 +308,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 @media (max-width:999px){#toast{bottom:96px}}
 
 @media print{
-  .side,.mtop,.tabbar,#fab,#overlay,.ph,.noprint,#toast,dialog,.card:not(.printable){display:none!important}
+  .side,.mtop,.tabbar,#overlay,.ph,.noprint,#toast,dialog,.card:not(.printable){display:none!important}
   /* Einkaufsliste als Zettel zum Abhaken: leere Kästchen, Menge vor Artikel, zwei Spalten, ohne Preise */
   @page{margin:14mm 16mm}
   html,body{background:#fff!important}

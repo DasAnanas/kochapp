@@ -23,7 +23,7 @@ foreach ($f in $dlls) {
 }
 
 & $csc /nologo /target:winexe /platform:x64 /optimize+ `
-  "/out:$app\Kochapp.exe" `
+  "/out:$app\Kochapp.exe" "/win32icon:$PSScriptRoot\kochapp.ico" `
   "/r:$lib\Microsoft.Web.WebView2.Core.dll" "/r:$lib\Microsoft.Web.WebView2.WinForms.dll" `
   /r:System.Net.Http.dll /r:System.Web.Extensions.dll /r:System.Windows.Forms.dll /r:System.Drawing.dll `
   $res "$PSScriptRoot\Program.cs"
