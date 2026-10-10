@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kochapp – Essen organisieren</title>
+<title>dAIlykitchen – Essen organisieren</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,800&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <style>
-/* Kochapp – Gestaltung im Küchenbuch-Stil: Seitenleiste, helle Karten, Bricolage Grotesque + Manrope */
+/* dAIlykitchen – Gestaltung im Küchenbuch-Stil: Seitenleiste, helle Karten, Bricolage Grotesque + Manrope */
 :root{
   --bg:#F6F8F5; --card:#FFFFFF; --side:#EEF2EC; --hover:#E2EBDF; --ink:#1B2420; --ink2:#36423C; --muted:#5C6862; --faint:#8C978F;
   --line:#E3E8E1; --line2:#EDF1EB; --line3:#D3DBD0;
@@ -45,6 +45,8 @@ a{color:var(--acc)}
 .side .brand{display:flex;flex-direction:column;gap:4px;padding:0 12px}
 .side .brand b{font:500 28px/1 var(--head);letter-spacing:-.01em}
 .side .brand span{font:500 14px/1.3 var(--body);color:var(--muted)}
+/* Markenname dAIlykitchen: das AI ist hervorgehoben */
+.side .brand b .ai,.mtop b .ai{font:inherit;font-weight:800;color:var(--acc);letter-spacing:.01em}
 .newbtn{border:0;cursor:pointer;background:var(--acc);color:var(--acc-ink);font:600 14px var(--body);padding:12px 14px;border-radius:10px;text-align:left;display:flex;align-items:center;gap:10px}
 .newbtn:hover{background:var(--acc-h)} .newbtn span{font-size:18px;line-height:1}
 .snav{display:flex;flex-direction:column;gap:2px}
@@ -388,7 +390,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 <div id="toast" role="status" aria-live="polite"></div>
 <noscript>Diese App benötigt JavaScript.</noscript>
 <script>
-/* Kochapp – Daten: Nährstoffe, Lebensmittel, Rezepte
+/* dAIlykitchen – Daten: Nährstoffe, Lebensmittel, Rezepte
  * Nährwerte pro 100 g bzw. 100 ml stammen aus der Schweizer Nährwertdatenbank (BLV) und sind gegen
  * USDA FoodData Central geprüft – siehe tools/naehrwerte/PRUEFBERICHT.md. Sie dienen der Orientierung,
  * nicht der medizinischen Beratung.
@@ -931,7 +933,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 
 </script>
 <script>
-/* Kochapp – Rezeptbuch: zusätzliche Rezepte für alle Kategorien
+/* dAIlykitchen – Rezeptbuch: zusätzliche Rezepte für alle Kategorien
  * Diese Rezepte erscheinen im Rezeptbuch und auf der Einkaufsliste (wie eigene Rezepte),
  * nicht im Vorrats-Finder oder Wochenplan – dafür fehlen ihnen die Nährwerte.
  * Format: r(id, Titel, Minuten, Portionen, Bild, 'Zutat|Zutat|…', 'Schritt|Schritt|…')
@@ -1746,7 +1748,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 
 </script>
 <script>
-/* Kochapp – Rezeptbilder
+/* dAIlykitchen – Rezeptbilder
  * Zeichnet zu jedem Rezept eine Illustration als SVG (läuft offline, keine Bilddateien nötig).
  * Bild-Angabe: 'art:farbe1,farbe2,farbe3' – z. B. 'pizza:tomate,kaese,kraut'.
  * Farben sind Namen aus FARBE oder Hex-Werte (#RRGGBB).
@@ -2081,7 +2083,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 
 </script>
 <script>
-/* Kochapp – Logik (ohne DOM): Nährwerte, Filter, Rezept-Finder, Wochenplaner, Einkaufsliste */
+/* dAIlykitchen – Logik (ohne DOM): Nährwerte, Filter, Rezept-Finder, Wochenplaner, Einkaufsliste */
 (function (root) {
   const KA = (root.KA = root.KA || {});
   const { NUTRIENTS, ING, RECIPES, DIETS, MEALS, CATS } = KA;
@@ -2644,7 +2646,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 
 </script>
 <script>
-/* Kochapp – Bestell-Schnittstelle
+/* dAIlykitchen – Bestell-Schnittstelle
  *
  * Jeder Anbieter ("Provider") ist ein Adapter mit:
  *   label    – Anzeigename
@@ -2660,7 +2662,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   function payload(items, customer, meta) {
     const lines = items.filter((i) => i.checked !== false);
     return {
-      source: 'Kochapp',
+      source: 'dAIlykitchen',
       createdAt: new Date().toISOString(),
       currency: 'EUR',
       customer: customer || {},
@@ -2792,7 +2794,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 
 </script>
 <script>
-/* Kochapp – Oberfläche */
+/* dAIlykitchen – Oberfläche */
 (function () {
   'use strict';
   const KA = window.KA;
@@ -3461,7 +3463,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     if (bookMap) return bookMap;
     bookMap = {};
     KA.BOOK.forEach((b) => {
-      bookMap[b.id] = { id: b.id, title: b.title, cat: b.cat, cuisine: b.cuisine, diff: b.diff, time: b.time, serv: b.serv, source: 'Kochapp', builtin: true,
+      bookMap[b.id] = { id: b.id, title: b.title, cat: b.cat, cuisine: b.cuisine, diff: b.diff, time: b.time, serv: b.serv, source: 'dAIlykitchen', builtin: true,
         tone: hash(b.id) % TONES.length, image: KA.dishImage(b.img, b.id), ings: b.ings.map((t) => linkIng(parseLine(t))), steps: b.steps };
     });
     return bookMap;
@@ -3473,7 +3475,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     const meta = KA.BUILTIN_META[id] || {};
     const cat = meta.cat || builtinCat(r);
     return {
-      id, title: r.name, cat, cuisine: r.k, time: r.time, serv: r.s, source: 'Kochapp', builtin: true,
+      id, title: r.name, cat, cuisine: r.k, time: r.time, serv: r.s, source: 'dAIlykitchen', builtin: true,
       tone: hash(id) % TONES.length, image: KA.dishImage(meta.img || CAT_IMG[cat], id),
       ings: r.i.map(([iid, a]) => ({ id: iid, qty: a, base: a, unit: ING[iid].unit, name: ING[iid].name, std: true })), steps: r.st,
     };
@@ -3929,12 +3931,12 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     const count = { book: book.length, pantry: pMode() === 'off' ? '' : pIds().length, shop: open };
     const inLib = S.tab === 'book' && ui.book === 'library';
     TABS[1][1] = pMode() === 'off' ? 'Rezepte finden' : 'Rezepte aus Vorrat';
-    $('#side').innerHTML = `<div class="brand"><b>Kochapp</b><span>Rezepte · Vorrat · Wochenplan</span></div>
+    $('#side').innerHTML = `<div class="brand"><b aria-label="dAIlykitchen">d<span class="ai">AI</span>lykitchen</b><span>Rezepte · Vorrat · Wochenplan</span></div>
       <button class="newbtn" data-act="bookadd"><span>+</span>Neues Rezept</button>
       <nav class="snav">${TABS.map(([k, l]) => `<button class="${S.tab === k ? 'on' : ''}" data-act="tab" data-v="${k}"><span>${l}</span><i>${count[k] == null ? '' : count[k]}</i></button>`).join('')}</nav>
       <div class="snav"><div class="slabel">Sammlungen</div>${BOOK_CATS.concat(['Eigene']).map((c) =>
         `<button class="${inLib && ui.filter === c ? 'on' : ''}" data-act="bookfilter" data-v="${c}"><span>${c}</span><i>${book.filter((r) => (c === 'Eigene' ? !r.builtin : r.cat === c)).length}</i></button>`).join('')}</div>`;
-    $('#mtop').innerHTML = '<b>Kochapp</b><button data-act="bookadd" aria-label="Neues Rezept">+</button>';
+    $('#mtop').innerHTML = '<b aria-label="dAIlykitchen">d<span class="ai">AI</span>lykitchen</b><button data-act="bookadd" aria-label="Neues Rezept">+</button>';
     $('#tabbar').innerHTML = TABS.map(([k, , l]) => `<button class="${S.tab === k ? 'on' : ''}" data-act="tab" data-v="${k}">${l}${k === 'shop' ? `<i>${open || ''}</i>` : ''}</button>`).join('');
   }
   function render() {
@@ -4282,7 +4284,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   function zipDialog(count) {
     const cfg = S.order.cfg.rewe || {};
     return `<h2>Bei REWE in den Warenkorb</h2>
-      <p>Die Kochapp legt ${count} Artikel in deinen Warenkorb auf rewe.de und öffnet ihn danach im REWE-Fenster. <b>Es wird nichts bestellt</b> – die Bestellung schließt du dort selbst ab.</p>
+      <p>dAIlykitchen legt ${count} Artikel in deinen Warenkorb auf rewe.de und öffnet ihn danach im REWE-Fenster. <b>Es wird nichts bestellt</b> – die Bestellung schließt du dort selbst ab.</p>
       <div class="grid2">
         <label>Deine Postleitzahl<input id="zip-in" inputmode="numeric" maxlength="5" value="${esc(cfg.zip || S.order.customer.zip || '')}" placeholder="z. B. 10115" autocomplete="postal-code"></label>
         <label>Service<select id="zip-svc"><option value="DELIVERY" ${cfg.service !== 'PICKUP' ? 'selected' : ''}>Lieferservice</option><option value="PICKUP" ${cfg.service === 'PICKUP' ? 'selected' : ''}>Abholservice im Markt</option></select></label>

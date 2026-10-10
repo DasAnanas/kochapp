@@ -1,6 +1,6 @@
 # REWE-Bridge
 
-Lokale Schnittstelle, über die die Kochapp eine Einkaufsliste in den Warenkorb auf rewe.de legt.
+Lokale Schnittstelle, über die dAIlykitchen eine Einkaufsliste in den Warenkorb auf rewe.de legt.
 **Bestellt wird nie automatisch** – am Ende öffnet sich der Warenkorb (`/shop/checkout/basket`), und der
 Mensch prüft und bestellt dort selbst.
 
@@ -8,11 +8,11 @@ Keine Installation nötig: Windows PowerShell + Chrome (oder Edge).
 
 ## So wird sie benutzt
 
-**Aus der Kochapp (Windows-App):** Im Bereich „Einkaufsliste“ auf
+**Aus dAIlykitchen (Windows-App):** Im Bereich „Einkaufsliste“ auf
 „Bei REWE in den Warenkorb …“ klicken und die Postleitzahl eingeben. Die App startet die Bridge bei Bedarf
 selbst und im Hintergrund: ohne Konsolenfenster, das Chrome-Fenster bleibt minimiert und verborgen. Sie wählt den
 Markt zur Postleitzahl, füllt den Warenkorb und holt erst dann das REWE-Fenster mit dem Warenkorb nach vorn.
-Der API-Schlüssel wird von der App automatisch gesetzt; die Bridge beendet sich, wenn die Kochapp geschlossen wird
+Der API-Schlüssel wird von der App automatisch gesetzt; die Bridge beendet sich, wenn dAIlykitchen geschlossen wird
 (`-ParentPid`). Protokoll: `.data\bridge.log`. Zur Fehlersuche lässt sich alles sichtbar starten: Umgebungsvariable
 `KOCHAPP_REWE_VISIBLE=1` für die App bzw. `start-rewe-bridge.cmd -Visible` von Hand.
 

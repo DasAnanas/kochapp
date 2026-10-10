@@ -1,17 +1,17 @@
 Link zum Rezeptbuch: [https://kochapp-rezeptbuch.readyberry.chatgpt.site](https://kochapp-rezeptbuch.readyberry.chatgpt.site)
 
-**Aktuelle HTML-Version (eine Datei, läuft in jedem Browser): [Kochapp.html herunterladen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/Kochapp.html)** – herunterladen und doppelklicken. Sie wird bei jeder Änderung aus dem aktuellen Stand von `main` neu erzeugt (`desktop/build-html.py` bzw. unter Windows `desktop\build-html.ps1`) und enthält damit auch die eine Einkaufsliste und „Bei REWE in den Warenkorb“.
+**Aktuelle HTML-Version (eine Datei, läuft in jedem Browser): [dAIlykitchen.html herunterladen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/dAIlykitchen.html)** – herunterladen und doppelklicken. Sie wird bei jeder Änderung aus dem aktuellen Stand von `main` neu erzeugt (`desktop/build-html.py` bzw. unter Windows `desktop\build-html.ps1`) und enthält damit auch die eine Einkaufsliste und „Bei REWE in den Warenkorb“.
 
-# Kochapp – Essen organisieren
+# dAIlykitchen – Essen organisieren
 
-**Für den Mac: `Kochapp-macOS.zip` (native App) oder `Kochapp.html` (Browser). Für Windows: `Kochapp.exe`.** Beide Dateien enthalten die Oberfläche und können einzeln weitergegeben werden.
+**Für den Mac: `Kochapp-macOS.zip` (native App) oder `dAIlykitchen.html` (Browser). Für Windows: `dAIlykitchen.exe`.** Beide Dateien enthalten die Oberfläche und können einzeln weitergegeben werden.
 
 ## Native Mac-App
 
-**[Kochapp für macOS herunterladen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/Kochapp-macOS.zip)**
+**[dAIlykitchen für macOS herunterladen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/Kochapp-macOS.zip)**
 
 1. ZIP herunterladen und im Finder doppelklicken, um sie zu entpacken.
-2. `Kochapp.app` in den Ordner „Programme“ ziehen und öffnen.
+2. `Kochapp.app` (die Mac-App trägt bis zum nächsten Neubau auf einem Mac noch den alten Namen) in den Ordner „Programme“ ziehen und öffnen.
 
 Die App öffnet ein eigenes Fenster und benötigt keinen Browser, Node.js oder Server. Sie läuft ab macOS 11.3 auf Apple Silicon und Intel. Eigene Rezepte und Einstellungen werden im persistenten WebKit-Speicher der App abgelegt; Daten aus der HTML- oder Windows-Version werden nicht automatisch übernommen.
 
@@ -23,27 +23,27 @@ Eigene REST-Endpunkte müssen WebKit-Zugriffe erlauben (CORS); der lokale Bestel
 
 ## Auf dem Mac im Browser öffnen
 
-**[Kochapp herunterladen und öffnen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/Kochapp.html)**
+**[dAIlykitchen herunterladen und öffnen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/dAIlykitchen.html)**
 
-Über den Link die Datei `Kochapp.html` herunterladen und anschließend im Finder doppelklicken. Sie öffnet sich in deinem Standardbrowser. Dies ist die lokal nutzbare Version. Die Browser-Version ohne Download ist über den Link ganz oben erreichbar.
+Über den Link die Datei `dAIlykitchen.html` herunterladen und anschließend im Finder doppelklicken. Sie öffnet sich in deinem Standardbrowser. Dies ist die lokal nutzbare Version. Die Browser-Version ohne Download ist über den Link ganz oben erreichbar.
 
-- `Kochapp.html` herunterladen und im Finder doppelklicken (oder über „Öffnen mit“ Safari bzw. Chrome auswählen). Bei GitHub die Datei über „Download raw file“ herunterladen; die Quelltextansicht führt die App nicht aus.
+- `dAIlykitchen.html` herunterladen und im Finder doppelklicken (oder über „Öffnen mit“ Safari bzw. Chrome auswählen). Bei GitHub die Datei über „Download raw file“ herunterladen; die Quelltextansicht führt die App nicht aus.
 - Die App läuft im Browser, ohne Installation, Node.js oder lokalen Server. HTML, CSS und JavaScript sind in dieser einen Datei enthalten. Die Schriftarten benötigen Internet; offline werden Systemschriften verwendet.
 - Eigene Rezepte, Vorrat und Wochenplan werden im lokalen Speicher des verwendeten Browsers gespeichert. Verwende denselben Browser und Dateipfad, keinen privaten Modus. Daten aus der Windows-App werden nicht automatisch übernommen.
 - Zum Füllen des REWE-Warenkorbs wird die lokale Windows-Bridge benötigt (siehe „Bei REWE bestellen“).
-- Nach Änderungen an der Oberfläche mit `python3 desktop/build-html.py` (Windows: `powershell -ExecutionPolicy Bypass -File desktop\build-html.ps1`) neu bauen und die aktualisierte `Kochapp.html` mit ins Repository aufnehmen. Python wird nur zum Bauen benötigt.
+- Nach Änderungen an der Oberfläche mit `python3 desktop/build-html.py` (Windows: `powershell -ExecutionPolicy Bypass -File desktop\build-html.ps1`) neu bauen und die aktualisierte `dAIlykitchen.html` mit ins Repository aufnehmen. Python wird nur zum Bauen benötigt.
 
 Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 10/11 mit WebView2-Laufzeit (in Windows 11 enthalten).
 
 ## Desktop-App
-- **Download: [Kochapp-Windows.zip (aktuelle Version)](https://github.com/DasAnanas/kochapp/releases/latest/download/Kochapp-Windows.zip)** – ZIP entpacken (Rechtsklick > „Alle extrahieren“) und `Kochapp.exe` aus dem entpackten Ordner starten. Alle Versionen unter [Releases](https://github.com/DasAnanas/kochapp/releases).
-- Der Ordner enthält `Kochapp.exe`, drei WebView2-Bibliotheken von Microsoft (`*.dll`) und den Ordner `rewe-bridge`; alles muss zusammen liegen bleiben. Zum Weitergeben den ganzen Ordner bzw. die ZIP-Datei verwenden.
+- **Download: [dAIlykitchen-Windows.zip (aktuelle Version)](https://github.com/DasAnanas/kochapp/releases/latest/download/dAIlykitchen-Windows.zip)** – ZIP entpacken (Rechtsklick > „Alle extrahieren“) und `dAIlykitchen.exe` aus dem entpackten Ordner starten. Alle Versionen unter [Releases](https://github.com/DasAnanas/kochapp/releases).
+- Der Ordner enthält `dAIlykitchen.exe`, drei WebView2-Bibliotheken von Microsoft (`*.dll`) und den Ordner `rewe-bridge`; alles muss zusammen liegen bleiben. Zum Weitergeben den ganzen Ordner bzw. die ZIP-Datei verwenden.
 - Die Oberfläche (`index.html`, `style.css`, `*.js`) ist in die EXE eingebettet. Die Bibliotheken sind es bewusst nicht: Eine EXE, die Programmbibliotheken aus sich selbst entpackt, meldet Windows Defender als Trojaner (Fehlalarm, so geschehen bei Version 1.0.0).
 - Dieses Repository enthält nur den Quelltext; die fertige App liegt als Release-Download vor (so kollidieren parallele Änderungen nicht an einer Binärdatei).
 - **Neue Version veröffentlichen:** `powershell -ExecutionPolicy Bypass -File desktop\release.ps1` baut die App aus dem aktuellen `main` und lädt sie als neues GitHub-Release hoch (benötigt Git und die angemeldete GitHub-CLI `gh`).
 - Das Fenster- und Programmsymbol (Kochtopf) liegt als `desktop\kochapp.ico` vor; `desktop\make-icon.ps1` zeichnet es neu.
-- **Lokal bauen (zum Ausprobieren):** `powershell -ExecutionPolicy Bypass -File desktop\build.ps1` erzeugt den Ordner `dist` mit `Kochapp.exe` und den DLLs (nutzt den in Windows enthaltenen C#-Compiler; die DLLs liegen in `desktop\lib`).
-- Eigene Rezepte, Einkaufsliste, Vorrat und Wochenplan liegen unter `%LOCALAPPDATA%\Kochapp`.
+- **Lokal bauen (zum Ausprobieren):** `powershell -ExecutionPolicy Bypass -File desktop\build.ps1` erzeugt den Ordner `dist` mit `dAIlykitchen.exe` und den DLLs (nutzt den in Windows enthaltenen C#-Compiler; die DLLs liegen in `desktop\lib`).
+- Eigene Rezepte, Einkaufsliste, Vorrat und Wochenplan liegen unter `%LOCALAPPDATA%\Kochapp` (der Ordner behält den früheren App-Namen, damit beim Update keine Daten verloren gehen).
 - Bestellungen an einen eigenen REST-Endpunkt sendet die App-Hülle selbst (kein CORS). `ORDER_API_URL`, `ORDER_API_KEY` und `ORDER_API_KEY_HEADER` legen Ziel und Key per Umgebungsvariable fest.
 - Externe Links und `mailto:` öffnen im Standardprogramm.
 - Schriftarten (Bricolage Grotesque, Manrope) werden von Google Fonts geladen; ohne Internet nutzt die App Systemschriften.
@@ -52,9 +52,9 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
 ## Bei REWE bestellen
 - Im Bereich „Einkaufsliste“ auf **„Bei REWE in den Warenkorb …“** klicken. Übergeben werden alle Artikel, die noch nicht abgehakt sind. Die App fragt nach der **Postleitzahl** (und Liefer- oder Abholservice), wählt den passenden REWE-Markt, legt die Artikel der Liste in den Warenkorb auf rewe.de und holt das REWE-Fenster mit dem Warenkorb nach vorn.
 - **Es wird nie automatisch bestellt.** Warenkorb prüfen, Liefertermin wählen und die Bestellung abschließen macht der Mensch selbst auf rewe.de.
-- Technik: Der Ordner `rewe-bridge` (liegt neben `Kochapp.exe`) enthält eine kleine lokale Schnittstelle, die ein eigenes Chrome- bzw. Edge-Fenster steuert. Die Windows-App startet sie bei Bedarf selbst und **unsichtbar im Hintergrund**: kein Konsolenfenster, und das REWE-Fenster bleibt verborgen, bis der Warenkorb fertig ist – dann kommt es nach vorn. Nur wenn rewe.de eine Sicherheitsprüfung zeigt oder der Markt nicht gewählt werden kann, erscheint das Fenster früher. Die Bridge beendet sich mit der Kochapp; ihr Protokoll steht in `rewe-bridge\.data\bridge.log`. Den API-Schlüssel setzt die App automatisch. Wer sich in diesem REWE-Fenster einmal anmeldet, bleibt dort angemeldet. Details: `rewe-bridge/README.md`.
+- Technik: Der Ordner `rewe-bridge` (liegt neben `dAIlykitchen.exe`) enthält eine kleine lokale Schnittstelle, die ein eigenes Chrome- bzw. Edge-Fenster steuert. Die Windows-App startet sie bei Bedarf selbst und **unsichtbar im Hintergrund**: kein Konsolenfenster, und das REWE-Fenster bleibt verborgen, bis der Warenkorb fertig ist – dann kommt es nach vorn. Nur wenn rewe.de eine Sicherheitsprüfung zeigt oder der Markt nicht gewählt werden kann, erscheint das Fenster früher. Die Bridge beendet sich mit der Kochapp; ihr Protokoll steht in `rewe-bridge\.data\bridge.log`. Den API-Schlüssel setzt die App automatisch. Wer sich in diesem REWE-Fenster einmal anmeldet, bleibt dort angemeldet. Details: `rewe-bridge/README.md`.
 - Für jeden Artikel wird das erste lieferbare Suchergebnis genommen und die Menge auf ganze Packungen aufgerundet; nach dem Füllen zeigt die App je Artikel, welches Produkt gewählt wurde und was nicht gefunden wurde. Feste Produkte lassen sich in `rewe-bridge/mappings.json` hinterlegen.
-- rewe.de hat keine öffentliche Schnittstelle; die Bridge nutzt dieselben Aufrufe wie der Shop im Browser. Ändert REWE diese, funktioniert das Füllen nicht mehr, bis `rewe-bridge/rewe-page.js` angepasst ist. In der Browser-Version (`Kochapp.html`) muss die Bridge von Hand gestartet und ihr API-Schlüssel eingetragen werden; auf dem Mac gibt es sie nicht (PowerShell-Skript).
+- rewe.de hat keine öffentliche Schnittstelle; die Bridge nutzt dieselben Aufrufe wie der Shop im Browser. Ändert REWE diese, funktioniert das Füllen nicht mehr, bis `rewe-bridge/rewe-page.js` angepasst ist. In der Browser-Version (`dAIlykitchen.html`) muss die Bridge von Hand gestartet und ihr API-Schlüssel eingetragen werden; auf dem Mac gibt es sie nicht (PowerShell-Skript).
 
 ## Rezeptbuch (aus dem Projekt „Küchenbuch“ übernommen)
 - **Bibliothek** mit rund 250 Rezepten, Suche nach Titel, Zutat oder Küche, Kategorien und Sammlungen in der Seitenleiste.
@@ -66,7 +66,7 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
 - **Eigene Rezepte** anlegen: Zutaten wie „200 g Mehl“ eintippen, Menge/Einheit werden erkannt; Titelbild optional, bei Hauptgerichten optional die Küche. Zutaten, deren Name in der Lebensmittelliste steht (wie bei „Mein Vorrat“) und die eine Menge in g, ml oder Stk haben, werden mit Nährwerten verknüpft; die Eingabe zeigt das sofort an.
 - **Eigene Rezepte in Finder und Wochenplan:** Rezepte mit mindestens einer verknüpften Zutat stehen auch im Vorrats-Finder und im Wochenplan zur Verfügung. Mit dem Schalter **„Nur meine eigenen Rezepte verwenden“** (Präferenzen) arbeiten beide ausschließlich mit ihnen. Nicht verknüpfte Zutaten zählen nicht für Nährwerte und Vorrat, landen aber auf der Einkaufsliste; solche Rezepte werden bei aktiver Ernährungsform (vegan, glutenfrei …) vorsichtshalber ausgelassen.
 - **Eine Einkaufsliste** (eigener Bereich in der Seitenleiste): Sie sammelt alles an einer Stelle – Rezepte aus dem Rezeptbuch („+ Liste“, Personenzahl änderbar), die übernommene Rezept-Auswahl, den übernommenen Wochenplan und eigene Artikel. Gleiche Lebensmittel werden zusammengefasst; jede Zeile zeigt, woher sie kommt. Abhaken, kopieren, als CSV speichern, drucken oder bei REWE in den Warenkorb legen.
-- **Linkimport:** Unter „Neues Rezept → Linkimport“ einen Rezeptlink eingeben. Titel, Zutaten, Zubereitung, Portionen und Dauer werden aus öffentlich zugänglichen schema.org-Rezeptdaten übernommen und können vor dem Speichern bearbeitet werden. In der Windows-App ruft die App die Rezeptseite selbst ab. Funktioniert auch beim direkten Öffnen von `index.html` oder `Kochapp.html`: Lokale HTML-Dateien nutzen mit Internetverbindung den öffentlichen Importdienst der Online-Kochapp. Übermittelt wird nur der eingegebene Rezeptlink; gespeicherte Rezepte bleiben lokal. Die Online-Version und der lokale Server (`node server.js`, Node.js 18+) nutzen ihren eigenen Import-Endpunkt. Nicht jede Website erlaubt Abrufe oder liefert strukturierte Rezeptdaten; in diesem Fall zeigt die App eine Fehlermeldung.
+- **Linkimport:** Unter „Neues Rezept → Linkimport“ einen Rezeptlink eingeben. Titel, Zutaten, Zubereitung, Portionen und Dauer werden aus öffentlich zugänglichen schema.org-Rezeptdaten übernommen und können vor dem Speichern bearbeitet werden. In der Windows-App ruft die App die Rezeptseite selbst ab. Funktioniert auch beim direkten Öffnen von `index.html` oder `dAIlykitchen.html`: Lokale HTML-Dateien nutzen mit Internetverbindung den öffentlichen Importdienst der Online-Kochapp. Übermittelt wird nur der eingegebene Rezeptlink; gespeicherte Rezepte bleiben lokal. Die Online-Version und der lokale Server (`node server.js`, Node.js 18+) nutzen ihren eigenen Import-Endpunkt. Nicht jede Website erlaubt Abrufe oder liefert strukturierte Rezeptdaten; in diesem Fall zeigt die App eine Fehlermeldung.
 - **Foto-Scan bleibt eine Demo** mit festem Beispielrezept; es findet keine Texterkennung statt.
 - Bereits gespeicherte Wochenplan- und Finder-Listen der Online-Version werden beim Öffnen in die gemeinsame Einkaufsliste übernommen.
 - Linkimport prüfen: `node --test import-recipe.test.mjs`.

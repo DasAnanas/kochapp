@@ -1,4 +1,4 @@
-/* Kochapp – Bestell-Schnittstelle
+/* dAIlykitchen – Bestell-Schnittstelle
  *
  * Jeder Anbieter ("Provider") ist ein Adapter mit:
  *   label    – Anzeigename
@@ -14,7 +14,7 @@
   function payload(items, customer, meta) {
     const lines = items.filter((i) => i.checked !== false);
     return {
-      source: 'Kochapp',
+      source: 'dAIlykitchen',
       createdAt: new Date().toISOString(),
       currency: 'EUR',
       customer: customer || {},

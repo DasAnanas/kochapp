@@ -15,7 +15,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <plist version="1.0"><dict>
 <key>CFBundleExecutable</key><string>Kochapp</string>
 <key>CFBundleIdentifier</key><string>de.dasananas.kochapp</string>
-<key>CFBundleName</key><string>Kochapp</string>
+<key>CFBundleName</key><string>dAIlykitchen</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>1.0.0</string>
 <key>CFBundleVersion</key><string>1</string>

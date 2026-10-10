@@ -1,4 +1,4 @@
-# Windows-Gegenstueck zu build-html.py: baut Kochapp.html (eine einzelne, im Browser startbare Datei)
+# Windows-Gegenstueck zu build-html.py: baut dAIlykitchen.html (eine einzelne, im Browser startbare Datei)
 # aus index.html, style.css und den Skripten. Ergebnis ist identisch zum Python-Skript.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
@@ -16,6 +16,6 @@ foreach ($name in 'data.js', 'rezepte.js', 'bilder.js', 'logic.js', 'order.js', 
   if (-not $html.Contains($ref)) { throw "Skript-Verweis $name in index.html nicht gefunden" }
   $html = $html.Replace($ref, "<script>`n$script`n</script>")
 }
-$target = Join-Path $root 'Kochapp.html'
+$target = Join-Path $root 'dAIlykitchen.html'
 [IO.File]::WriteAllText($target, $html, $u8)
 Write-Output "Fertig: $target ($([math]::Round((Get-Item $target).Length / 1KB)) KB)"

@@ -10,7 +10,7 @@
     NSMenu *menu = [NSMenu new];
     NSMenuItem *appItem = [NSMenuItem new]; [menu addItem:appItem];
     NSMenu *appMenu = [NSMenu new];
-    [appMenu addItemWithTitle:@"Kochapp beenden" action:@selector(terminate:) keyEquivalent:@"q"];
+    [appMenu addItemWithTitle:@"dAIlykitchen beenden" action:@selector(terminate:) keyEquivalent:@"q"];
     appItem.submenu = appMenu;
     NSMenuItem *editItem = [NSMenuItem new]; [menu addItem:editItem];
     NSMenu *editMenu = [[NSMenu alloc] initWithTitle:@"Bearbeiten"];
@@ -22,7 +22,7 @@
     self.web = [[WKWebView alloc] initWithFrame:NSZeroRect configuration:config];
     self.web.navigationDelegate = self; self.web.UIDelegate = self;
     self.window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0,0,1200,800) styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable|NSWindowStyleMaskResizable backing:NSBackingStoreBuffered defer:NO];
-    self.window.title = @"Kochapp"; self.window.minSize = NSMakeSize(480,400);
+    self.window.title = @"dAIlykitchen"; self.window.minSize = NSMakeSize(480,400);
     self.window.contentView = self.web; [self.window center]; [self.window makeKeyAndOrderFront:nil];
     [NSApp activateIgnoringOtherApps:YES];
     NSURL *page = [NSBundle.mainBundle URLForResource:@"index" withExtension:@"html" subdirectory:@"web"];

@@ -1,4 +1,4 @@
-/* Kochapp – Rezeptbuch: zusätzliche Rezepte für alle Kategorien
+/* dAIlykitchen – Rezeptbuch: zusätzliche Rezepte für alle Kategorien
  * Diese Rezepte erscheinen im Rezeptbuch und auf der Einkaufsliste (wie eigene Rezepte),
  * nicht im Vorrats-Finder oder Wochenplan – dafür fehlen ihnen die Nährwerte.
  * Format: r(id, Titel, Minuten, Portionen, Bild, 'Zutat|Zutat|…', 'Schritt|Schritt|…')

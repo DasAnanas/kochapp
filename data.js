@@ -1,4 +1,4 @@
-/* Kochapp – Daten: Nährstoffe, Lebensmittel, Rezepte
+/* dAIlykitchen – Daten: Nährstoffe, Lebensmittel, Rezepte
  * Nährwerte pro 100 g bzw. 100 ml stammen aus der Schweizer Nährwertdatenbank (BLV) und sind gegen
  * USDA FoodData Central geprüft – siehe tools/naehrwerte/PRUEFBERICHT.md. Sie dienen der Orientierung,
  * nicht der medizinischen Beratung.

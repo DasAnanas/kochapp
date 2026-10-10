@@ -1,4 +1,4 @@
-/* Kochapp – optionaler lokaler Server (ohne Abhängigkeiten, nur Node.js)
+/* dAIlykitchen – optionaler lokaler Server (ohne Abhängigkeiten, nur Node.js)
  *   node server.js            -> http://localhost:8080
  *
  * Aufgaben:
@@ -74,4 +74,4 @@ http.createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream' });
     res.end(buf);
   });
-}).listen(PORT, '127.0.0.1', () => console.log(`Kochapp läuft auf http://localhost:${PORT}  (Strg+C zum Beenden)`));
+}).listen(PORT, '127.0.0.1', () => console.log(`dAIlykitchen läuft auf http://localhost:${PORT}  (Strg+C zum Beenden)`));
