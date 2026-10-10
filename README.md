@@ -61,7 +61,7 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
 - **Kategorien:** Frühstück, Hauptgericht, Snack, Backen, Nachtisch, Getränke (je ca. 30 Rezepte, Hauptgerichte knapp 100) sowie „Eigene“.
 - **Hauptgerichte nach Küche filtern:** Italienisch, Deutsch, Mexikanisch, Indisch, Asiatisch, Griechisch, Orientalisch, Französisch, Spanisch, Amerikanisch, International.
 - **Bilder:** Jedes Rezept hat ein Bild. Die mitgelieferten Rezepte bekommen eine gezeichnete Illustration (`bilder.js`, funktioniert offline); eigene Rezepte ohne Foto erhalten eine passende Illustration ihrer Kategorie.
-- Die zusätzlichen Rezepte aus `rezepte.js` erscheinen im Rezeptbuch und auf der Einkaufsliste, aber nicht im Vorrats-Finder oder Wochenplan.
+- Die zusätzlichen Rezepte aus `rezepte.js` erscheinen im Rezeptbuch, in der Rezeptfindung („Rezepte finden“ / „Rezepte aus Vorrat“) und auf der Einkaufsliste. Im Wochenplan stehen nur Rezepte mit vollständigen Nährwerten, deshalb fehlen sie dort.
 - **Rezeptseite** mit Portionsrechner: Zutatenmengen passen sich an.
 - **Eigene Rezepte** anlegen: Zutaten wie „200 g Mehl“ eintippen, Menge/Einheit werden erkannt; Titelbild optional, bei Hauptgerichten optional die Küche. Zutaten, deren Name in der Lebensmittelliste steht (wie bei „Mein Vorrat“) und die eine Menge in g, ml oder Stk haben, werden mit Nährwerten verknüpft; die Eingabe zeigt das sofort an.
 - **Eigene Rezepte in Finder und Wochenplan:** Rezepte mit mindestens einer verknüpften Zutat stehen auch im Vorrats-Finder und im Wochenplan zur Verfügung. Mit dem Schalter **„Nur meine eigenen Rezepte verwenden“** (Präferenzen) arbeiten beide ausschließlich mit ihnen. Nicht verknüpfte Zutaten zählen nicht für Nährwerte und Vorrat, landen aber auf der Einkaufsliste; solche Rezepte werden bei aktiver Ernährungsform (vegan, glutenfrei …) vorsichtshalber ausgelassen.
@@ -80,6 +80,11 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
    Schnell-Eingabe in natürlicher Sprache: „3 Bananen, 500 g Haferflocken, Milch“, „2 Dosen Kichererbsen“, „1 Packung Eier“, „drei Karotten“ (Packungsgrößen und Stückgewichte in `logic.js`, `KA.PACK`/`KA.PIECE`). Mit Vorrat rankt die App Rezepte nach Vorrat-Nutzung, schlägt die *beste Kombination* vor und erstellt die **Einkaufsliste für die Reste**.
 3. **Wochenplan** – 7 Tage, optimiert auf Energie, Makros und 10 Mikronährstoffe (Wochendurchschnitt). Pro Mahlzeit: 🎲 Reroll, ⇄ Swap (Alternativen mit Bewertung), 🔒 Sperren. Ohne Körperdaten wird mit 2.000 kcal-Referenz geplant. Einkaufsliste optional abzüglich Vorrat.
 4. **Einkaufsliste** – die eine Liste der App: abhaken, eigene Artikel ergänzen, kopieren, CSV, drucken, bestellen.
+
+## Labels und Küchen
+- Jedes Rezept hat eine **Küche** (Deutsch, Österreichisch, Italienisch, Türkisch, Orientalisch, Thailändisch, Vietnamesisch, Japanisch, Mexikanisch … – Liste `KA.KUECHEN` in `rezepte.js`). In den Präferenzen lässt sie sich als Filter wählen (wirkt in Rezeptfindung und Wochenplan), im Rezeptbuch gibt es Küchen-Chips je Kategorie.
+- **Ernährungs-Labels** (vegan, vegetarisch, pescetarisch, mit Fleisch, glutenfrei, laktosefrei, nussfrei, mit Alkohol) werden aus den Zutaten berechnet. Zutaten, die nicht in den Lebensmitteldaten stehen, sind in der Tabelle `ZUTATEN` in `rezepte.js` erfasst (z. B. Chorizo → Fleisch, Schwein; Fischsauce → Fisch; Gelatine). „high protein“ und „low carb“ gibt es nur bei vollständigen Nährwerten.
+- Küche, Schwierigkeit und Zutaten-Tabelle stehen im Abschnitt „Labels“ am Ende von `rezepte.js`. **Nach neuen Rezepten prüfen:** `node tools/labels-check.mjs` (mit `--liste` alle Labels zum Gegenlesen). Das Skript meldet Rezepte ohne Küche und Zutaten ohne bekannte Inhaltsstoffe.
 
 ## Bestell-Schnittstelle (`order.js`)
 Unter „Liste → Bestellen“ steht ausschließlich **REWE** zur Verfügung. Demo-Shop, eigener REST-Endpunkt und E-Mail wurden aus der Anbieterauswahl entfernt. Bereits gespeicherte andere Anbieter werden beim Öffnen automatisch auf REWE umgestellt. Die REWE-Bridge und ihre Konfiguration bleiben unverändert; die Bestellung wird weiterhin selbst auf rewe.de abgeschlossen.

@@ -369,6 +369,9 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important;animation-duration:.01s!important}}
 
 .linkres textarea{display:block;width:100%;min-height:180px;box-sizing:border-box;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px;font:inherit;resize:vertical}
+.tag.kueche{background:var(--side);color:var(--ink2);border:1px solid var(--line3)}
+.tag.warn{background:var(--warm-soft);color:var(--warm-ink)}
+.tag.neutral{background:var(--side);color:var(--muted)}
 
 </style>
 </head>
@@ -425,16 +428,17 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 
   // Ernährungsformen: ausgeschlossene Inhaltsstoff-Flags
   KA.DIETS = {
-    vegan:        { label: 'Vegan',            excl: ['fleisch', 'fisch', 'schalentier', 'milch', 'ei', 'honig'] },
-    vegetarisch:  { label: 'Vegetarisch',      excl: ['fleisch', 'fisch', 'schalentier'] },
-    pescetarisch: { label: 'Pescetarisch',     excl: ['fleisch'] },
+    vegan:        { label: 'Vegan',            excl: ['fleisch', 'fisch', 'schalentier', 'milch', 'ei', 'honig', 'gelatine'] },
+    vegetarisch:  { label: 'Vegetarisch',      excl: ['fleisch', 'fisch', 'schalentier', 'gelatine'] },
+    pescetarisch: { label: 'Pescetarisch',     excl: ['fleisch', 'gelatine'] },
     glutenfrei:   { label: 'Glutenfrei',       excl: ['gluten'] },
     laktosefrei:  { label: 'Laktosefrei',      excl: ['milch'] },
     nussfrei:     { label: 'Nussfrei',         excl: ['nuss', 'erdnuss'] },
     eifrei:       { label: 'Eifrei',           excl: ['ei'] },
     sojafrei:     { label: 'Sojafrei',         excl: ['soja'] },
     sesamfrei:    { label: 'Sesamfrei',        excl: ['sesam'] },
-    halal:        { label: 'Halal (ohne Schwein)', excl: ['schwein', 'alkohol'] },
+    halal:        { label: 'Halal (ohne Schwein)', excl: ['schwein', 'alkohol', 'gelatine'] },
+    alkoholfrei:  { label: 'Ohne Alkohol',     excl: ['alkohol'] },
     lowcarb:      { label: 'Low Carb',         macro: 'lowcarb' },
     highprotein:  { label: 'High Protein',     macro: 'highprotein' },
   };
@@ -937,9 +941,9 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   const KA = (root.KA = root.KA || {});
 
   KA.BOOK_CATS = ['Frühstück', 'Hauptgericht', 'Snack', 'Backen', 'Nachtisch', 'Getränke'];
-  KA.KUECHEN = ['Italienisch', 'Deutsch', 'Mexikanisch', 'Indisch', 'Asiatisch', 'Griechisch', 'Orientalisch', 'Französisch', 'Spanisch', 'Amerikanisch', 'International'];
+  // Küchen: Liste und Zuordnung stehen unten im Abschnitt „Labels“
 
-  // Mitgelieferte Rezepte aus data.js: Küche (bei Hauptgerichten), Bild und ggf. abweichende Kategorie
+  // Mitgelieferte Rezepte aus data.js: Bild und ggf. abweichende Kategorie (Küche: siehe Abschnitt „Labels“)
   KA.BUILTIN_META = {
     'overnight-oats': { img: 'dessert:joghurt,vanille,beere' },
     'oats-vegan': { img: 'suppe:creme,banane,zimt' },
@@ -950,41 +954,41 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     'protein-pancakes': { img: 'pancakes:teig,honig,beere' },
     'quark-beeren': { img: 'suppe:joghurt,beere,nuss' },
     'chia-pudding': { img: 'dessert:kokos,sahne,beere' },
-    'tofu-ruehrei': { k: 'International', img: 'teller:mais,brot,paprika' },
-    shakshuka: { k: 'Orientalisch', img: 'ei:tomate,kraut' },
-    'spaghetti-pomodoro': { k: 'Italienisch', img: 'pasta:nudel,tomate,kraut' },
-    'pasta-haehnchen-brokkoli': { k: 'Italienisch', img: 'pasta:nudel,haehnchen,kraut' },
-    'rote-linsen-dal': { k: 'Indisch', img: 'curry:linse,reis,kraut' },
-    'gemuese-curry': { k: 'Indisch', img: 'curry:curry,paprika,spinat' },
-    'haehnchen-reis-pfanne': { k: 'Asiatisch', img: 'teller:reis,paprika,haehnchen' },
-    'lachs-ofenkartoffeln': { k: 'International', img: 'teller:lachs,kartoffel,kraut' },
-    'chili-sin-carne': { k: 'Mexikanisch', img: 'eintopf:tomate,bohne,mais' },
-    'chili-con-carne': { k: 'Mexikanisch', img: 'eintopf:sosse,bohne,mais' },
-    'tofu-pfanne': { k: 'Asiatisch', img: 'bowl:reis,karotte,kraut' },
-    'gemuese-omelett': { k: 'International', img: 'gefaltet:eigelb,paprika,kraut' },
-    'griechischer-quinoa': { k: 'Griechisch', img: 'salat:tomate,ei,oliv' },
-    'quinoa-suesskartoffel': { k: 'International', img: 'bowl:kuerbis,spinat,kichererbse' },
-    kartoffelsuppe: { k: 'Deutsch', img: 'suppe:kartoffel,karotte,kraut' },
-    kuerbissuppe: { k: 'International', img: 'suppe:kuerbis,kokos,kraut' },
-    'ofenpasta-mozzarella': { k: 'Italienisch', img: 'auflauf:tomate,ei,kraut' },
-    'gemuese-lasagne': { k: 'Italienisch', img: 'auflauf:tomate,kaese,kraut' },
-    'gnocchi-spinat': { k: 'Italienisch', img: 'teller:kartoffel,spinat,ei' },
-    'spinat-feta-wraps': { k: 'Griechisch', img: 'wrap:spinat,ei,tomate' },
-    'haehnchen-wraps': { k: 'International', img: 'wrap:haehnchen,paprika,gurke' },
-    'thunfisch-pasta': { k: 'Italienisch', img: 'pasta:nudel,tomate,fisch' },
-    'garnelen-reis': { k: 'Spanisch', img: 'teller:reis,garnele,zitrone' },
-    'hack-kartoffel-auflauf': { k: 'Deutsch', img: 'auflauf:kaese,kruste,kraut' },
-    'spinat-kichererbsen-eintopf': { k: 'Spanisch', img: 'eintopf:tomate,kartoffel,spinat' },
-    'linsen-bolognese': { k: 'Italienisch', img: 'pasta:nudel,sosse,kraut' },
-    'blumenkohl-curry': { k: 'Indisch', img: 'curry:curry,ei,kraut' },
-    'gefuellte-paprika-hack': { k: 'Deutsch', img: 'teller:paprika,reis,kaese' },
-    'gefuellte-paprika-veg': { k: 'International', img: 'teller:paprika,mais,ei' },
-    'pilz-risotto': { k: 'Italienisch', img: 'teller:creme,pilz,kraut' },
-    'ofengemuese-couscous': { k: 'Orientalisch', img: 'bowl:nudel,aubergine,paprika' },
-    'suesskartoffel-burrito': { k: 'Mexikanisch', img: 'wrap:kuerbis,bohne,avocado' },
-    'lachs-quinoa-bowl': { k: 'Asiatisch', img: 'bowl:lachs,avocado,gurke' },
-    'haehnchen-gemuesesuppe': { k: 'Deutsch', img: 'suppe:bruehe,karotte,kraut' },
-    'bratkartoffeln-ei': { k: 'Deutsch', img: 'ei:kartoffel,kraut' },
+    'tofu-ruehrei': { img: 'teller:mais,brot,paprika' },
+    shakshuka: { img: 'ei:tomate,kraut' },
+    'spaghetti-pomodoro': { img: 'pasta:nudel,tomate,kraut' },
+    'pasta-haehnchen-brokkoli': { img: 'pasta:nudel,haehnchen,kraut' },
+    'rote-linsen-dal': { img: 'curry:linse,reis,kraut' },
+    'gemuese-curry': { img: 'curry:curry,paprika,spinat' },
+    'haehnchen-reis-pfanne': { img: 'teller:reis,paprika,haehnchen' },
+    'lachs-ofenkartoffeln': { img: 'teller:lachs,kartoffel,kraut' },
+    'chili-sin-carne': { img: 'eintopf:tomate,bohne,mais' },
+    'chili-con-carne': { img: 'eintopf:sosse,bohne,mais' },
+    'tofu-pfanne': { img: 'bowl:reis,karotte,kraut' },
+    'gemuese-omelett': { img: 'gefaltet:eigelb,paprika,kraut' },
+    'griechischer-quinoa': { img: 'salat:tomate,ei,oliv' },
+    'quinoa-suesskartoffel': { img: 'bowl:kuerbis,spinat,kichererbse' },
+    kartoffelsuppe: { img: 'suppe:kartoffel,karotte,kraut' },
+    kuerbissuppe: { img: 'suppe:kuerbis,kokos,kraut' },
+    'ofenpasta-mozzarella': { img: 'auflauf:tomate,ei,kraut' },
+    'gemuese-lasagne': { img: 'auflauf:tomate,kaese,kraut' },
+    'gnocchi-spinat': { img: 'teller:kartoffel,spinat,ei' },
+    'spinat-feta-wraps': { img: 'wrap:spinat,ei,tomate' },
+    'haehnchen-wraps': { img: 'wrap:haehnchen,paprika,gurke' },
+    'thunfisch-pasta': { img: 'pasta:nudel,tomate,fisch' },
+    'garnelen-reis': { img: 'teller:reis,garnele,zitrone' },
+    'hack-kartoffel-auflauf': { img: 'auflauf:kaese,kruste,kraut' },
+    'spinat-kichererbsen-eintopf': { img: 'eintopf:tomate,kartoffel,spinat' },
+    'linsen-bolognese': { img: 'pasta:nudel,sosse,kraut' },
+    'blumenkohl-curry': { img: 'curry:curry,ei,kraut' },
+    'gefuellte-paprika-hack': { img: 'teller:paprika,reis,kaese' },
+    'gefuellte-paprika-veg': { img: 'teller:paprika,mais,ei' },
+    'pilz-risotto': { img: 'teller:creme,pilz,kraut' },
+    'ofengemuese-couscous': { img: 'bowl:nudel,aubergine,paprika' },
+    'suesskartoffel-burrito': { img: 'wrap:kuerbis,bohne,avocado' },
+    'lachs-quinoa-bowl': { img: 'bowl:lachs,avocado,gurke' },
+    'haehnchen-gemuesesuppe': { img: 'suppe:bruehe,karotte,kraut' },
+    'bratkartoffeln-ei': { img: 'ei:kartoffel,kraut' },
     'gemuesesticks-dip': { img: 'dip:creme,karotte,kraut' },
     'joghurt-nuesse': { img: 'suppe:joghurt,nuss,beere' },
     'apfel-erdnussmus': { img: 'dip:nuss,apfel,nuss' },
@@ -994,9 +998,9 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   };
 
   const B = (KA.BOOK = []);
-  let kat = '', kueche = '';
+  let kat = '';
   const r = (id, title, time, serv, img, ings, steps) =>
-    B.push({ id: 'b-' + id, title, cat: kat, cuisine: kat === 'Hauptgericht' ? kueche : '', time, serv, img, ings: ings.split('|'), steps: steps.split('|') });
+    B.push({ id: 'b-' + id, title, cat: kat, time, serv, img, ings: ings.split('|'), steps: steps.split('|') });
 
   /* ==================== Frühstück ==================== */
   kat = 'Frühstück';
@@ -1145,7 +1149,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   /* ==================== Hauptgerichte nach Küchen ==================== */
   kat = 'Hauptgericht';
 
-  kueche = 'Italienisch';
   r('pizza-margherita', 'Pizza Margherita', 90, 2, 'pizza:tomate,ei,kraut',
     '300 g Weizenmehl (Typ 00)|7 g Trockenhefe|190 ml Wasser|1 TL Salz|2 EL Olivenöl|200 g Passierte Tomaten|1 TL Oregano|250 g Mozzarella|1 Bund Basilikum',
     'Mehl, Hefe, Salz, Wasser und 1 EL Öl 8 Minuten zu einem glatten Teig kneten und 1 Stunde gehen lassen.|Ofen mit Blech auf höchster Stufe (250 °C) vorheizen.|Teig in 2 Portionen dünn ausziehen, mit gewürzten Tomaten bestreichen und Mozzarella darauf zupfen.|8–10 Minuten backen, mit Basilikum und restlichem Öl servieren.');
@@ -1162,7 +1165,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     '1 Zwiebel|2 Karotten|2 Stk Stangensellerie|1 Zucchini|400 g Dosentomaten (gehackt)|1 l Gemüsebrühe|240 g Weiße Bohnen (Dose)|80 g Suppennudeln|2 EL Olivenöl|30 g Parmesan|2 EL Pesto',
     'Zwiebel, Karotten und Sellerie würfeln und in Öl 5 Minuten andünsten.|Zucchini, Tomaten und Brühe zugeben und 15 Minuten köcheln.|Bohnen und Nudeln zufügen und weitere 10 Minuten garen.|Mit Parmesan und einem Klecks Pesto servieren.');
 
-  kueche = 'Deutsch';
   r('kaesespaetzle', 'Allgäuer Käsespätzle', 40, 4, 'auflauf:kaese,zwiebel,kraut',
     '400 g Weizenmehl|4 Eier|150 ml Wasser|1 TL Salz|250 g Bergkäse|3 Zwiebel|30 g Butter|0.5 Bund Schnittlauch',
     'Mehl, Eier, Wasser und Salz zu einem zähen Teig schlagen, bis er Blasen wirft.|Teig portionsweise in kochendes Salzwasser schaben oder drücken, aufschwimmende Spätzle abschöpfen.|Spätzle schichtweise mit geriebenem Käse in eine Form geben und warm halten.|Zwiebelringe in Butter goldbraun rösten und darüber verteilen, mit Schnittlauch bestreuen.');
@@ -1191,7 +1193,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     '1.2 kg Rinderbraten (Schaufel)|500 ml Rotwein|250 ml Rotweinessig|2 Zwiebel|1 Karotte|5 Stk Wacholderbeeren|2 Stk Lorbeerblätter|80 g Rosinen|60 g Printen oder Lebkuchen|1 kg Kartoffeln|700 g Rotkohl (Glas)',
     'Fleisch mit Wein, Essig, Gemüse und Gewürzen 3–5 Tage im Kühlschrank marinieren.|Fleisch trocken tupfen, rundum anbraten und mit der Marinade 2,5 Stunden schmoren.|Sauce durchsieben, mit zerbröselten Printen und Rosinen sämig einkochen.|Mit Kartoffelklößen oder Salzkartoffeln und Rotkohl servieren.');
 
-  kueche = 'Mexikanisch';
   r('haehnchen-tacos', 'Hähnchen-Tacos mit Pico de Gallo', 30, 4, 'taco:haehnchen,tomate,avocado',
     '8 Stk Mais-Tortillas (klein)|500 g Hähnchenbrust|1 TL Kreuzkümmel|1 TL Paprikapulver|3 Tomaten|1 Stk rote Zwiebel|1 Limette|0.5 Bund Koriander|1 Avocado|100 g Schmand',
     'Hähnchen in Streifen schneiden, mit Gewürzen und Öl marinieren und scharf anbraten.|Tomaten, Zwiebel und Koriander fein hacken, mit Limettensaft und Salz zu Pico de Gallo mischen.|Tortillas in einer trockenen Pfanne erwärmen.|Mit Hähnchen, Pico de Gallo, Avocado und Schmand füllen.');
@@ -1211,7 +1212,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     '1 Zwiebel|2 Zehen Knoblauch|1 Stk Chipotle-Chili|400 g Dosentomaten (gehackt)|1 l Hühnerbrühe|300 g Hähnchenbrust|4 Stk Mais-Tortillas|1 Avocado|100 g Feta|1 Limette',
     'Zwiebel, Knoblauch und Chili anbraten, Tomaten und Brühe zugeben und 15 Minuten köcheln, dann pürieren.|Hähnchen in der Suppe 15 Minuten garen, herausnehmen und zerzupfen.|Tortillas in Streifen schneiden und im Ofen knusprig backen.|Suppe mit Hähnchen, Tortillastreifen, Avocado, Käse und Limette servieren.');
 
-  kueche = 'Indisch';
   r('butter-chicken', 'Butter Chicken', 50, 4, 'curry:orange,haehnchen,kraut',
     '600 g Hähnchenbrust|150 g Naturjoghurt|2 TL Garam Masala|1 Zwiebel|3 Zehen Knoblauch|20 g Ingwer|40 g Butter|400 g Passierte Tomaten|150 ml Sahne|250 g Basmatireis',
     'Hähnchen würfeln und mit Joghurt und 1 TL Garam Masala 30 Minuten marinieren.|Hähnchen in einer Pfanne anbraten und herausnehmen.|Zwiebel, Knoblauch und Ingwer in Butter dünsten, restliches Garam Masala und Tomaten zugeben und 10 Minuten köcheln.|Sahne und Hähnchen zugeben, 10 Minuten ziehen lassen und mit Reis servieren.');
@@ -1228,7 +1228,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     '700 g Lammschulter|2 Zwiebel|3 Zehen Knoblauch|20 g Ingwer|2 TL Paprikapulver|1 TL Kreuzkümmel|1 TL Garam Masala|150 g Naturjoghurt|200 g Dosentomaten (gehackt)|250 g Basmatireis',
     'Lamm würfeln und portionsweise kräftig anbraten.|Zwiebeln, Knoblauch und Ingwer im Bratfett dünsten, Gewürze kurz mitrösten.|Joghurt löffelweise einrühren, Tomaten und Fleisch zugeben.|Zugedeckt 75 Minuten schmoren, bis das Fleisch zart ist. Mit Reis servieren.');
 
-  kueche = 'Asiatisch';
   r('pad-thai', 'Pad Thai', 30, 2, 'pasta:nudel,garnele,limette',
     '200 g Reisbandnudeln|200 g Garnelen|2 Eier|150 g Sojasprossen|3 Stk Frühlingszwiebeln|3 EL Fischsauce|2 EL Tamarindenpaste|1 EL Zucker|40 g Erdnüsse|1 Limette',
     'Nudeln in warmem Wasser einweichen.|Garnelen im Wok anbraten, zur Seite schieben und Eier darin stocken lassen.|Nudeln, Fischsauce, Tamarinde und Zucker zugeben und unter Rühren braten.|Sprossen und Frühlingszwiebeln unterheben, mit Erdnüssen und Limette servieren.');
@@ -1254,7 +1253,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     '500 g Hähnchenbrust|2 EL Speisestärke|1 Paprika|200 g Ananas|1 Zwiebel|4 EL Ketchup|3 EL Reisessig|2 EL Zucker|2 EL Sojasauce|250 g Reis',
     'Hähnchen würfeln, in Stärke wenden und knusprig braten.|Zwiebel, Paprika und Ananas kurz im Wok braten.|Ketchup, Essig, Zucker, Sojasauce und 100 ml Wasser verrühren und zugeben.|Hähnchen untermischen und mit Reis servieren.');
 
-  kueche = 'Griechisch';
   r('moussaka', 'Moussaka', 100, 6, 'auflauf:creme,kruste,kraut',
     '3 Aubergine|500 g Lammhack|1 Zwiebel|2 Zehen Knoblauch|400 g Dosentomaten (gehackt)|1 TL Zimt|1 TL Oregano|50 g Butter|50 g Weizenmehl|500 ml Milch|1 Eier|60 g Kefalotyri oder Parmesan',
     'Auberginen in Scheiben schneiden, mit Öl bestreichen und im Ofen vorbacken.|Hack mit Zwiebel und Knoblauch braten, Tomaten, Zimt und Oregano zugeben und 15 Minuten köcheln.|Béchamel aus Butter, Mehl und Milch kochen, Ei und die Hälfte des Käses unterrühren.|Auberginen und Hack schichten, mit Béchamel und Käse abschließen und bei 180 °C 45 Minuten backen.');
@@ -1271,7 +1269,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     '400 g Makkaroni|500 g Rinderhack|1 Zwiebel|400 g Dosentomaten (gehackt)|1 TL Zimt|60 g Butter|60 g Weizenmehl|700 ml Milch|2 Eier|100 g Parmesan',
     'Makkaroni bissfest kochen.|Hack mit Zwiebel braten, Tomaten und Zimt zugeben und 15 Minuten köcheln.|Béchamel kochen, Eier und Käse unterrühren.|Nudeln, Hack und Béchamel in eine Form schichten und 40 Minuten bei 180 °C goldbraun backen.');
 
-  kueche = 'Orientalisch';
   r('falafel-teller', 'Falafel-Teller mit Hummus', 50, 4, 'kugeln:kraut,sesam,tomate',
     '250 g Getrocknete Kichererbsen|1 Zwiebel|2 Zehen Knoblauch|1 Bund Petersilie|1 TL Kreuzkümmel|1 TL Backpulver|500 ml Sonnenblumenöl|200 g Hummus|2 Tomaten|1 Gurke|4 Stk Fladenbrot',
     'Kichererbsen über Nacht einweichen, abtropfen lassen.|Mit Zwiebel, Knoblauch, Petersilie und Gewürzen fein mixen, Backpulver unterrühren.|Bällchen formen und im heißen Öl 3–4 Minuten frittieren.|Mit Hummus, Tomaten-Gurken-Salat und Fladenbrot servieren.');
@@ -1288,7 +1285,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     '300 g Weizenmehl|7 g Trockenhefe|180 ml Wasser|250 g Rinderhack|1 Zwiebel|1 Paprika|2 EL Tomatenmark|1 TL Pul Biber|1 Bund Petersilie|1 Zitrone',
     'Mehl, Hefe, Wasser und Salz zu einem Teig kneten und 40 Minuten gehen lassen.|Hack mit sehr fein gehackter Zwiebel, Paprika, Tomatenmark und Gewürzen verkneten.|Teig in 4 sehr dünne Fladen ausrollen und hauchdünn mit der Hackmasse bestreichen.|Bei 250 °C 8 Minuten backen, mit Petersilie und Zitrone belegen und aufrollen.');
 
-  kueche = 'Französisch';
   r('coq-au-vin', 'Coq au Vin', 110, 4, 'eintopf:rotwein,haehnchen,pilz',
     '1.2 kg Hähnchenteile|150 g Speckwürfel|200 g Champignons|12 Stk Perlzwiebeln|2 Zehen Knoblauch|1 EL Tomatenmark|750 ml Rotwein (Burgunder)|2 Stk Lorbeerblätter|4 Stk Thymianzweige|1 EL Weizenmehl',
     'Hähnchen salzen, rundum anbraten und herausnehmen.|Speck, Zwiebeln und Pilze im Bratfett bräunen, Knoblauch, Tomatenmark und Mehl kurz mitrösten.|Mit Wein ablöschen, Hähnchen und Kräuter zugeben und zugedeckt 75 Minuten schmoren.|Sauce bei Bedarf einkochen und mit Baguette oder Kartoffeln servieren.');
@@ -1308,7 +1304,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     '250 g Weizenmehl|150 ml Wasser|2 EL Olivenöl|200 g Schmand|150 g Speckwürfel|2 Zwiebel|1 Prise Muskat',
     'Mehl, Wasser, Öl und Salz zu einem glatten Teig kneten (ohne Hefe).|Sehr dünn ausrollen und auf ein Backpapier legen.|Mit gewürztem Schmand bestreichen, Speck und Zwiebelringe darauf verteilen.|Bei 250 °C 10–12 Minuten knusprig backen.');
 
-  kueche = 'Spanisch';
   r('paella', 'Paella mit Meeresfrüchten', 60, 4, 'teller:curry,garnele,zitrone',
     '300 g Paella-Reis|1 Zwiebel|2 Zehen Knoblauch|1 Paprika|1 Pck Safranfäden|1 TL Paprikapulver (geräuchert)|900 ml Fischfond|300 g Garnelen|300 g Miesmuscheln|150 g Erbsen (TK)|1 Zitrone',
     'Zwiebel, Knoblauch und Paprika in Öl in einer großen Pfanne dünsten.|Reis, Safran und Paprikapulver zugeben und kurz anrösten.|Fond angießen und 15 Minuten ohne Rühren köcheln.|Garnelen, Muscheln und Erbsen darauf verteilen und 10 Minuten garen. Mit Zitrone servieren.');
@@ -1325,7 +1320,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     '1 kg Hähnchenschenkel|1 Stk Knoblauchknolle|100 ml Olivenöl|150 ml Weißwein|2 Stk Lorbeerblätter|1 Bund Petersilie|800 g Kartoffeln',
     'Hähnchen in Stücke teilen, salzen und im Öl rundum goldbraun braten.|Ungeschälte Knoblauchzehen und Lorbeer zugeben und 5 Minuten mitbraten.|Mit Wein ablöschen und zugedeckt 25 Minuten schmoren.|Mit Petersilie bestreuen und mit Bratkartoffeln servieren.');
 
-  kueche = 'Amerikanisch';
   r('cheeseburger', 'Klassischer Cheeseburger', 30, 4, 'burger:hack,kaese,tomate',
     '600 g Rinderhack|4 Stk Burger-Brötchen|4 Stk Cheddar (Scheiben)|1 Tomaten|1 Stk rote Zwiebel|4 Stk Salatblätter|4 EL Burgersauce|2 Stk Gewürzgurken',
     'Hack salzen, pfeffern und zu 4 flachen Patties formen.|In einer heißen Pfanne 3–4 Minuten pro Seite braten, zuletzt mit Cheddar belegen und schmelzen lassen.|Brötchen anrösten und mit Sauce bestreichen.|Mit Salat, Tomate, Zwiebel, Gurke und Patty belegen.');
@@ -1345,7 +1339,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     '100 g Speckwürfel|1 Zwiebel|2 Stk Stangensellerie|500 g Kartoffeln|500 ml Fischfond|300 g Venusmuscheln (Dose)|250 ml Sahne|1 Bund Petersilie',
     'Speck auslassen, Zwiebel und Sellerie darin dünsten.|Kartoffelwürfel und Fond zugeben und 15 Minuten garen.|Muscheln mit Saft und Sahne zugeben und 5 Minuten ziehen lassen.|Mit Petersilie und Crackern servieren.');
 
-  kueche = 'International';
   r('chili-cheese-ofenkartoffel', 'Gefüllte Ofenkartoffeln', 70, 4, 'teller:kartoffel,creme,kraut',
     '4 Stk Große Kartoffeln|150 g Kräuterquark|100 g Gouda / Schnittkäse|100 g Schinkenwürfel|2 Stk Frühlingszwiebeln',
     'Kartoffeln waschen, einstechen und bei 200 °C 60 Minuten backen.|Aufschneiden und etwas Fruchtfleisch herauslösen.|Mit Schinken und Käse mischen, wieder einfüllen und 10 Minuten überbacken.|Mit Kräuterquark und Frühlingszwiebeln servieren.');
@@ -1355,7 +1348,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 
   /* ==================== Backen ==================== */
   kat = 'Backen';
-  kueche = '';
   r('apfelkuchen', 'Gedeckter Apfelkuchen', 90, 12, 'torte:apfel,kruste,zimt',
     '400 g Weizenmehl|200 g Butter|120 g Zucker|1 Pck Vanillezucker|1 Eier|1 TL Backpulver|1.2 kg Aepfel|1 Zitrone|1 TL Zimt|50 g Rosinen|1 EL Puderzucker',
     'Mehl, Backpulver, Butter, Zucker, Vanillezucker und Ei zu einem Mürbeteig kneten und 30 Minuten kühlen.|Äpfel schälen, in Scheiben schneiden und mit Zitronensaft, Zimt und Rosinen mischen.|Zwei Drittel des Teigs in eine Springform mit Rand drücken, Äpfel einfüllen und mit dem restlichen Teig abdecken.|Bei 180 °C 50 Minuten backen und mit Puderzucker bestäuben.');
@@ -1632,6 +1624,124 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   r('gurken-wasser', 'Gurken-Limetten-Wasser', 5, 6, 'glas:wasser,keine,limette',
     '1.5 l Wasser|0.5 Gurke|1 Limette|1 Bund Minze',
     'Gurke und Limette in dünne Scheiben schneiden.|Mit Minze in eine Karaffe geben und mit kaltem Wasser auffüllen.|Mindestens 1 Stunde im Kühlschrank ziehen lassen.');
+
+  /* ==================== Labels ====================
+   * Einzige Quelle für Küche, Schwierigkeit und die Inhaltsstoffe der Zutaten aller mitgelieferten Rezepte.
+   * Ernährungs-Labels (vegan, vegetarisch, glutenfrei …) werden daraus berechnet, nicht von Hand gesetzt.
+   * Prüfen nach Änderungen: node tools/labels-check.mjs
+   */
+  // Reihenfolge = Reihenfolge der Auswahl-Chips. Küchen ohne Rezept werden in Filtern ausgeblendet,
+  // stehen aber für eigene Rezepte zur Wahl.
+  KA.KUECHEN = ['Deutsch', 'Österreichisch', 'Schweizerisch', 'Italienisch', 'Französisch', 'Spanisch', 'Griechisch', 'Britisch',
+    'Skandinavisch', 'Osteuropäisch', 'Türkisch', 'Orientalisch', 'Indisch', 'Thailändisch', 'Vietnamesisch', 'Chinesisch', 'Japanisch',
+    'Koreanisch', 'Asiatisch', 'Mexikanisch', 'Amerikanisch', 'Karibisch', 'Afrikanisch', 'International'];
+
+  // Küche je Rezept (IDs aus data.js und rezepte.js ohne „b-“)
+  const KUECHE = {
+    Deutsch: 'bauernfruehstueck strammer-max griessbrei gefuellte-eier obazda kaesespaetzle rouladen koenigsberger-klopse schnitzel-kartoffelsalat ' +
+      'linseneintopf frikadellen-pueree maultaschen himmel-und-erde sauerbraten apfelkuchen kaesekuchen marmorkuchen zitronenkuchen schwarzwaelder ' +
+      'streuselkuchen butterkuchen hefezopf broetchen vollkornbrot laugenbrezeln donauwelle erdbeerkuchen zwetschgendatschi bienenstich zupfkuchen ' +
+      'milchreis rote-gruetze schokopudding bratapfel dampfnudeln quarkspeise griessflammeri eiskaffee holunder-schorle kinderpunsch rhabarber-schorle ' +
+      'gluehwein kartoffelsuppe hack-kartoffel-auflauf gefuellte-paprika-hack haehnchen-gemuesesuppe bratkartoffeln-ei quark-beeren quark-dip',
+    'Österreichisch': 'vanillekipferl linzer-torte kaiserschmarrn apfelstrudel germknoedel',
+    Schweizerisch: 'bircher-muesli schokofondue',
+    Italienisch: 'caprese-toast bruschetta caprese-spiesse pizza-margherita carbonara arrabbiata saltimbocca minestrone focaccia tiramisu panna-cotta ' +
+      'affogato zitronensorbet zabaione aperol-spritz spaghetti-pomodoro pasta-haehnchen-brokkoli ofenpasta-mozzarella gemuese-lasagne gnocchi-spinat ' +
+      'thunfisch-pasta linsen-bolognese pilz-risotto',
+    'Französisch': 'coq-au-vin ratatouille quiche-lorraine boeuf-bourguignon zwiebelsuppe flammkuchen baguette madeleines mousse-au-chocolat ' +
+      'creme-brulee lava-cake crepes',
+    Spanisch: 'patatas-bravas datteln-speck paella tortilla-espanola gazpacho albondigas pollo-al-ajillo churros sangria garnelen-reis spinat-kichererbsen-eintopf',
+    Griechisch: 'tzatziki-gemuese moussaka gyros-tzatziki souvlaki briam pastitsio spanakopita frappe griechischer-quinoa spinat-feta-wraps',
+    Britisch: 'scones eton-mess apfel-crumble trifle',
+    'Türkisch': 'menemen koefte-bulgur lahmacun baklava ayran',
+    Orientalisch: 'hummus baba-ganoush falafel-teller haehnchen-tajine mujaddara minztee shakshuka ofengemuese-couscous',
+    Indisch: 'butter-chicken chana-masala palak-paneer gemuese-biryani rogan-josh mango-lassi chai-latte golden-milk rote-linsen-dal gemuese-curry blumenkohl-curry',
+    'Thailändisch': 'pad-thai gruenes-thai-curry mango-sticky-rice',
+    Vietnamesisch: 'sommerrollen pho-bo',
+    Chinesisch: 'gebratener-reis suess-sauer bubble-tea',
+    Japanisch: 'tamagoyaki edamame gurken-maki ramen teriyaki-haehnchen matcha-latte',
+    Koreanisch: 'bibimbap',
+    Asiatisch: 'haehnchen-reis-pfanne tofu-pfanne lachs-quinoa-bowl',
+    Mexikanisch: 'huevos-rancheros fruehstuecks-burrito guacamole nachos-ueberbacken haehnchen-tacos enchiladas quesadillas fajitas burrito-bowl ' +
+      'sopa-de-tortilla agua-fresca horchata chili-sin-carne chili-con-carne suesskartoffel-burrito',
+    Amerikanisch: 'pancakes french-toast granola eggs-benedict lachs-bagel pb-bananen-toast mozzarella-sticks cheeseburger mac-and-cheese pulled-pork ' +
+      'jambalaya meatloaf clam-chowder bananenbrot brownies schokomuffins blaubeermuffins karottenkuchen cookies banana-split erdbeer-milchshake',
+    International: 'waffeln smoothie-bowl kaese-schinken-omelett ei-muffins huettenkaese-bowl buchweizen-porridge ofen-kichererbsen zimt-popcorn ' +
+      'energy-balls muesliriegel suesskartoffel-pommes gemuesechips obstspiesse gewuerznuesse joghurt-bites wrap-roellchen chili-cheese-ofenkartoffel ' +
+      'buddha-bowl zimtschnecken pizzaschnecken pavlova vanilleeis nicecream erdbeer-bananen-smoothie heisse-schokolade pfirsich-eistee ' +
+      'zitronenlimonade ingwer-shot bananenmilch virgin-mojito virgin-pina-colada ingwer-zitronen-tee protein-shake gurken-wasser overnight-oats ' +
+      'oats-vegan ruehrei-spinat skyr-bowl porridge-apfel avocado-toast tofu-ruehrei protein-pancakes chia-pudding lachs-ofenkartoffeln ' +
+      'gemuese-omelett quinoa-suesskartoffel kuerbissuppe haehnchen-wraps gefuellte-paprika-veg gemuesesticks-dip joghurt-nuesse apfel-erdnussmus ' +
+      'hafer-kekse gruener-smoothie',
+  };
+  KA.KUECHE_VON = {};
+  Object.keys(KUECHE).forEach((k) => KUECHE[k].split(/\s+/).forEach((id) => (KA.KUECHE_VON[id] = k)));
+
+  // Schwierigkeit der Rezeptbuch-Rezepte (1 einfach, 2 mittel, 3 anspruchsvoll); die Rezepte aus data.js haben sie bereits
+  const DIFF = {
+    3: 'eggs-benedict moussaka pastitsio schwarzwaelder laugenbrezeln donauwelle baguette bienenstich apfelstrudel germknoedel dampfnudeln',
+    2: 'huevos-rancheros fruehstuecks-burrito tamagoyaki patatas-bravas sommerrollen mozzarella-sticks gurken-maki pizza-margherita carbonara ' +
+      'saltimbocca kaesespaetzle rouladen koenigsberger-klopse schnitzel-kartoffelsalat frikadellen-pueree sauerbraten haehnchen-tacos enchiladas ' +
+      'burrito-bowl sopa-de-tortilla butter-chicken palak-paneer gemuese-biryani rogan-josh pad-thai ramen bibimbap pho-bo suess-sauer gyros-tzatziki ' +
+      'falafel-teller haehnchen-tajine koefte-bulgur mujaddara lahmacun coq-au-vin quiche-lorraine boeuf-bourguignon zwiebelsuppe flammkuchen paella ' +
+      'tortilla-espanola albondigas pulled-pork jambalaya clam-chowder apfelkuchen kaesekuchen karottenkuchen streuselkuchen butterkuchen hefezopf ' +
+      'broetchen vollkornbrot vanillekipferl erdbeerkuchen zwetschgendatschi linzer-torte madeleines zupfkuchen spanakopita tiramisu mousse-au-chocolat ' +
+      'creme-brulee kaiserschmarrn pavlova zitronensorbet vanilleeis lava-cake mango-sticky-rice churros baklava zabaione',
+  };
+  KA.DIFF_VON = {};
+  Object.keys(DIFF).forEach((d) => DIFF[d].split(/\s+/).forEach((id) => (KA.DIFF_VON[id] = Number(d))));
+  B.forEach((b) => {
+    const id = b.id.slice(2);
+    b.cuisine = KA.KUECHE_VON[id] || 'International';
+    b.diff = KA.DIFF_VON[id] || 1;
+  });
+
+  // Inhaltsstoffe von Zutaten, die nicht (oder nicht genau genug) in den Lebensmitteldaten stehen.
+  // Schlüssel: Zutatenname in Kleinbuchstaben ohne Umlaute und ohne Klammerzusatz („Bacon (Scheiben)“ -> „bacon“).
+  // Leerer Eintrag = geprüft, enthält nichts davon. Diese Angaben ergänzen die Flags aus data.js.
+  const ZUTATEN = {
+    'fleisch schwein': 'bacon|blutwurst|chorizo|guanciale oder pancetta|parmaschinken|schweinebauch|schweinenacken|schweineschnitzel|' +
+      'schweineschulter|wiener wurstchen|gemischtes hackfleisch|kochschinken|speckwurfel|schinkenwurfel',
+    fleisch: 'hahnchenschenkel|hahnchenteile|huhnerbruhe|kalbsschnitzel|lammhack|lammschulter|rinderbraten|rinderbruhe|rinderfilet|rinderfond|' +
+      'rinderhuftsteak|rinderrouladen',
+    'fleisch gluten ei': 'maultaschen',
+    fisch: 'fischfond|fischsauce|worcestersauce',
+    schalentier: 'miesmuscheln|venusmuscheln|grune currypaste',
+    milch: 'bergkase|camembert|cheddar|clotted cream|ghee|gruyere|krauterquark|mascarpone|mini-mozzarella|paneer|pecorino|ziegenfrischkase|' +
+      'tzatziki|vanillepudding|vanillesosse|schokososse|schokoraspel|schokotropfen',
+    'milch ei': 'kugeln eis|kugeln vanilleeis',
+    ei: 'eigelb|eiweiss|baisers|aioli|burgersauce',
+    gluten: 'bagels|bauernbrot|brotchen|burger-brotchen|ciabatta|dinkelvollkornmehl|english muffins|filoteig|fladenbrot|laugenbrezeln|makkaroni|' +
+      'pita-brote|pizzateig|ramen-nudeln|strudelteig|vollkorntoast|weichweizengriess|bulgur',
+    'gluten ei': 'loffelbiskuits|biskuitboden|suppennudeln',
+    'gluten nuss': 'granola',
+    'gluten ei nuss': 'amarettini',
+    'gluten nuss honig': 'printen oder lebkuchen',
+    nuss: 'gehackte nusse|nussmischung|pistazien|marzipan|mandelblattchen',
+    'nuss milch': 'pesto',
+    sesam: 'sesamol|hummus',
+    'soja gluten': 'gochujang',
+    alkohol: 'amaretto|aperol|brandy|kirschwasser|marsala|prosecco|rotwein|weisswein|mirin',
+    gelatine: 'gelatineblatter',
+    '': 'aepfel|agavendicksaft|ananassaft|ananasstucke|backpulver|balsamico-creme|basilikumblatter|bbq-rub|bbq-sauce|biryani-gewurz|' +
+      'cajun-gewurz|chiliflocken|chilipulver|chilischote|chipotle-chili|cocktailkirschen|cranberrys|crushed ice|dill|eiswurfel|erdbeermarmelade|' +
+      'espresso|fruchtetee|fruhlingszwiebeln|garam masala|gewurzgurken|grune chilischote|gruner tee|guacamole|gyrosgewurz|hagelsalz|hagelzucker|' +
+      'himbeermarmelade|holunderblutensirup|ingwerpulver|instantkaffee|jalapeno|jalapenos|jasminreis|kaffee|kapern|kardamom|kardamomkapseln|' +
+      'kirschsaft|kirschtomaten|kiwi|klebreis|knoblauchknolle|kokosol|kokosraspeln|koriander|krauter der provence|kreuzkummel|kummel|kurkuma|' +
+      'limette|lorbeerblatter|mais-tortillas|majoran|mandarinen|mangos|matcha-pulver|meersalz|milchreis|minzblatter|minze|muskat|nana-minze|' +
+      'natron|nelken|noriblatt|noriblatter|orangenscheibe|oregano|paella-reis|pak choi|passionsfrucht|perlzwiebeln|pfirsich|pfirsiche|' +
+      'pflaumenmus|popcornmais|puderzucker|pul biber|reisbandnudeln|reisessig|reisnudeln|reispapier|rhabarber|rohrzucker|rosmarinzweige|' +
+      'rotweinessig|safranfaden|sahnesteif|salatblatter|salbeiblatter|salsa|salzzitronen|sauerkirschen|schwarzteebeutel|sherryessig|sodawasser|' +
+      'sojasprossen|spitzpaprika|sprudelwasser|sternanis|sushireis|tamarindenpaste|tapiokaperlen|thai-basilikum|thymianzweige|tomatensauce|' +
+      'tortenguss|tortilla-chips|trockenhefe|vanilleextrakt|vanillepuddingpulver|vanilleschote|vanillesossenpulver|vanillezucker|wacholderbeeren|' +
+      'wassermelone|zartbitterkuverture|zimtstange|zimtstangen|zimtzucker|zuckerschoten|zwetschgen|zwetschgenroster|gemahlener mohn',
+  };
+  KA.ZUTAT_FLAGS = {};
+  Object.keys(ZUTATEN).forEach((f) => ZUTATEN[f].split('|').forEach((n) => (KA.ZUTAT_FLAGS[n] = f ? f.split(' ') : [])));
+  // Schlüssel zu einem Zutatennamen; liefert die Flags oder undefined, wenn die Zutat nicht erfasst ist
+  KA.zutatKey = (name) => String(name || '').toLowerCase().replace(/ß/g, 'ss').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+  KA.zutatFlags = (name) => KA.ZUTAT_FLAGS[KA.zutatKey(name)];
 })(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
@@ -1982,6 +2092,12 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   const REC = {};
   RECIPES.forEach((r) => (REC[r.id] = r));
   KA.REC = REC;
+  // Kategorie und Küche der mitgelieferten Rezepte (Zuordnung in rezepte.js)
+  const catOfTypes = (t) => (t.includes('m') || t.includes('a') ? 'Hauptgericht' : t.includes('f') ? 'Frühstück' : 'Snack');
+  RECIPES.forEach((r) => {
+    r.cat = ((KA.BUILTIN_META || {})[r.id] || {}).cat || catOfTypes(r.types);
+    r.k = (KA.KUECHE_VON || {})[r.id] || 'International';
+  });
 
   /* ---------- Hilfsfunktionen ---------- */
   KA.norm = (s) =>
@@ -2037,22 +2153,28 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     if (!flagCache[r.id]) {
       const s = new Set();
       r.i.forEach(([id]) => ING[id].flags.forEach((f) => s.add(f)));
-      // eigene Rezepte: erkannte Zutaten ohne umrechenbare Menge zählen für die Inhaltsstoffe mit;
-      // bei unbekannten Zutaten sind die Inhaltsstoffe nicht prüfbar
-      (r.free || []).forEach((x) => (x.id && ING[x.id] ? ING[x.id].flags.forEach((f) => s.add(f)) : s.add('unbekannt')));
+      // Rezeptbuch- und eigene Rezepte: Zutaten ohne umrechenbare Menge zählen für die Inhaltsstoffe mit. Die Tabelle
+      // in rezepte.js ergänzt Zutaten, die nicht in den Lebensmitteldaten stehen (oder dort zu grob erfasst sind);
+      // fehlen sie in beiden, sind die Inhaltsstoffe nicht prüfbar.
+      (r.free || []).forEach((x) => {
+        if (x.id && ING[x.id]) ING[x.id].flags.forEach((f) => s.add(f));
+        else if (!(KA.zutatFlags && KA.zutatFlags(x.name))) s.add('unbekannt');
+      });
+      (r.names || []).forEach((n) => ((KA.zutatFlags && KA.zutatFlags(n)) || []).forEach((f) => s.add(f)));
       flagCache[r.id] = s;
     }
     return flagCache[r.id];
   };
 
-  /* ---------- Eigene Rezepte des Nutzers für Finder und Wochenplan ---------- */
+  /* ---------- Eigene und Rezeptbuch-Rezepte für Finder und Wochenplan ---------- */
   const TYPES_BY_CAT = { 'Frühstück': ['f'], 'Hauptgericht': ['m', 'a'], 'Snack': ['s'], 'Backen': ['s'], 'Nachtisch': ['s'], 'Getränke': ['s'] };
-  // Übernimmt eigene Rezepte (Format des Rezeptbuchs) in den Rezeptbestand und liefert, wie viele nutzbar sind.
-  // Die Nährwerte ergeben sich aus den Zutaten, die mit den Stammdaten verknüpft sind (id + base = Menge in der
-  // Grundeinheit des Lebensmittels); die übrigen stehen in r.free. Rezepte ganz ohne verknüpfte Zutat bleiben außen vor.
-  KA.setUserRecipes = (list) => {
+  // Übernimmt Rezepte im Format des Rezeptbuchs in den Rezeptbestand. Die Nährwerte ergeben sich aus den Zutaten, die mit den
+  // Stammdaten verknüpft sind (id + base = Menge in der Grundeinheit des Lebensmittels); die übrigen stehen in r.free, dann
+  // sind die Nährwerte unvollständig (r.partial). kind: 'user' (eigene, nur mit mindestens einer verknüpften Zutat) oder
+  // 'book' (mitgelieferte Rezeptbuch-Rezepte; nur im Finder, nicht im Wochenplan, weil ihre Nährwerte meist unvollständig sind).
+  function setRecipes(list, kind) {
     for (let k = RECIPES.length - 1; k >= 0; k--) {
-      if (!RECIPES[k].user) continue;
+      if (!RECIPES[k][kind]) continue;
       const id = RECIPES[k].id;
       RECIPES.splice(k, 1);
       delete REC[id]; delete perServCache[id]; delete flagCache[id];
@@ -2062,17 +2184,22 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       const linked = (x) => x.id && ING[x.id] && x.base > 0;
       const sum = {};
       (u.ings || []).filter(linked).forEach((x) => (sum[x.id] = (sum[x.id] || 0) + x.base));
-      if (!Object.keys(sum).length || REC[u.id]) return;
+      if ((kind === 'user' && !Object.keys(sum).length) || REC[u.id]) return;
+      const free = (u.ings || []).filter((x) => !linked(x));
       const r = {
-        id: u.id, name: u.title, types: TYPES_BY_CAT[u.cat] || ['m', 'a'], time: u.time || 30, diff: u.diff || 2, s: u.serv || 1,
-        i: Object.keys(sum).map((id) => [id, sum[id]]), st: u.steps || [], user: true, free: (u.ings || []).filter((x) => !linked(x)),
+        id: u.id, name: u.title, types: TYPES_BY_CAT[u.cat] || ['m', 'a'], cat: u.cat || 'Hauptgericht', k: u.cuisine || 'International',
+        time: u.time || 30, diff: u.diff || 2, s: u.serv || 1, i: Object.keys(sum).map((id) => [id, sum[id]]), st: u.steps || [],
+        free, partial: free.length > 0, names: (u.ings || []).map((x) => x.name),
       };
+      r[kind] = true;
       RECIPES.push(r);
       REC[r.id] = r;
       n++;
     });
     return n;
-  };
+  }
+  KA.setUserRecipes = (list) => setRecipes(list, 'user');
+  KA.setBookRecipes = (list) => setRecipes(list, 'book');
 
   /* ---------- Präferenzen / Filter ---------- */
   KA.recipeMatches = (r, prefs, slot) => {
@@ -2080,6 +2207,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     if (prefs.onlyMine && !r.user) return false;
     if (prefs.maxTime && r.time > prefs.maxTime) return false;
     if (prefs.maxDiff && r.diff > prefs.maxDiff) return false;
+    if (prefs.cuisines && prefs.cuisines.length && !prefs.cuisines.includes(r.k || 'International')) return false;
     const flags = KA.recipeFlags(r);
     const n = KA.recipeNutr(r);
     const kcal = n[IDX.kcal] || 1;
@@ -2088,6 +2216,8 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       if (!def) continue;
       // unbekannte Zutaten könnten gegen die Ernährungsform verstoßen -> vorsichtshalber ausschließen
       if (def.excl && (flags.has('unbekannt') || def.excl.some((f) => flags.has(f)))) return false;
+      // Nährwert-Formen lassen sich nur mit vollständigen Nährwerten zusichern
+      if (def.macro && r.partial) return false;
       if (def.macro === 'lowcarb' && (n[IDX.carb] * 4) / kcal > 0.3) return false;
       if (def.macro === 'highprotein' && (n[IDX.prot] * 4) / kcal < 0.22) return false;
     }
@@ -2340,9 +2470,9 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   }
 
   KA.planSig = (prefs) =>
-    JSON.stringify([prefs.diets, prefs.dislikes, prefs.maxTime, prefs.maxDiff, !!prefs.onlyMine, prefs.meals, prefs.macro && prefs.macro.enabled ? prefs.macro : null, prefs.body && prefs.body.enabled ? prefs.body : null]);
+    JSON.stringify([prefs.diets, prefs.cuisines || [], prefs.dislikes, prefs.maxTime, prefs.maxDiff, !!prefs.onlyMine, prefs.meals, prefs.macro && prefs.macro.enabled ? prefs.macro : null, prefs.body && prefs.body.enabled ? prefs.body : null]);
 
-  KA.slotPool = (prefs, slot) => RECIPES.filter((r) => KA.recipeMatches(r, prefs, slot));
+  KA.slotPool = (prefs, slot) => RECIPES.filter((r) => !r.book && KA.recipeMatches(r, prefs, slot));
 
   KA.generatePlan = (prefs, oldPlan) => {
     const slots = KA.activeSlots(prefs);
@@ -2353,7 +2483,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     for (const s of slots) {
       pools[s] = KA.slotPool(prefs, s);
       if (!pools[s].length)
-        return { error: `Für „${MEALS[s].label}“ gibt es mit den aktuellen Filtern kein passendes Rezept. Lockere Ernährungsform, Zeit oder Schwierigkeit${prefs.onlyMine ? ' – oder schalte „Nur meine eigenen Rezepte verwenden“ aus' : ''}.` };
+        return { error: `Für „${MEALS[s].label}“ gibt es mit den aktuellen Filtern kein passendes Rezept. Lockere Ernährungsform, Küche, Zeit oder Schwierigkeit${prefs.onlyMine ? ' – oder schalte „Nur meine eigenen Rezepte verwenden“ aus' : ''}.` };
     }
     const mk = (s, r) => ({ slot: s, rid: r.id, f: factorFor(r, T.kcal * share[s]), lock: false });
     const rnd = (a) => a[Math.floor(Math.random() * a.length)];
@@ -2674,7 +2804,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     tab: 'book',
     my: [], list: [], extras: [], done: {}, // Rezeptbuch: eigene Rezepte, Rezepte auf der Einkaufsliste, freie Artikel, Häkchen
     prefs: {
-      diets: [], dislikes: [], maxTime: 60, maxDiff: 3, persons: 2, assumeStaples: true, onlyMine: false,
+      diets: [], cuisines: [], dislikes: [], maxTime: 60, maxDiff: 3, persons: 2, assumeStaples: true, onlyMine: false,
       meals: { f: 1, m: 1, a: 1, s: 0 },
       macro: { enabled: false, p: 20, c: 50, f: 30 },
       body: { enabled: false, sex: 'm', age: 30, height: 175, weight: 70, activity: 1.6, goal: 'keep' },
@@ -2698,7 +2828,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   const emptyDraft = () => ({ title: '', serv: 4, time: '', cat: 'Hauptgericht', cuisine: '', diff: 2, ings: [], steps: [], image: '' });
   const ui = {
     open: new Set(), nutDay: -1, preview: false, orderResult: null, ordering: false, planError: '', focus: null,
-    book: 'library', selId: null, detailServ: 2, filter: 'Alle', cuisine: 'Alle', query: '', addMode: 'manual', draft: emptyDraft(),
+    fcat: 'Alle', flimit: 24, book: 'library', selId: null, detailServ: 2, filter: 'Alle', cuisine: 'Alle', query: '', addMode: 'manual', draft: emptyDraft(),
     scan: null, scanPhase: 'idle', link: { url: '', phase: 'idle' },
   };
 
@@ -2728,12 +2858,17 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   }
 
   /* ---------- Gemeinsame Bausteine ---------- */
+  // Küchen, zu denen es Rezepte gibt (in der Reihenfolge von KA.KUECHEN)
+  const usedCuisines = () => KA.KUECHEN.filter((k) => KA.RECIPES.some((r) => (r.k || 'International') === k) || (S.prefs.cuisines || []).includes(k));
   function filterBar() {
     const p = S.prefs;
     return `
     <div class="fgroup"><div class="flabel">Ernährung <small>(frei kombinierbar)</small></div>
       <div class="chips">${Object.entries(DIETS).map(([k, d]) =>
         `<label class="chip"><input type="checkbox" data-diet="${k}" ${p.diets.includes(k) ? 'checked' : ''}><span>${esc(d.label)}</span></label>`).join('')}</div></div>
+    <div class="fgroup"><div class="flabel">Küche <small>(keine Auswahl = alle Küchen)</small></div>
+      <div class="chips">${usedCuisines().map((k) =>
+        `<label class="chip"><input type="checkbox" data-cuisine="${esc(k)}" ${(p.cuisines || []).includes(k) ? 'checked' : ''}><span>${esc(k)}</span></label>`).join('')}</div></div>
     <div class="frow">
       <div class="fgroup"><div class="flabel">Max. Zubereitungszeit</div>
         <div class="seg">${TIMES.map(([v, l]) => `<button class="${p.maxTime === v ? 'on' : ''}" data-act="setTime" data-v="${v}">${l}</button>`).join('')}</div></div>
@@ -2743,25 +2878,36 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   }
   const filterDetails = (key) => {
     const n = S.prefs.diets.length;
+    const nk = (S.prefs.cuisines || []).length;
     const t = S.prefs.maxTime ? `≤ ${S.prefs.maxTime} Min.` : 'Zeit egal';
     return `<details class="card filt" data-key="${key}" ${ui.open.has(key) ? 'open' : ''}>
-      <summary><b>Präferenzen</b> <span class="muted">${n ? n + ' Ernährungsform' + (n > 1 ? 'en' : '') + ' · ' : ''}${t} · bis ${DIFF[S.prefs.maxDiff].toLowerCase()}</span></summary>
+      <summary><b>Präferenzen</b> <span class="muted">${n ? n + ' Ernährungsform' + (n > 1 ? 'en' : '') + ' · ' : ''}${nk ? nk + (nk > 1 ? ' Küchen' : ' Küche') + ' · ' : ''}${t} · bis ${DIFF[S.prefs.maxDiff].toLowerCase()}</span></summary>
       ${filterBar()}<p class="muted sm">Weitere Einstellungen (Ausschlüsse, Personen, Körperdaten) findest du im Tab „Profil“.</p></details>`;
   };
 
   const tag = (txt, cls) => `<span class="tag ${cls || ''}">${esc(txt)}</span>`;
-  function recipeTags(r) {
+  // Labels eines Rezepts: Küche, Ernährungsform, Unverträglichkeiten, Nährwert-Profil. Ernährungs-Labels werden nur vergeben,
+  // wenn alle Zutaten bekannt sind; Nährwert-Labels nur bei vollständigen Nährwerten.
+  function recipeTags(r, noCuisine) {
     const f = KA.recipeFlags(r);
-    const t = r.user ? ['eigenes'] : [];
-    // Bei Zutaten ohne Stammdaten lässt sich keine Ernährungsform zusichern
-    if (f.has('unbekannt')) return t.concat('Nährwerte unvollständig').map((x) => tag(x)).join('');
-    if (!f.has('fleisch') && !f.has('fisch') && !f.has('schalentier')) t.push(!f.has('milch') && !f.has('ei') && !f.has('honig') ? 'vegan' : 'vegetarisch');
-    else if (!f.has('fleisch')) t.push('pescetarisch');
-    if (!f.has('gluten')) t.push('glutenfrei');
-    if (!f.has('milch')) t.push('laktosefrei');
-    const n = KA.recipeNutr(r);
-    if ((n[1] * 4) / n[0] >= 0.22) t.push('high protein');
-    return t.map((x) => tag(x)).join('');
+    const t = [];
+    if (r.user) t.push(tag('eigenes'));
+    if (r.k && !noCuisine) t.push(tag(r.k, 'kueche'));
+    if (f.has('unbekannt')) return t.concat(tag('Labels unvollständig', 'warn')).join('');
+    const meat = f.has('fleisch') || f.has('gelatine');
+    if (!meat && !f.has('fisch') && !f.has('schalentier')) t.push(tag(!f.has('milch') && !f.has('ei') && !f.has('honig') ? 'vegan' : 'vegetarisch'));
+    else if (!meat) t.push(tag('pescetarisch'));
+    else t.push(tag(f.has('fleisch') ? 'mit Fleisch' : 'mit Gelatine', 'neutral'));
+    if (!f.has('gluten')) t.push(tag('glutenfrei'));
+    if (!f.has('milch')) t.push(tag('laktosefrei'));
+    if (!f.has('nuss') && !f.has('erdnuss')) t.push(tag('nussfrei'));
+    if (!r.partial) {
+      const n = KA.recipeNutr(r);
+      if ((n[1] * 4) / n[0] >= 0.22) t.push(tag('high protein'));
+      if ((n[2] * 4) / n[0] <= 0.3) t.push(tag('low carb'));
+    }
+    if (f.has('alkohol')) t.push(tag('mit Alkohol', 'warn'));
+    return t.join('');
   }
 
   function ingTable(r, servings, ev) {
@@ -2784,6 +2930,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   }
 
   function recipeFacts(r) {
+    if (r.partial) return `⏱ ${r.time} Min. · <span title="${DIFF[r.diff]}">${dots(r.diff)}</span> · ${esc(r.cat || '')} · <span title="Nicht alle Zutaten sind in den Lebensmitteldaten erfasst">Nährwerte unvollständig</span>`;
     const n = KA.recipeNutr(r);
     return `⏱ ${r.time} Min. · <span title="${DIFF[r.diff]}">${dots(r.diff)}</span> · ${r0(n[0])} kcal · ${r0(n[1])} g Eiweiß · ca. ${KA.fmtEUR(KA.recipeCost(r))} p. P.`;
   }
@@ -2993,6 +3140,18 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
         : `<p class="muted">${empty}</p>`}</section>`;
   }
 
+  // Trefferliste der Rezeptfindung mit Kategorie-Filter; zeigt die ersten ui.flimit Treffer
+  function resultGrid(title, results, sel) {
+    const cats = BOOK_CATS.filter((c) => results.some((e) => e.r.cat === c));
+    if (ui.fcat !== 'Alle' && !cats.includes(ui.fcat)) ui.fcat = 'Alle';
+    const list = ui.fcat === 'Alle' ? results : results.filter((e) => e.r.cat === ui.fcat);
+    const more = list.length - ui.flimit;
+    return `<h2 class="sec">${title} <span class="opt">${list.length}</span></h2>
+      ${cats.length > 1 ? `<div class="fchips">${['Alle'].concat(cats).map((c) => `<button class="${ui.fcat === c ? 'on' : ''}" data-act="fcat" data-v="${c}">${c} <i>${c === 'Alle' ? results.length : results.filter((e) => e.r.cat === c).length}</i></button>`).join('')}</div>` : ''}
+      <div class="rgrid">${list.slice(0, ui.flimit).map((e) => recipeCard(e, sel.includes(e.r.id))).join('')}</div>
+      ${more > 0 ? `<div class="btnrow"><button class="btn ghost" data-act="fmore">${Math.min(more, 24)} weitere anzeigen</button><span class="muted sm">${more} noch nicht angezeigt</span></div>` : ''}`;
+  }
+
   function viewFinder() {
     const p = S.prefs;
     const mode = pMode();
@@ -3005,7 +3164,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       if (!results.length) return pageHead('Rezepte finden', 'Passende Gerichte zu deinen Präferenzen.') + pantryBar() + prefsCard() +
         '<section class="card"><h2>Rezepte</h2><p class="muted">Mit deinen Filtern passt aktuell kein Rezept. Lockere die Präferenzen.</p></section>';
       out += selectionCard(sel, {}, 'Einkaufsliste für deine Auswahl', 'Wähle unten Rezepte aus – hier erscheint dann alles, was du dafür einkaufen musst.');
-      out += `<h2 class="sec">Passende Rezepte <span class="opt">${results.length}</span></h2><div class="rgrid">${results.slice(0, 24).map((e) => recipeCard(e, sel.includes(e.r.id))).join('')}</div>`;
+      out += resultGrid('Passende Rezepte', results, sel);
       return pageHead('Rezepte finden', 'Passende Gerichte zu deinen Präferenzen – alles Nötige kommt auf die Einkaufsliste.') + pantryBar() + prefsCard() + out;
     }
     if (Object.keys(P).length) {
@@ -3024,7 +3183,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
           <p>Damit werden <b>${usage.touched} von ${usage.count}</b> Vorratsartikeln verwendet${exact ? ` (ca. ${r0(usage.massFrac * 100)} % der Mengen)` : ''}.</p>
           <button class="btn" data-act="takecombo" ${same ? 'disabled' : ''}>${same ? '✔ Übernommen' : 'Kombination übernehmen'}</button></section>`;
         out += selectionCard(sel, P, 'Einkaufsliste für die Reste', 'Wähle unten Rezepte aus (oder übernimm die beste Kombination), dann erscheint hier, was zusätzlich besorgt werden muss.');
-        out += `<h2 class="sec">Alle passenden Rezepte <span class="opt">${results.length}</span></h2><div class="rgrid">${results.slice(0, 24).map((e) => recipeCard(e, sel.includes(e.r.id))).join('')}</div>`;
+        out += resultGrid('Alle passenden Rezepte', results, sel);
       }
     } else {
       out = `<section class="card"><h2>Rezepte</h2><p class="muted">${mode === 'simple' ? 'Hake zuerst ab, was du da hast' : 'Trage zuerst deinen Vorrat ein'} – die App schlägt dann Rezepte vor, die möglichst viel davon verwenden, und erstellt eine Einkaufsliste für den Rest. Oder nutze die App ganz ohne Vorrat.</p>
@@ -3302,7 +3461,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     if (bookMap) return bookMap;
     bookMap = {};
     KA.BOOK.forEach((b) => {
-      bookMap[b.id] = { id: b.id, title: b.title, cat: b.cat, cuisine: b.cuisine, time: b.time, serv: b.serv, source: 'Kochapp', builtin: true,
+      bookMap[b.id] = { id: b.id, title: b.title, cat: b.cat, cuisine: b.cuisine, diff: b.diff, time: b.time, serv: b.serv, source: 'Kochapp', builtin: true,
         tone: hash(b.id) % TONES.length, image: KA.dishImage(b.img, b.id), ings: b.ings.map((t) => linkIng(parseLine(t))), steps: b.steps };
     });
     return bookMap;
@@ -3310,16 +3469,16 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   // Einheitliche Sicht auf mitgelieferte und eigene Rezepte
   function bookRecipe(id) {
     const r = REC[id];
-    if (!r || r.user) return bookData()[id] || S.my.find((x) => x.id === id) || null;
+    if (!r || r.user || r.book) return bookData()[id] || S.my.find((x) => x.id === id) || null;
     const meta = KA.BUILTIN_META[id] || {};
     const cat = meta.cat || builtinCat(r);
     return {
-      id, title: r.name, cat, cuisine: cat === 'Hauptgericht' ? meta.k || 'International' : '', time: r.time, serv: r.s, source: 'Kochapp', builtin: true,
+      id, title: r.name, cat, cuisine: r.k, time: r.time, serv: r.s, source: 'Kochapp', builtin: true,
       tone: hash(id) % TONES.length, image: KA.dishImage(meta.img || CAT_IMG[cat], id),
       ings: r.i.map(([iid, a]) => ({ id: iid, qty: a, base: a, unit: ING[iid].unit, name: ING[iid].name, std: true })), steps: r.st,
     };
   }
-  const builtins = () => KA.RECIPES.filter((r) => !r.user);
+  const builtins = () => KA.RECIPES.filter((r) => !r.user && !r.book);
   const allBook = () => S.my.concat(builtins().map((r) => bookRecipe(r.id)), Object.values(bookData()));
 
   // Eigene Rezepte in Finder und Wochenplan bereitstellen; Verweise auf gelöschte Rezepte aufräumen
@@ -3350,6 +3509,8 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
         return i.id && i.base === undefined ? Object.assign({}, i, { base: i.qty }) : i.id ? i : linkIng(i);
       });
     });
+    // Rezeptbuch-Rezepte in die Rezeptfindung übernehmen (beim Start und wenn eigene Lebensmittel sie neu verknüpfen)
+    if (!bookMap) KA.setBookRecipes(Object.values(bookData()));
     usableMine = KA.setUserRecipes(S.my);
     S.sel = S.sel.filter((id) => REC[id]);
     if (S.plan && S.plan.days.some((day) => day.some((m) => !REC[m.rid]))) S.plan = null;
@@ -3380,7 +3541,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   function libFiltered() {
     const q = KA.norm(ui.query);
     return allBook().filter((r) => (ui.filter === 'Alle' || (ui.filter === 'Eigene' ? !r.builtin : r.cat === ui.filter)) &&
-      (ui.filter !== 'Hauptgericht' || ui.cuisine === 'Alle' || (r.cuisine || 'International') === ui.cuisine) &&
+      (ui.filter === 'Eigene' || ui.cuisine === 'Alle' || (r.cuisine || 'International') === ui.cuisine) &&
       (!q || KA.norm(r.title).includes(q) || KA.norm(r.cuisine || '').includes(q) || r.ings.some((i) => KA.norm(i.name).includes(q))));
   }
   function bookCards() {
@@ -3395,11 +3556,11 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     }).join('');
   }
 
-  // Zweite Filterzeile bei Hauptgerichten: nach Küche
+  // Zweite Filterzeile: nach Küche (innerhalb der gewählten Kategorie)
   function cuisineChips() {
-    const mains = allBook().filter((r) => r.cat === 'Hauptgericht');
-    const n = (k) => mains.filter((r) => (r.cuisine || 'International') === k).length;
-    return `<div class="fchips kchips" aria-label="Küche"><span class="flabel">Küche</span>${[['Alle', mains.length]].concat(KA.KUECHEN.map((k) => [k, n(k)]).filter((x) => x[1]))
+    const pool = allBook().filter((r) => ui.filter === 'Alle' || r.cat === ui.filter);
+    const n = (k) => pool.filter((r) => (r.cuisine || 'International') === k).length;
+    return `<div class="fchips kchips" aria-label="Küche"><span class="flabel">Küche</span>${[['Alle', pool.length]].concat(KA.KUECHEN.map((k) => [k, n(k)]).filter((x) => x[1]))
       .map(([k, c]) => `<button class="${ui.cuisine === k ? 'on' : ''}" data-act="bookcuisine" data-v="${k}">${k === 'Alle' ? 'Alle Küchen' : k} <i>${c}</i></button>`).join('')}</div>`;
   }
 
@@ -3408,7 +3569,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     return `<div class="ph"><div><h1>Meine Rezepte</h1><p>${n} Rezepte · ${S.my.length} eigene</p></div>
         <input id="bk-q" class="search" value="${esc(ui.query)}" aria-label="Rezept oder Zutat suchen" placeholder="Rezept oder Zutat suchen …" autocomplete="off"></div>
       <div class="fchips">${['Alle'].concat(BOOK_CATS, ['Eigene']).map((f) => `<button class="${ui.filter === f ? 'on' : ''}" data-act="bookfilter" data-v="${f}">${f}</button>`).join('')}</div>
-      ${ui.filter === 'Hauptgericht' ? cuisineChips() : ''}
+      ${ui.filter === 'Eigene' ? '' : cuisineChips()}
       <div class="bgrid" id="bk-cards">${bookCards()}</div>`;
   }
 
@@ -3422,8 +3583,8 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       return `<div class="nurow"><span>${nu.label}</span><b>${KA.fmtNum(n[i], n[i] < 10 ? 1 : 0)} ${nu.unit}</b><div class="bar"><i style="width:${Math.min(100, pct)}%"></i></div><span class="muted">${r0(pct)} %</span></div>`;
     }).join('');
     // eigene Rezepte: offenlegen, welche Zutaten in die Rechnung eingehen
-    const open = r.builtin ? [] : r.ings.filter((i) => !(i.id && i.base > 0)).map((i) => i.name);
-    const counted = r.builtin ? '' : `<p class="${open.length ? 'warn' : 'muted sm'}">${r.ings.length - open.length} von ${r.ings.length} Zutaten berücksichtigt${
+    const open = r.ings.filter((i) => !(i.id && i.base > 0)).map((i) => i.name);
+    const counted = r.builtin && !open.length ? '' : `<p class="${open.length ? 'warn' : 'muted sm'}">${r.ings.length - open.length} von ${r.ings.length} Zutaten berücksichtigt${
       open.length ? ` – nicht eingerechnet: ${esc(open.join(', '))}. Die tatsächlichen Werte liegen höher.` : '.'}</p>`;
     const own = r.ings.some((i) => i.id && ING[i.id] && ING[i.id].custom);
     return `<div class="card ingcard"><div class="lh"><h2>Nährwerte</h2><span class="muted sm">pro Portion · % vom Tagesbedarf</span></div>${rows}${counted}${unknownFoods(r)}
@@ -3451,8 +3612,8 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
         <h1>${esc(r.title)}</h1>
         ${r.sourceUrl && /^https?:\/\//i.test(r.sourceUrl) ? `<p class="muted sm"><a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener noreferrer">Originalrezept öffnen</a></p>` : ''}
         <div class="facts">${fact('Zeit', r.time + ' Min')}${fact('Zutaten', r.ings.length)}${fact('Original', r.serv + ' Pers.')}
-          ${base ? fact('Pro Portion', r0(KA.recipeNutr(base)[0]) + ' kcal') + fact('Niveau', DIFF[base.diff]) : ''}</div>
-        ${base ? `<div class="tags">${recipeTags(base)}</div>` : ''}
+          ${base ? (base.i.length ? fact('Pro Portion', (base.partial ? 'mind. ' : '') + r0(KA.recipeNutr(base)[0]) + ' kcal') : '') + fact('Niveau', DIFF[base.diff]) : ''}</div>
+        ${base ? `<div class="tags">${recipeTags(base, true)}</div>` : ''}
         <div class="servbox"><span class="muted">Portionen</span>
           <div class="step"><button data-act="dserv" data-d="-1" aria-label="Weniger">−</button><span>${persons(ui.detailServ)}</span><button data-act="dserv" data-d="1" aria-label="Mehr">+</button></div>
           <button class="btn dark" data-act="addlistd">${inL ? (inL.serv === ui.detailServ ? '✓ Auf der Liste' : 'Liste aktualisieren') : 'Auf Einkaufsliste'}</button></div>
@@ -3461,7 +3622,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       <div class="dt-body">
         <div class="col"><div class="card ingcard"><div class="lh"><h2>Zutaten</h2><span class="muted sm">für ${persons(ui.detailServ)}</span></div>
           ${r.ings.map((i) => `<div class="irow"><span class="${f !== 1 ? 'chg' : ''}">${esc(ingQty(i, f))}</span><span>${esc(i.name)}</span></div>`).join('')}</div>
-        ${nutritionCard(r, base)}</div>
+        ${nutritionCard(r, base && base.i.length ? base : null)}</div>
         <div><h2>Zubereitung</h2>
           ${r.steps.length ? r.steps.map((s, k) => `<div class="srow"><span>${k + 1}</span><p>${esc(s)}</p></div>`).join('') : '<p class="muted">Keine Schritte hinterlegt.</p>'}
           ${r.builtin ? '' : '<div class="btnrow"><button class="btn ghost" data-act="delrec">Rezept löschen</button></div>'}</div>
@@ -3503,7 +3664,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
           <div class="fgroup"><div class="flabel">Kategorie</div><div class="fchips">${BOOK_CATS.map((c) => `<button class="${d.cat === c ? 'on' : ''}" data-act="dcat" data-v="${c}">${c}</button>`).join('')}</div></div>
           <div class="fgroup"><div class="flabel">Schwierigkeit</div><div class="seg">${[1, 2, 3].map((v) => `<button class="${d.diff === v ? 'on' : ''}" data-act="ddiff" data-v="${v}">${DIFF[v]}</button>`).join('')}</div></div>
         </div>
-        ${d.cat === 'Hauptgericht' ? `<div class="fgroup"><div class="flabel">Küche <small>(optional)</small></div><div class="fchips">${KA.KUECHEN.map((k) => `<button class="${d.cuisine === k ? 'on' : ''}" data-act="dcuisine" data-v="${k}">${k}</button>`).join('')}</div></div>` : ''}
+        <div class="fgroup"><div class="flabel">Küche <small>(optional)</small></div><div class="fchips">${KA.KUECHEN.map((k) => `<button class="${d.cuisine === k ? 'on' : ''}" data-act="dcuisine" data-v="${k}">${k}</button>`).join('')}</div></div>
         </div>
         <label class="drop">Titelbild wählen<input id="d-img" type="file" accept="image/jpeg,image/png,image/webp">${d.image ? `<img src="${esc(d.image)}" alt="Titelbild-Vorschau">` : ''}<span>JPG, PNG oder WebP – wird verkleinert gespeichert. Ohne Foto bekommt das Rezept eine passende Illustration.</span></label>
       </div>
@@ -3846,6 +4007,8 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     booklib: () => { S.tab = 'book'; ui.book = 'library'; ui.filter = 'Alle'; ui.cuisine = 'Alle'; update(); window.scrollTo(0, 0); },
     bookfilter: (el) => { S.tab = 'book'; ui.book = 'library'; ui.filter = el.dataset.v; ui.cuisine = 'Alle'; update(); },
     bookcuisine: (el) => { ui.cuisine = el.dataset.v; update(); },
+    fcat: (el) => { ui.fcat = el.dataset.v; ui.flimit = 24; render(); },
+    fmore: () => { ui.flimit += 24; render(); },
     bookadd: () => { S.tab = 'book'; ui.book = 'add'; update(); window.scrollTo(0, 0); },
     openrec: (el) => openRecipe(el.dataset.id),
     addlist: (el) => {
@@ -3884,7 +4047,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       if (st) st.value = '';
       if (!d.title.trim()) { ui.focus = 'd-title'; render(); toast('Bitte einen Titel eingeben.'); return; }
       ui.draft = emptyDraft();
-      saveRecipe({ title: d.title.trim(), cat: d.cat, cuisine: d.cat === 'Hauptgericht' ? d.cuisine : '', diff: d.diff, time: Number(d.time) || 30, serv: d.serv, source: 'Eigenes', ings: d.ings, steps: d.steps, image: d.image });
+      saveRecipe({ title: d.title.trim(), cat: d.cat, cuisine: d.cuisine, diff: d.diff, time: Number(d.time) || 30, serv: d.serv, source: 'Eigenes', ings: d.ings, steps: d.steps, image: d.image });
     },
     scanstart: () => {
       clearTimeout(demoTimer);
@@ -4151,6 +4314,12 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     if (t.id === 'd-img') { if (t.files[0]) readImage(t.files[0], (url) => { ui.draft.image = url; render(); }); return; }
     if (t.dataset.fd || t.dataset.fn) { if (t.dataset.fd === 'unit' && ui.food) { ui.food.unit = t.value; redrawFood(); } return; } // Lebensmittel-Dialog
     if (t.dataset.act && t.tagName === 'INPUT') { A[t.dataset.act](t, e); return; }
+    if (t.dataset.cuisine) {
+      const s = new Set(S.prefs.cuisines || []);
+      t.checked ? s.add(t.dataset.cuisine) : s.delete(t.dataset.cuisine);
+      S.prefs.cuisines = KA.KUECHEN.filter((k) => s.has(k));
+      update(); return;
+    }
     if (t.dataset.diet) {
       const s = new Set(S.prefs.diets);
       t.checked ? s.add(t.dataset.diet) : s.delete(t.dataset.diet);

@@ -359,3 +359,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important;animation-duration:.01s!important}}
 
 .linkres textarea{display:block;width:100%;min-height:180px;box-sizing:border-box;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px;font:inherit;resize:vertical}
+.tag.kueche{background:var(--side);color:var(--ink2);border:1px solid var(--line3)}
+.tag.warn{background:var(--warm-soft);color:var(--warm-ink)}
+.tag.neutral{background:var(--side);color:var(--muted)}
