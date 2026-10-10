@@ -177,17 +177,56 @@ namespace Kochapp
         {
             Uri uri = new Uri(e.Request.Uri);
             bool rewe = uri.AbsolutePath.StartsWith(RewePrefix + "/", StringComparison.Ordinal);
-            if (uri.AbsolutePath != "/api/order" && !rewe) { e.Response = ServeFile(uri); return; }
+            bool food = uri.AbsolutePath == "/api/foodsearch";
+            if (uri.AbsolutePath != "/api/order" && !rewe && !food) { e.Response = ServeFile(uri); return; }
 
             string method = e.Request.Method;
-            if (method != "POST" && !(rewe && method == "GET")) { e.Response = Error(405, "Methode nicht erlaubt"); return; }
+            if (food ? method != "GET" : method != "POST" && !(rewe && method == "GET")) { e.Response = Error(405, "Methode nicht erlaubt"); return; }
             string body = ReadAll(e.Request.Content);
             CoreWebView2Deferral deferral = e.GetDeferral();
             CoreWebView2WebResourceResponse response;
-            try { response = rewe ? await ForwardRewe(uri, method, body) : await ForwardOrder(body); }
-            catch (Exception ex) { response = Error(502, (rewe ? "REWE-Bridge nicht erreichbar: " : "Ziel nicht erreichbar: ") + Innermost(ex).Message); }
+            try { response = food ? await SearchFood(uri) : rewe ? await ForwardRewe(uri, method, body) : await ForwardOrder(body); }
+            catch (Exception ex) { response = Error(502, (food ? "Suche nicht erreichbar: " : rewe ? "REWE-Bridge nicht erreichbar: " : "Ziel nicht erreichbar: ") + Innermost(ex).Message); }
             e.Response = response;
             deferral.Complete();
+        }
+
+        // ---------- Nährwertsuche bei Open Food Facts (für eigene Lebensmittel) ----------
+
+        /// <summary>
+        /// GET /api/foodsearch?q=… fragt die Produktsuche von Open Food Facts ab und weicht bei Überlast auf deren
+        /// zweiten Suchdienst aus. Übertragen wird nur der Suchbegriff. Die Antwort (JSON) geht unverändert zurück.
+        /// </summary>
+        async Task<CoreWebView2WebResourceResponse> SearchFood(Uri uri)
+        {
+            string q = "";
+            foreach (string part in uri.Query.TrimStart('?').Split('&'))
+                if (part.StartsWith("q=", StringComparison.Ordinal)) q = Uri.UnescapeDataString(part.Substring(2).Replace('+', ' ')).Trim();
+            if (q.Length == 0 || q.Length > 80) return Error(400, "Suchbegriff fehlt");
+            string term = Uri.EscapeDataString(q);
+            string[] urls =
+            {
+                "https://world.openfoodfacts.org/cgi/search.pl?search_terms=" + term + "&search_simple=1&action=process&json=1&page_size=24&lc=de&cc=de&fields=code,product_name,product_name_de,brands,nutriments",
+                "https://search.openfoodfacts.org/search?q=" + term + "&langs=de&page_size=24&fields=code,product_name,brands,nutriments",
+            };
+            string last = "keine Antwort";
+            foreach (string url in urls)
+            {
+                try
+                {
+                    using (HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, url))
+                    {
+                        req.Headers.TryAddWithoutValidation("User-Agent", "Kochapp/1.2 (https://github.com/DasAnanas/kochapp)");
+                        using (HttpResponseMessage res = await http.SendAsync(req))
+                        {
+                            if (res.IsSuccessStatusCode) return Respond(200, "OK", await res.Content.ReadAsByteArrayAsync(), "application/json; charset=utf-8");
+                            last = "HTTP " + (int)res.StatusCode;
+                        }
+                    }
+                }
+                catch (Exception ex) { last = Innermost(ex).Message; }
+            }
+            return Error(502, "Open Food Facts antwortet nicht (" + last + ")");
         }
 
         // ---------- REWE-Bridge (rewe-bridge\ neben der EXE): lokale API, die den Warenkorb auf rewe.de füllt ----------

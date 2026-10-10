@@ -204,6 +204,12 @@ details.pick2{border-top:1px solid var(--line2);padding-top:14px} details.pick2[
 .lh{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.4rem}
 .olines{list-style:none;padding:0;margin:.7rem 0 0;font-size:14px} .olines li{padding:5px 0;border-top:1px solid var(--line2)} .olines li.bad{color:var(--low)}
 .zip-err{color:var(--low);font-weight:600;margin:0;min-height:1.2em}
+/* Eigene Lebensmittel: Verweis-Knöpfe an unbekannten Zutaten und der Dialog */
+.lk{border:0;background:none;padding:0;cursor:pointer;font:600 13px var(--body);color:var(--acc);text-decoration:underline;text-underline-offset:2px}
+.lk:hover{color:var(--acc-h)}
+.fd-open{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin:.6rem 0}
+.fd-web{margin-top:14px} .fd-web .alts button{grid-template-columns:1fr auto}
+#dlg-body .seg{margin:.4rem 0 .2rem} #dlg-body details{margin-top:.6rem}
 pre.json{background:#10171a;color:#cfe8d8;border-radius:10px;padding:.9rem;overflow:auto;max-height:340px;font-size:12px;margin-top:.8rem}
 
 /* ---------- Wochenplan ---------- */
@@ -2758,6 +2764,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     pantry: {}, pantryMode: 'simple', sel: [], comboN: 3, plan: null, subPantry: true,
     // Einkaufsliste: Rezepte (list) + übernommene Rezept-Auswahl / Wochenplan (blocks) + eigene Artikel (extras); done = abgehakt
     blocks: { finder: null, plan: null },
+    foods: [], // eigene Lebensmittel: { id, name, unit, gpu, tl, n: [15 Nährwerte je 100 g/ml], flags, src }
     order: { provider: 'rewe', cfg: { rewe: { service: 'DELIVERY' }, rest: { method: 'POST', authHeader: 'Authorization' }, mailto: {}, mock: {} }, customer: { name: '', street: '', zip: '', city: '' } },
   });
   const merge = (a, b) => {
@@ -3398,10 +3405,31 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 
   // Eigene Rezepte in Finder und Wochenplan bereitstellen; Verweise auf gelöschte Rezepte aufräumen
   let usableMine = 0;
+  // Eigene Lebensmittel (S.foods: vom Nutzer eingetragene oder im Internet gefundene Nährwerte) in die Stammdaten
+  // aufnehmen. Liefert true, wenn sich etwas geändert hat – dann müssen Zutaten neu verknüpft werden.
+  let foodsSig = null;
+  function registerFoods() {
+    const sig = JSON.stringify(S.foods);
+    if (sig === foodsSig) return false;
+    foodsSig = sig;
+    Object.keys(ING).forEach((id) => { if (ING[id].custom) delete ING[id]; });
+    S.foods.forEach((f) => {
+      if (ING[f.id]) return;
+      ING[f.id] = { id: f.id, name: f.name, cat: 'SO', unit: f.unit, gpu: f.unit === 'Stk' ? f.gpu : 1, price: 0, flags: f.flags || [], n: f.n,
+        staple: false, meta: f.tl ? { tl: f.tl } : {}, custom: true, src: f.src || '' };
+    });
+    nameIndex = null; bookMap = null;
+    return true;
+  }
   function syncRecipes() {
-    // Zutaten (neu) mit den Stammdaten verknüpfen – auch für Rezepte aus älteren Versionen
+    const foodsChanged = registerFoods();
+    // Zutaten (neu) mit den Stammdaten verknüpfen – auch für Rezepte aus älteren Versionen und nach Änderungen
+    // an eigenen Lebensmitteln (Einheit geändert oder gelöscht)
     S.my.forEach((r) => {
-      r.ings = r.ings.map((i) => (i.id && i.base === undefined ? Object.assign({}, i, { base: i.qty }) : i.id ? i : linkIng(i)));
+      r.ings = r.ings.map((i) => {
+        if (i.id && (!ING[i.id] || (foodsChanged && ING[i.id].custom))) return linkIng(i);
+        return i.id && i.base === undefined ? Object.assign({}, i, { base: i.qty }) : i.id ? i : linkIng(i);
+      });
     });
     usableMine = KA.setUserRecipes(S.my);
     S.sel = S.sel.filter((id) => REC[id]);
@@ -3467,7 +3495,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 
   // Nährwerte einer Portion, zusammengerechnet aus den Zutaten (Werte je 100 g aus den Stammdaten)
   function nutritionCard(r, base) {
-    if (!base) return '<div class="card ingcard"><h2>Nährwerte</h2><p class="muted">Für dieses Rezept lassen sich keine Nährwerte berechnen: Keine Zutat wurde als bekanntes Lebensmittel mit Menge erkannt.</p></div>';
+    if (!base) return `<div class="card ingcard"><h2>Nährwerte</h2><p class="muted">Für dieses Rezept lassen sich keine Nährwerte berechnen: Keine Zutat wurde als bekanntes Lebensmittel mit Menge erkannt.</p>${unknownFoods(r)}</div>`;
     const n = KA.recipeNutr(base);
     const T = KA.targets(S.prefs);
     const rows = NUTRIENTS.map((nu, i) => {
@@ -3478,8 +3506,17 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     const open = r.builtin ? [] : r.ings.filter((i) => !(i.id && i.base > 0)).map((i) => i.name);
     const counted = r.builtin ? '' : `<p class="${open.length ? 'warn' : 'muted sm'}">${r.ings.length - open.length} von ${r.ings.length} Zutaten berücksichtigt${
       open.length ? ` – nicht eingerechnet: ${esc(open.join(', '))}. Die tatsächlichen Werte liegen höher.` : '.'}</p>`;
-    return `<div class="card ingcard"><div class="lh"><h2>Nährwerte</h2><span class="muted sm">pro Portion · % vom Tagesbedarf</span></div>${rows}${counted}
-      <p class="muted sm">Berechnet aus den Zutaten. Lebensmittelwerte: Schweizer Nährwertdatenbank (BLV), geprüft gegen USDA FoodData Central. Näherungswerte, keine Ernährungsberatung.</p></div>`;
+    const own = r.ings.some((i) => i.id && ING[i.id] && ING[i.id].custom);
+    return `<div class="card ingcard"><div class="lh"><h2>Nährwerte</h2><span class="muted sm">pro Portion · % vom Tagesbedarf</span></div>${rows}${counted}${unknownFoods(r)}
+      <p class="muted sm">Berechnet aus den Zutaten. Lebensmittelwerte: Schweizer Nährwertdatenbank (BLV), geprüft gegen USDA FoodData Central${own ? '; eigene Lebensmittel nach deinen Angaben bzw. Open Food Facts' : ''}. Näherungswerte, keine Ernährungsberatung.</p></div>`;
+  }
+  // Zutaten eigener Rezepte, die die App nicht kennt: Nährwerte lassen sich nachtragen oder im Internet suchen
+  function unknownFoods(r) {
+    if (r.builtin) return '';
+    const names = r.ings.filter((i) => !i.id).map((i) => i.name).filter((n, k, a) => a.indexOf(n) === k);
+    if (!names.length) return '';
+    return `<div class="fd-open"><span class="muted sm">Nährwerte nachtragen oder im Internet suchen:</span>
+      ${names.map((n) => `<button class="lk" data-act="fdnew" data-n="${esc(n)}">+ ${esc(n)}</button>`).join('')}</div>`;
   }
 
   function viewDetail() {
@@ -3523,7 +3560,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     ['link', '03', 'Linkimport', 'Rezeptlink einfügen, Angaben prüfen und speichern.']];
   let demoTimer;
 
-  const linkHint = (l) => (!l.id ? '· kein bekanntes Lebensmittel – ohne Nährwerte'
+  const linkHint = (l) => (!l.id ? `· kein bekanntes Lebensmittel – ohne Nährwerte <button class="lk" data-act="fdnew" data-n="${esc(l.name)}">Nährwerte hinzufügen</button>`
     : l.base > 0 ? `✓ Nährwerte: ${esc(ING[l.id].name)} (≈ ${esc(KA.fmtAmount(l.id, l.base))})`
       : `· ${esc(ING[l.id].name)} erkannt, aber ${l.qty == null ? 'ohne Menge' : 'Einheit nicht umrechenbar'} – ohne Nährwerte`);
   const previewHTML = (text) => {
@@ -3533,7 +3570,8 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       <span>${linkHint(linkIng(p))}</span>`;
   };
   const stepList = (steps, removable) => steps.map((s, k) => `<div class="lrow st"><span class="no">${k + 1}</span><span>${esc(s)}</span>${removable ? `<button class="x" data-act="delstep" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
-  const ingList = (ings, removable) => ings.map((i, k) => `<div class="lrow"><b>${esc(ingQty(i, 1))}</b><span>${esc(i.name)}</span>${removable ? `<button class="x" data-act="deling" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
+  const ingList = (ings, removable) => ings.map((i, k) => `<div class="lrow"><b>${esc(ingQty(i, 1))}</b><span>${esc(i.name)}${
+    removable && !linkIng(i).id ? ` <button class="lk" data-act="fdnew" data-n="${esc(i.name)}">+ Nährwerte</button>` : ''}</span>${removable ? `<button class="x" data-act="deling" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
 
   function addManual() {
     const d = ui.draft;
@@ -3612,7 +3650,133 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   function viewAdd() {
     return pageHead('Neues Rezept', 'Wie möchtest du das Rezept hinzufügen?') +
       `<div class="addtabs">${ADD_MODES.map(([k, num, label, desc]) => `<button class="${ui.addMode === k ? 'on' : ''}" data-act="addmode" data-v="${k}"><i>${num}</i><b>${label}</b><span>${desc}</span></button>`).join('')}</div>` +
-      { manual: addManual, photo: addPhoto, link: addLink }[ui.addMode]();
+      { manual: addManual, photo: addPhoto, link: addLink }[ui.addMode]() + ownFoodsCard();
+  }
+
+  /* ---------- Eigene Lebensmittel: Nährwerte selbst eintragen oder im Internet suchen ---------- */
+  const FOOD_FLAGS = [['fleisch', 'Fleisch'], ['schwein', 'Schwein'], ['fisch', 'Fisch'], ['schalentier', 'Schalentiere'], ['milch', 'Milch'], ['ei', 'Ei'],
+    ['gluten', 'Gluten'], ['nuss', 'Nüsse'], ['erdnuss', 'Erdnüsse'], ['soja', 'Soja'], ['sesam', 'Sesam'], ['honig', 'Honig'], ['alkohol', 'Alkohol']];
+  const OFF_SEARCH = 'https://world.openfoodfacts.org/cgi/search.pl';
+  // Open Food Facts gibt Vitamine und Mineralstoffe in Gramm je 100 g an -> Faktor in die Einheit der App (mg bzw. µg)
+  const OFF_KEYS = [['energy-kcal_100g', 1], ['proteins_100g', 1], ['carbohydrates_100g', 1], ['fat_100g', 1], ['fiber_100g', 1], ['vitamin-c_100g', 1e3],
+    ['vitamin-a_100g', 1e6], ['vitamin-d_100g', 1e6], ['vitamin-b12_100g', 1e6], ['vitamin-b9_100g', 1e6], ['calcium_100g', 1e3], ['iron_100g', 1e3],
+    ['magnesium_100g', 1e3], ['zinc_100g', 1e3], ['potassium_100g', 1e3]];
+  const numIn = (v) => { const x = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isFinite(x) ? x : null; };
+  const fmtIn = (x) => (x == null ? '' : String(Math.round(x * 100) / 100).replace('.', ','));
+
+  function ownFoodsCard() {
+    return `<section class="card"><div class="lh"><h2>Eigene Lebensmittel</h2><span class="muted sm">${S.foods.length} angelegt</span></div>
+      <p class="muted">Kennt die App eine Zutat nicht, kannst du ihre Nährwerte selbst eintragen oder im Internet suchen. Danach wird sie in allen Rezepten mitgerechnet.</p>
+      ${S.foods.map((f) => `<div class="dr-rec"><span class="t">${esc(f.name)} <small class="muted">${KA.fmtNum(f.n[0], 0)} kcal je 100 ${f.unit === 'ml' ? 'ml' : 'g'}${f.src ? ' · ' + esc(f.src.split(':')[0]) : ''}</small></span>
+        <button class="btn ghost sm" data-act="fdedit" data-id="${esc(f.id)}">Bearbeiten</button></div>`).join('')}
+      <div class="btnrow"><button class="btn ghost" data-act="fdnew" data-n="">+ Lebensmittel anlegen</button></div></section>`;
+  }
+
+  function foodDialog() {
+    const f = ui.food;
+    const per = f.unit === 'ml' ? '100 ml' : '100 g';
+    const field = (i) => `<label>${NUTRIENTS[i].label} (${NUTRIENTS[i].unit})<input data-fn="${i}" inputmode="decimal" value="${esc(f.n[i])}" placeholder="${i < 5 ? '0' : '–'}" autocomplete="off"></label>`;
+    const results = f.busy ? '<p class="muted busy" role="status">Suche läuft …</p>'
+      : f.results == null ? ''
+        : !f.results.length ? '<p class="muted">Nichts Passendes gefunden. Versuche einen anderen Begriff oder trage die Werte selbst ein.</p>'
+          : `<ul class="alts">${f.results.map((p, k) => `<li><button data-act="fdpick" data-i="${k}"><b>${esc(p.name)}</b>
+              <span class="muted">${esc(p.brand || 'ohne Marke')} · je 100 g: ${KA.fmtNum(p.n[0], 0)} kcal · ${KA.fmtNum(p.n[1] || 0)} g Eiweiß · ${KA.fmtNum(p.n[2] || 0)} g KH · ${KA.fmtNum(p.n[3] || 0)} g Fett</span>
+              <span class="st ok">übernehmen</span></button></li>`).join('')}</ul>`;
+    return `<h2>${f.id ? 'Lebensmittel bearbeiten' : 'Nährwerte hinzufügen'}</h2>
+      <p class="muted">${f.id ? 'Änderungen wirken sich auf alle Rezepte mit diesem Lebensmittel aus.' : 'Dieses Lebensmittel kennt die App noch nicht. Trage die Nährwerte selbst ein (sie stehen meist auf der Packung) oder suche sie im Internet.'}</p>
+      <div class="seg"><button class="${f.mode === 'manual' ? 'on' : ''}" data-act="fdmode" data-v="manual">Selbst eintragen</button><button class="${f.mode === 'web' ? 'on' : ''}" data-act="fdmode" data-v="web">Im Internet suchen</button></div>
+      ${f.mode === 'web' ? `<div class="fd-web"><div class="addrow"><input id="fd-q" data-fd="q" value="${esc(f.q)}" placeholder="Suchbegriff, z. B. Halloumi" autocomplete="off"><button class="btn" data-act="fdsearch" ${f.busy ? 'disabled' : ''}>Suchen</button></div>
+        <p class="muted sm">Gesucht wird bei Open Food Facts (openfoodfacts.org), einer freien Lebensmitteldatenbank. Dabei wird nur der Suchbegriff übertragen. Die Angaben dort stammen von Freiwilligen und Herstellern – bitte nach dem Übernehmen prüfen.</p>
+        ${f.error ? `<p class="warn" role="alert">${esc(f.error)}</p>` : ''}${results}</div>` : ''}
+      <div class="grid2"><label>Name<input data-fd="name" value="${esc(f.name)}" placeholder="z. B. Halloumi" autocomplete="off"></label>
+        <label>Mengen werden angegeben in<select data-fd="unit"><option value="g" ${f.unit === 'g' ? 'selected' : ''}>Gramm</option><option value="ml" ${f.unit === 'ml' ? 'selected' : ''}>Milliliter</option><option value="Stk" ${f.unit === 'Stk' ? 'selected' : ''}>Stück</option></select></label>
+        ${f.unit === 'Stk' ? `<label>Gewicht pro Stück (g)<input data-fd="gpu" inputmode="decimal" value="${esc(f.gpu)}" placeholder="z. B. 60" autocomplete="off"></label>`
+          : `<label>1 Teelöffel wiegt (g) <input data-fd="tl" inputmode="decimal" value="${esc(f.tl)}" placeholder="optional – für Angaben in TL/EL" autocomplete="off"></label>`}</div>
+      <h4 class="cat">Nährwerte je ${per}</h4>
+      <div class="grid4">${[0, 1, 2, 3, 4].map(field).join('')}</div>
+      <details data-key="fdmore" ${ui.open.has('fdmore') ? 'open' : ''}><summary>Vitamine & Mineralstoffe <span class="muted">optional – leer zählt als 0</span></summary><div class="grid4">${[5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(field).join('')}</div></details>
+      <h4 class="cat">Enthält <span class="opt">für die Ernährungsfilter</span></h4>
+      <div class="fchips">${FOOD_FLAGS.map(([k, l]) => `<button class="${f.flags.includes(k) ? 'on' : ''}" data-act="fdflag" data-v="${k}">${l}</button>`).join('')}</div>
+      <p class="muted sm">Nichts markiert heißt: enthält nichts davon. Davon hängt ab, ob Rezepte mit diesem Lebensmittel z. B. als vegan oder glutenfrei gelten.</p>
+      ${f.src ? `<p class="muted sm">Quelle: ${esc(f.src)}</p>` : ''}
+      <p class="zip-err" id="fd-err" role="alert">${esc(f.warn || '')}</p>
+      <div class="btnrow"><button class="btn ghost" data-act="closedlg">Abbrechen</button>${f.id ? '<button class="btn ghost" data-act="fddel">Löschen</button>' : ''}
+        <button class="btn" data-act="fdsave">${f.warn ? 'Trotzdem speichern' : 'Speichern'}</button></div>`;
+  }
+
+  function openFood(name, food) {
+    ui.food = food
+      ? { id: food.id, name: food.name, unit: food.unit, gpu: food.unit === 'Stk' ? fmtIn(food.gpu) : '', tl: fmtIn(food.tl), n: food.n.map((x, i) => (x || i < 5 ? fmtIn(x) : '')), flags: (food.flags || []).slice(), src: food.src || '',
+        mode: 'manual', q: food.name, results: null, busy: false, error: '', warn: '' }
+      : { id: null, name: name || '', unit: 'g', gpu: '', tl: '', n: NUTRIENTS.map(() => ''), flags: [], src: '', mode: 'manual', q: name || '', results: null, busy: false, error: '', warn: '' };
+    openDlg(foodDialog());
+  }
+  const redrawFood = () => { const y = $('#dlg-body').scrollTop; $('#dlg-body').innerHTML = foodDialog(); $('#dlg-body').scrollTop = y; };
+
+  async function searchFood() {
+    const f = ui.food;
+    const q = f.q.trim();
+    if (!q) { f.error = 'Bitte einen Suchbegriff eingeben.'; redrawFood(); return; }
+    Object.assign(f, { busy: true, error: '', results: null }); redrawFood();
+    try {
+      const qs = new URLSearchParams({ search_terms: q, search_simple: '1', action: 'process', json: '1', page_size: '24', lc: 'de', cc: 'de',
+        fields: 'code,product_name,product_name_de,brands,nutriments' });
+      // Open Food Facts begrenzt Suchanfragen und antwortet bei Überlast kurzzeitig mit einem Fehler -> ein paar Mal versuchen.
+      // In der Desktop-App fragt die App-Hülle an (/api/foodsearch); sie kann zusätzlich auf den zweiten Suchdienst ausweichen.
+      let data = null, last = '';
+      for (let attempt = 0; attempt < 3 && !data; attempt++) {
+        if (attempt) await new Promise((r) => setTimeout(r, 1500 * attempt));
+        try {
+          const res = await fetch(window.KA_DESKTOP ? '/api/foodsearch?q=' + encodeURIComponent(q) : OFF_SEARCH + '?' + qs);
+          if (res.ok) data = await res.json(); else last = 'HTTP ' + res.status;
+        } catch (e) { last = 'keine Antwort'; }
+        if (ui.food !== f) return;
+      }
+      if (!data) throw new Error(last);
+      const list = (data.products || data.hits || []).map((p) => {
+        const nu = p.nutriments || {};
+        const n = OFF_KEYS.map(([k, factor]) => (typeof nu[k] === 'number' ? Math.round(nu[k] * factor * 100) / 100 : null));
+        if (n[0] == null && typeof nu.energy_100g === 'number') n[0] = Math.round(nu.energy_100g / 4.184); // nur kJ angegeben
+        const brands = Array.isArray(p.brands) ? p.brands[0] : String(p.brands || '').split(',')[0];
+        return { name: String(p.product_name_de || p.product_name || '').trim(), brand: String(brands || '').trim(), code: String(p.code || ''), n };
+      }).filter((p) => p.name && p.n[0] != null && p.n[0] <= 900 && p.n[1] != null && p.n[3] != null); // nur Einträge mit vollständigen Grundangaben
+      if (ui.food !== f) return; // Dialog inzwischen geschlossen oder neu geöffnet
+      f.results = list.slice(0, 8);
+    } catch (e) {
+      if (ui.food !== f) return;
+      f.error = 'Open Food Facts hat gerade nicht geantwortet (' + e.message + '). Der Dienst ist manchmal überlastet – bitte gleich noch einmal versuchen, die Internetverbindung prüfen oder die Werte selbst eintragen.';
+    }
+    f.busy = false; redrawFood();
+  }
+
+  function saveFood() {
+    const f = ui.food;
+    if (!f) return;
+    const fail = (msg) => { f.warn = ''; redrawFood(); $('#fd-err').textContent = msg; };
+    const name = f.name.trim();
+    if (!name) return fail('Bitte einen Namen eingeben.');
+    const other = findFood(name);
+    if (other && other.id !== f.id && KA.norm(other.name) === KA.norm(name)) return fail(`„${other.name}“ gibt es schon.`);
+    const n = f.n.map(numIn);
+    if (n[0] == null) return fail('Bitte mindestens die Energie (kcal) angeben.');
+    if (n.some((x) => x != null && x < 0)) return fail('Nährwerte können nicht negativ sein.');
+    if (n[0] > 900) return fail('Mehr als 900 kcal je 100 g sind nicht möglich – bitte prüfen.');
+    const vals = n.map((x) => x || 0);
+    if (vals[1] + vals[2] + vals[3] + vals[4] > 101) return fail('Eiweiß, Kohlenhydrate, Fett und Ballaststoffe ergeben zusammen mehr als 100 g – bitte prüfen.');
+    const gpu = numIn(f.gpu), tl = numIn(f.tl);
+    if (f.unit === 'Stk' && !(gpu > 0)) return fail('Bitte das Gewicht pro Stück angeben.');
+    // Plausibilität: Energie sollte ungefähr zu den Makronährstoffen passen (4/4/9 kcal je g, Ballaststoffe 2)
+    const calc = 4 * vals[1] + 4 * vals[2] + 9 * vals[3] + 2 * vals[4];
+    if (!f.warn && (vals[1] || vals[2] || vals[3]) && Math.abs(calc - vals[0]) > Math.max(40, vals[0] * 0.3)) {
+      f.warn = `Die Energie (${KA.fmtNum(vals[0], 0)} kcal) passt nicht zu Eiweiß, Kohlenhydraten und Fett (ergäbe etwa ${KA.fmtNum(calc, 0)} kcal). Bitte prüfen – oder trotzdem speichern.`;
+      redrawFood(); return;
+    }
+    const food = { id: f.id || 'x_' + KA.norm(name).replace(/[^a-z0-9]+/g, '_').slice(0, 24) + '_' + Date.now().toString(36), name, unit: f.unit,
+      gpu: f.unit === 'Stk' ? gpu : 1, tl: f.unit === 'g' && tl > 0 ? tl : null, n: vals, flags: FOOD_FLAGS.map((x) => x[0]).filter((k) => f.flags.includes(k)), src: f.src || 'eigene Angabe' };
+    const at = S.foods.findIndex((x) => x.id === food.id);
+    if (at >= 0) S.foods[at] = food; else S.foods.push(food);
+    ui.food = null; closeDlg(); update();
+    toast(`„${name}“ gespeichert – wird jetzt mitgerechnet.`);
   }
 
   const viewBook = () => (ui.book === 'detail' && bookRecipe(ui.selId) ? viewDetail() : ui.book === 'add' ? viewAdd() : viewLibrary());
@@ -3947,6 +4111,30 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     },
     view: (el) => openDlg(recipeDialog(el.dataset.id, Number(el.dataset.f) || 1)),
     closedlg: closeDlg,
+
+    /* Eigene Lebensmittel */
+    fdnew: (el) => openFood(el.dataset.n || ''),
+    fdedit: (el) => openFood('', S.foods.find((x) => x.id === el.dataset.id)),
+    fdmode: (el) => { ui.food.mode = el.dataset.v; redrawFood(); if (ui.food.mode === 'web') { const q = $('#fd-q'); if (q) q.focus(); } },
+    fdsearch: () => searchFood(),
+    fdpick: (el) => {
+      const f = ui.food, p = f.results[Number(el.dataset.i)];
+      f.n = p.n.map((x, i) => (x != null && (x || i < 5) ? fmtIn(x) : ''));
+      if (!f.name.trim()) f.name = p.name;
+      f.src = `Open Food Facts: ${p.name}${p.brand ? ' (' + p.brand + ')' : ''}${p.code ? ', Nr. ' + p.code : ''}`;
+      f.mode = 'manual'; f.warn = '';
+      if (p.n.slice(5).some((x) => x)) ui.open.add('fdmore');
+      redrawFood(); toast('Werte übernommen – bitte prüfen und speichern.');
+    },
+    fdflag: (el) => { const f = ui.food, k = el.dataset.v; f.flags = f.flags.includes(k) ? f.flags.filter((x) => x !== k) : f.flags.concat(k); redrawFood(); },
+    fdsave: () => saveFood(),
+    fddel: () => {
+      const f = ui.food;
+      if (!confirm(`„${f.name}“ löschen? Rezepte mit diesem Lebensmittel rechnen es dann nicht mehr mit.`)) return;
+      S.foods = S.foods.filter((x) => x.id !== f.id);
+      delete S.pantry[f.id];
+      ui.food = null; closeDlg(); update(); toast('Lebensmittel gelöscht');
+    },
     copy: async () => { toast((await copyText(KA.listToText(cartOpen(), null))) ? 'Liste kopiert' : 'Kopieren nicht möglich'); },
     csv: () => {
       const rows = [['Kategorie', 'Artikel', 'Menge', 'Einheit', 'Preis (EUR)']].concat(
@@ -4014,6 +4202,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     const t = e.target;
     if (t.id === 'l-cat' && ui.link.recipe) { ui.link.recipe.cat = t.value; return; }
     if (t.id === 'd-img') { if (t.files[0]) readImage(t.files[0], (url) => { ui.draft.image = url; render(); }); return; }
+    if (t.dataset.fd || t.dataset.fn) { if (t.dataset.fd === 'unit' && ui.food) { ui.food.unit = t.value; redrawFood(); } return; } // Lebensmittel-Dialog
     if (t.dataset.act && t.tagName === 'INPUT') { A[t.dataset.act](t, e); return; }
     if (t.dataset.diet) {
       const s = new Set(S.prefs.diets);
@@ -4050,6 +4239,8 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   document.addEventListener('input', (e) => {
     const t = e.target;
     // Rezeptbuch: Eingaben direkt in den Zustand schreiben, ohne die Ansicht neu aufzubauen
+    if (ui.food && t.dataset.fd) { ui.food[t.dataset.fd] = t.value; return; }
+    if (ui.food && t.dataset.fn) { ui.food.n[Number(t.dataset.fn)] = t.value; ui.food.warn = ''; return; }
     if (t.id === 'bk-q') { ui.query = t.value; $('#bk-cards').innerHTML = bookCards(); return; }
     if (t.id === 'd-title') { ui.draft.title = t.value; return; }
     if (t.id === 'd-time') { t.value = t.value.replace(/\D/g, ''); ui.draft.time = t.value; return; }
@@ -4074,6 +4265,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     if (t.id === 'd-step' && t.value.trim()) { ui.draft.steps.push(t.value.trim()); t.value = ''; ui.focus = 'd-step'; render(); return; }
     if (t.id === 'extra-in') { A.addextra(); return; }
     if (t.id === 'zip-in') { A.rewego(); return; }
+    if (t.id === 'fd-q') { searchFood(); return; }
     if (t.id === 'l-url') { A.linkfetch(); return; }
     if (t.id === 'p-quick') { A.pquick(); return; }
     if (t.classList.contains('pamt')) { t.blur(); return; }
