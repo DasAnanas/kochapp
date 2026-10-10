@@ -95,18 +95,29 @@ export async function fetchRecipe(value, fetcher = fetch) {
     throw error;
   } finally { clearTimeout(timer); }
 }
-export async function importEndpoint(request) {
+export async function importEndpoint(request, { allowFileOrigin = false } = {}) {
   const own = new URL(request.url).origin;
-  if (request.headers.get('origin') && request.headers.get('origin') !== own) return Response.json({error:'Anfrage nicht erlaubt.'},{status:403});
-  if (request.method !== 'POST') return Response.json({error:'Bitte POST verwenden.'},{status:405});
+  const origin = request.headers.get('origin');
+  // Nur der öffentliche Online-Dienst erlaubt lokale HTML-Dateien (Origin null).
+  const fromFile = allowFileOrigin && origin === 'null';
+  if (origin && origin !== own && !fromFile) return Response.json({error:'Anfrage nicht erlaubt.'},{status:403});
+  const headers = { 'Cache-Control': 'no-store', Vary: 'Origin' };
+  if (fromFile) {
+    headers['Access-Control-Allow-Origin'] = 'null';
+    headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
+    headers['Access-Control-Allow-Headers'] = 'Content-Type';
+  }
+  const json = (body, status = 200) => Response.json(body, { status, headers });
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
+  if (request.method !== 'POST') return json({error:'Bitte POST verwenden.'},405);
   try {
     const body = await request.text();
-    if (body.length > 4096) return Response.json({error:'Der Link ist zu lang.'},{status:400});
+    if (body.length > 4096) return json({error:'Der Link ist zu lang.'},400);
     const input = JSON.parse(body);
     if (typeof input.url !== 'string') throw new Error('Bitte einen Rezeptlink eingeben.');
     const recipe = await fetchRecipe(input.url);
-    return Response.json({recipe},{headers:{'Cache-Control':'no-store'}});
+    return json({recipe});
   } catch (error) {
-    return Response.json({error:error instanceof SyntaxError ? 'Ungültige Anfrage.' : error.message || 'Der Import ist fehlgeschlagen.'},{status:422,headers:{'Cache-Control':'no-store'}});
+    return json({error:error instanceof SyntaxError ? 'Ungültige Anfrage.' : error.message || 'Der Import ist fehlgeschlagen.'},422);
   }
 }

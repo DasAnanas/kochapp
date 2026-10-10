@@ -1240,10 +1240,12 @@
         const url = new URL(l.url);
         if (!['http:', 'https:'].includes(url.protocol)) throw new Error();
       } catch { l.error = 'Bitte einen vollständigen http://- oder https://-Rezeptlink eingeben.'; render(); return; }
-      if (location.protocol === 'file:') { l.error = 'Der Linkimport benötigt die Online-Version oder den lokalen Server (node server.js → http://localhost:8080).'; render(); return; }
+      const importURL = location.protocol === 'file:'
+        ? 'https://kochapp-rezeptbuch.readyberry.chatgpt.site/api/import-recipe'
+        : '/api/import-recipe';
       l.phase = 'busy'; render();
       try {
-        const response = await fetch('/api/import-recipe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: l.url }) });
+        const response = await fetch(importURL, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: l.url }) });
         const data = await response.json();
         if (!response.ok || !data.recipe) throw new Error(data.error || 'Das Rezept konnte nicht importiert werden.');
         if (ui.link !== l) return;
