@@ -58,7 +58,8 @@
   let toastTimer;
   function toast(msg) {
     const t = $('#toast');
-    t.textContent = msg;
+    t.innerHTML = '<i aria-hidden="true">✓</i><span></span>';
+    t.lastChild.textContent = msg;
     t.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
@@ -1183,8 +1184,27 @@
     $('#dlg-body').innerHTML = html;
     const d = $('#dlg');
     if (d.showModal) { if (!d.open) d.showModal(); } else d.setAttribute('open', '');
+    $('#dlg-body').scrollTop = 0;
   }
   const closeDlg = () => { const d = $('#dlg'); if (d.close) d.close(); else d.removeAttribute('open'); };
+
+  /* Rückfrage im Stil der App statt des Browser-Fensters; liefert true, wenn bestätigt wurde */
+  function ask(title, text, opt = {}) {
+    const d = $('#ask');
+    if (!d.showModal) return Promise.resolve(confirm(title + (text ? '\n\n' + text : '')));
+    return new Promise((done) => {
+      $('#ask-body').innerHTML = `<div class="ask-ic${opt.danger ? ' danger' : ''}" aria-hidden="true">${opt.danger ? '!' : '?'}</div>
+        <h2 id="ask-title">${esc(title)}</h2>${text ? `<p>${esc(text)}</p>` : ''}
+        <div class="btnrow"><button class="btn ghost" type="button" value="no">Abbrechen</button><button class="btn${opt.danger ? ' danger' : ''}" type="button" value="yes">${esc(opt.ok || 'OK')}</button></div>`;
+      let open = true;
+      const finish = (yes) => { if (!open) return; open = false; if (d.open) d.close(); done(yes); };
+      d.querySelectorAll('button').forEach((b) => { b.onclick = () => finish(b.value === 'yes'); });
+      d.onclose = () => finish(false); // Esc
+      d.onclick = (e) => { if (e.target === d) finish(false); }; // Klick neben das Fenster
+      d.showModal();
+      d.querySelector(opt.danger ? 'button[value=no]' : 'button[value=yes]').focus();
+    });
+  }
 
   function recipeDialog(id, f) {
     const r = REC[id];
@@ -1238,9 +1258,9 @@
       render();
       if (result.count === 1 && ui.generationVariant > 1) toast('Aktuell passt nur diese Kochidee zu deinem Vorrat und deinen Filtern.');
     },
-    editgenerated: () => {
+    editgenerated: async () => {
       if (!ui.generated || ui.generationSig !== JSON.stringify([pMode(), S.pantry, S.prefs])) return;
-      if ((ui.draft.title || ui.draft.ings.length || ui.draft.steps.length) && !confirm('Den bisherigen ungespeicherten Rezeptentwurf durch diesen Vorschlag ersetzen?')) return;
+      if ((ui.draft.title || ui.draft.ings.length || ui.draft.steps.length) && !await ask('Rezeptentwurf ersetzen?', 'Dein bisheriger, noch nicht gespeicherter Entwurf wird durch diesen Vorschlag ersetzt.', { ok: 'Ersetzen' })) return;
       ui.draft = JSON.parse(JSON.stringify(ui.generated)); ui.addMode = 'manual';
       S.tab = 'book'; ui.book = 'add'; update(); window.scrollTo(0, 0);
       toast('Vorschlag prüfen und als eigenes Rezept speichern.');
@@ -1266,9 +1286,9 @@
       update(); toast('Zur Einkaufsliste hinzugefügt');
     },
     dserv: (el) => { ui.detailServ = Math.max(1, Math.min(30, ui.detailServ + Number(el.dataset.d))); render(); },
-    delrec: () => {
+    delrec: async () => {
       const r = bookRecipe(ui.selId);
-      if (!r || r.builtin || !confirm(`„${r.title}“ wirklich löschen?`)) return;
+      if (!r || r.builtin || !await ask('Rezept löschen?', `„${r.title}“ wird aus deinem Rezeptbuch und von der Einkaufsliste entfernt.`, { ok: 'Löschen', danger: true })) return;
       S.my = S.my.filter((x) => x.id !== r.id);
       S.list = S.list.filter((l) => l.id !== r.id);
       ui.book = 'library'; update(); toast('Rezept gelöscht');
@@ -1385,7 +1405,7 @@
       ui.focus = 'dis-in'; update();
     },
     deldis: (el) => { S.prefs.dislikes.splice(Number(el.dataset.i), 1); update(); },
-    reset: () => { if (confirm('Wirklich alle gespeicherten Daten löschen?')) { S = DEF(); update(); toast('Zurückgesetzt'); } },
+    reset: async () => { if (await ask('Alle Daten löschen?', 'Eigene Rezepte, Einkaufsliste, Vorrat, Wochenplan und Einstellungen werden unwiderruflich gelöscht.', { ok: 'Alles löschen', danger: true })) { S = DEF(); update(); toast('Zurückgesetzt'); } },
     pmode: (el) => {
       const prev = pMode();
       S.pantryMode = el.dataset.v;
@@ -1416,7 +1436,7 @@
     },
     delp: (el) => { delete S.pantry[el.dataset.id]; update(); },
     demop: () => { S.pantry = Object.assign({}, KA.DEMO_PANTRY); S.sel = []; update(); },
-    clearp: () => { if (confirm('Vorrat wirklich leeren?')) { S.pantry = {}; S.sel = []; update(); } },
+    clearp: async () => { if (await ask('Vorrat leeren?', 'Alle eingetragenen Lebensmittel und Mengen werden entfernt.', { ok: 'Leeren', danger: true })) { S.pantry = {}; S.sel = []; update(); } },
     togglesel: (el) => {
       const id = el.dataset.id;
       S.sel = S.sel.includes(id) ? S.sel.filter((x) => x !== id) : S.sel.concat(id);
@@ -1481,9 +1501,9 @@
     },
     fdflag: (el) => { const f = ui.food, k = el.dataset.v; f.flags = f.flags.includes(k) ? f.flags.filter((x) => x !== k) : f.flags.concat(k); redrawFood(); },
     fdsave: () => saveFood(),
-    fddel: () => {
+    fddel: async () => {
       const f = ui.food;
-      if (!confirm(`„${f.name}“ löschen? Rezepte mit diesem Lebensmittel rechnen es dann nicht mehr mit.`)) return;
+      if (!await ask('Lebensmittel löschen?', `Rezepte mit „${f.name}“ rechnen es dann nicht mehr mit.`, { ok: 'Löschen', danger: true })) return;
       S.foods = S.foods.filter((x) => x.id !== f.id);
       delete S.pantry[f.id];
       ui.food = null; closeDlg(); update(); toast('Lebensmittel gelöscht');
@@ -1499,7 +1519,7 @@
     },
     print: () => window.print(),
     preview: () => { ui.preview = !ui.preview; render(); },
-    order: () => {
+    order: async () => {
       const o = S.order;
       const prov = KA.Providers[o.provider];
       const items = cartOpen();
@@ -1510,7 +1530,7 @@
         setTimeout(() => { const z = $('#zip-in'); if (z) { z.focus(); z.select(); } }, 50);
         return;
       }
-      if (o.provider !== 'mock' && !confirm(`${items.length} Artikel jetzt über „${prov.label}“ bestellen?`)) return;
+      if (o.provider !== 'mock' && !await ask('Jetzt bestellen?', `${items.length} Artikel über „${prov.label}“ bestellen.`, { ok: 'Bestellen' })) return;
       runOrder();
     },
     rewego: () => {

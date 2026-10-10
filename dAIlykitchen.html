@@ -328,16 +328,45 @@ input.flag{background:var(--warm-soft);border-color:var(--warm)} .note{font:500 
 @media print{.printable .slist .nm small{display:none}}
 
 /* ---------- Dialog & Hinweis ---------- */
-dialog{border:0;border-radius:18px;padding:0;max-width:min(640px,94vw);width:100%;background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.35)}
-dialog::backdrop{background:rgba(20,35,28,.35)}
-#dlg-body{padding:28px;max-height:80vh;overflow:auto}
+dialog{border:1px solid var(--line);border-radius:22px;padding:0;max-width:min(640px,94vw);width:100%;background:var(--card);color:var(--ink);overflow:hidden;
+  box-shadow:0 1px 2px rgba(0,0,0,.06),0 32px 80px -16px rgba(12,28,20,.45)}
+dialog[open]{animation:dlg-in .22s cubic-bezier(.2,.9,.3,1.15)}
+dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);animation:dlg-fade .2s ease-out}
+@keyframes dlg-in{from{opacity:0;transform:translateY(14px) scale(.96)}}
+@keyframes dlg-fade{from{opacity:0}}
+#dlg-body{padding:28px 28px 0;max-height:min(82vh,760px);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+#dlg-body>h2:first-child{font:600 24px/1.2 var(--head);letter-spacing:-.01em;margin:0 44px 10px 0}
+#dlg-body>.btnrow:last-child{position:sticky;bottom:0;justify-content:flex-end;margin:22px -28px 0;padding:16px 28px;background:var(--card);border-top:1px solid var(--line2)}
+#dlg-body>:last-child:not(.btnrow){margin-bottom:28px}
+.dlg-x{position:absolute;top:18px;right:18px;z-index:2;width:36px;height:36px;border:0;border-radius:50%;background:var(--side);color:var(--muted);font:400 22px/1 var(--body);cursor:pointer;
+  display:grid;place-items:center;transition:background .15s,color .15s,transform .15s}
+.dlg-x:hover{background:var(--hover);color:var(--ink);transform:rotate(90deg)}
+.dlg-x:focus-visible,#ask .btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+/* Rückfrage (ersetzt das Browser-Fenster von confirm) */
+#ask{max-width:min(420px,92vw)}
+#ask-body{padding:30px 28px 24px;text-align:center}
+#ask-body h2{font:600 21px/1.25 var(--head);letter-spacing:-.01em;margin:0 0 8px}
+#ask-body p{color:var(--muted);margin:0;font-size:15px;line-height:1.5;overflow-wrap:anywhere}
+#ask-body .btnrow{margin-top:24px;flex-wrap:nowrap} #ask-body .btn{flex:1;border:1px solid transparent} #ask-body .btn.ghost{border-color:var(--line)}
+.ask-ic{width:54px;height:54px;border-radius:50%;margin:0 auto 16px;display:grid;place-items:center;background:var(--acc-soft);color:var(--acc-deep);font:700 26px/1 var(--head)}
+.ask-ic.danger{background:color-mix(in srgb,var(--low) 16%,var(--card));color:var(--low)}
+.btn.danger{background:var(--low);color:#fff} .btn.danger:hover{background:color-mix(in srgb,var(--low) 86%,#000)}
+@media (max-width:599px){
+  #dlg{margin:auto 0 0;max-width:100vw;border-radius:22px 22px 0 0;border-width:1px 0 0}
+  #dlg[open]{animation:dlg-up .26s cubic-bezier(.2,.9,.3,1)}
+  #dlg-body{padding:24px 20px 0;max-height:86vh}
+  #dlg-body>.btnrow:last-child{margin:20px -20px 0;padding:14px 20px} #dlg-body>.btnrow:last-child .btn{flex:1}
+}
+@keyframes dlg-up{from{transform:translateY(100%)}}
 .alts{list-style:none;padding:0;margin:.6rem 0}
 .alts button{width:100%;display:grid;grid-template-columns:1fr auto;gap:.1rem .8rem;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 14px;margin-bottom:6px;cursor:pointer}
 .alts button:hover{border-color:var(--acc);background:var(--acc-soft)}
 .alts .muted{grid-column:1} .alts .st{grid-row:1/3;grid-column:2;align-self:center}
 
-#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,2rem);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:10px;opacity:0;pointer-events:none;transition:all .25s;z-index:50;font:500 14px var(--body);box-shadow:0 12px 30px -10px rgba(0,0,0,.4)}
-#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,1.4rem) scale(.96);display:flex;align-items:center;gap:10px;max-width:min(520px,calc(100vw - 32px));background:var(--ink);color:var(--bg);
+  padding:10px 20px 10px 10px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .22s,transform .28s cubic-bezier(.2,.9,.3,1.2);z-index:50;font:500 14px/1.35 var(--body);box-shadow:0 16px 36px -12px rgba(0,0,0,.5)}
+#toast i{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:var(--acc-ink);font:700 14px/1 var(--body);font-style:normal}
+#toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
 @media (max-width:999px){#toast{bottom:96px}}
 
 @media print{
@@ -386,7 +415,8 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   </main>
 </div>
 <nav class="tabbar" id="tabbar" aria-label="Bereiche"></nav>
-<dialog id="dlg"><div id="dlg-body"></div></dialog>
+<dialog id="dlg"><button class="dlg-x" type="button" data-act="closedlg" aria-label="Schließen">×</button><div id="dlg-body"></div></dialog>
+<dialog id="ask" role="alertdialog" aria-labelledby="ask-title"><div id="ask-body"></div></dialog>
 <div id="toast" role="status" aria-live="polite"></div>
 <noscript>Diese App benötigt JavaScript.</noscript>
 <script>
@@ -2944,7 +2974,8 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   let toastTimer;
   function toast(msg) {
     const t = $('#toast');
-    t.textContent = msg;
+    t.innerHTML = '<i aria-hidden="true">✓</i><span></span>';
+    t.lastChild.textContent = msg;
     t.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
@@ -4069,8 +4100,27 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     $('#dlg-body').innerHTML = html;
     const d = $('#dlg');
     if (d.showModal) { if (!d.open) d.showModal(); } else d.setAttribute('open', '');
+    $('#dlg-body').scrollTop = 0;
   }
   const closeDlg = () => { const d = $('#dlg'); if (d.close) d.close(); else d.removeAttribute('open'); };
+
+  /* Rückfrage im Stil der App statt des Browser-Fensters; liefert true, wenn bestätigt wurde */
+  function ask(title, text, opt = {}) {
+    const d = $('#ask');
+    if (!d.showModal) return Promise.resolve(confirm(title + (text ? '\n\n' + text : '')));
+    return new Promise((done) => {
+      $('#ask-body').innerHTML = `<div class="ask-ic${opt.danger ? ' danger' : ''}" aria-hidden="true">${opt.danger ? '!' : '?'}</div>
+        <h2 id="ask-title">${esc(title)}</h2>${text ? `<p>${esc(text)}</p>` : ''}
+        <div class="btnrow"><button class="btn ghost" type="button" value="no">Abbrechen</button><button class="btn${opt.danger ? ' danger' : ''}" type="button" value="yes">${esc(opt.ok || 'OK')}</button></div>`;
+      let open = true;
+      const finish = (yes) => { if (!open) return; open = false; if (d.open) d.close(); done(yes); };
+      d.querySelectorAll('button').forEach((b) => { b.onclick = () => finish(b.value === 'yes'); });
+      d.onclose = () => finish(false); // Esc
+      d.onclick = (e) => { if (e.target === d) finish(false); }; // Klick neben das Fenster
+      d.showModal();
+      d.querySelector(opt.danger ? 'button[value=no]' : 'button[value=yes]').focus();
+    });
+  }
 
   function recipeDialog(id, f) {
     const r = REC[id];
@@ -4124,9 +4174,9 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       render();
       if (result.count === 1 && ui.generationVariant > 1) toast('Aktuell passt nur diese Kochidee zu deinem Vorrat und deinen Filtern.');
     },
-    editgenerated: () => {
+    editgenerated: async () => {
       if (!ui.generated || ui.generationSig !== JSON.stringify([pMode(), S.pantry, S.prefs])) return;
-      if ((ui.draft.title || ui.draft.ings.length || ui.draft.steps.length) && !confirm('Den bisherigen ungespeicherten Rezeptentwurf durch diesen Vorschlag ersetzen?')) return;
+      if ((ui.draft.title || ui.draft.ings.length || ui.draft.steps.length) && !await ask('Rezeptentwurf ersetzen?', 'Dein bisheriger, noch nicht gespeicherter Entwurf wird durch diesen Vorschlag ersetzt.', { ok: 'Ersetzen' })) return;
       ui.draft = JSON.parse(JSON.stringify(ui.generated)); ui.addMode = 'manual';
       S.tab = 'book'; ui.book = 'add'; update(); window.scrollTo(0, 0);
       toast('Vorschlag prüfen und als eigenes Rezept speichern.');
@@ -4152,9 +4202,9 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       update(); toast('Zur Einkaufsliste hinzugefügt');
     },
     dserv: (el) => { ui.detailServ = Math.max(1, Math.min(30, ui.detailServ + Number(el.dataset.d))); render(); },
-    delrec: () => {
+    delrec: async () => {
       const r = bookRecipe(ui.selId);
-      if (!r || r.builtin || !confirm(`„${r.title}“ wirklich löschen?`)) return;
+      if (!r || r.builtin || !await ask('Rezept löschen?', `„${r.title}“ wird aus deinem Rezeptbuch und von der Einkaufsliste entfernt.`, { ok: 'Löschen', danger: true })) return;
       S.my = S.my.filter((x) => x.id !== r.id);
       S.list = S.list.filter((l) => l.id !== r.id);
       ui.book = 'library'; update(); toast('Rezept gelöscht');
@@ -4271,7 +4321,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       ui.focus = 'dis-in'; update();
     },
     deldis: (el) => { S.prefs.dislikes.splice(Number(el.dataset.i), 1); update(); },
-    reset: () => { if (confirm('Wirklich alle gespeicherten Daten löschen?')) { S = DEF(); update(); toast('Zurückgesetzt'); } },
+    reset: async () => { if (await ask('Alle Daten löschen?', 'Eigene Rezepte, Einkaufsliste, Vorrat, Wochenplan und Einstellungen werden unwiderruflich gelöscht.', { ok: 'Alles löschen', danger: true })) { S = DEF(); update(); toast('Zurückgesetzt'); } },
     pmode: (el) => {
       const prev = pMode();
       S.pantryMode = el.dataset.v;
@@ -4302,7 +4352,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     },
     delp: (el) => { delete S.pantry[el.dataset.id]; update(); },
     demop: () => { S.pantry = Object.assign({}, KA.DEMO_PANTRY); S.sel = []; update(); },
-    clearp: () => { if (confirm('Vorrat wirklich leeren?')) { S.pantry = {}; S.sel = []; update(); } },
+    clearp: async () => { if (await ask('Vorrat leeren?', 'Alle eingetragenen Lebensmittel und Mengen werden entfernt.', { ok: 'Leeren', danger: true })) { S.pantry = {}; S.sel = []; update(); } },
     togglesel: (el) => {
       const id = el.dataset.id;
       S.sel = S.sel.includes(id) ? S.sel.filter((x) => x !== id) : S.sel.concat(id);
@@ -4367,9 +4417,9 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     },
     fdflag: (el) => { const f = ui.food, k = el.dataset.v; f.flags = f.flags.includes(k) ? f.flags.filter((x) => x !== k) : f.flags.concat(k); redrawFood(); },
     fdsave: () => saveFood(),
-    fddel: () => {
+    fddel: async () => {
       const f = ui.food;
-      if (!confirm(`„${f.name}“ löschen? Rezepte mit diesem Lebensmittel rechnen es dann nicht mehr mit.`)) return;
+      if (!await ask('Lebensmittel löschen?', `Rezepte mit „${f.name}“ rechnen es dann nicht mehr mit.`, { ok: 'Löschen', danger: true })) return;
       S.foods = S.foods.filter((x) => x.id !== f.id);
       delete S.pantry[f.id];
       ui.food = null; closeDlg(); update(); toast('Lebensmittel gelöscht');
@@ -4385,7 +4435,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     },
     print: () => window.print(),
     preview: () => { ui.preview = !ui.preview; render(); },
-    order: () => {
+    order: async () => {
       const o = S.order;
       const prov = KA.Providers[o.provider];
       const items = cartOpen();
@@ -4396,7 +4446,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
         setTimeout(() => { const z = $('#zip-in'); if (z) { z.focus(); z.select(); } }, 50);
         return;
       }
-      if (o.provider !== 'mock' && !confirm(`${items.length} Artikel jetzt über „${prov.label}“ bestellen?`)) return;
+      if (o.provider !== 'mock' && !await ask('Jetzt bestellen?', `${items.length} Artikel über „${prov.label}“ bestellen.`, { ok: 'Bestellen' })) return;
       runOrder();
     },
     rewego: () => {
