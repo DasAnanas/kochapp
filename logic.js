@@ -64,14 +64,47 @@
     if (!flagCache[r.id]) {
       const s = new Set();
       r.i.forEach(([id]) => ING[id].flags.forEach((f) => s.add(f)));
+      // eigene Rezepte: erkannte Zutaten ohne umrechenbare Menge zählen für die Inhaltsstoffe mit;
+      // bei unbekannten Zutaten sind die Inhaltsstoffe nicht prüfbar
+      (r.free || []).forEach((x) => (x.id && ING[x.id] ? ING[x.id].flags.forEach((f) => s.add(f)) : s.add('unbekannt')));
       flagCache[r.id] = s;
     }
     return flagCache[r.id];
   };
 
+  /* ---------- Eigene Rezepte des Nutzers für Finder und Wochenplan ---------- */
+  const TYPES_BY_CAT = { 'Frühstück': ['f'], 'Hauptgericht': ['m', 'a'], 'Snack': ['s'], 'Backen': ['s'], 'Nachtisch': ['s'], 'Getränke': ['s'] };
+  // Übernimmt eigene Rezepte (Format des Rezeptbuchs) in den Rezeptbestand und liefert, wie viele nutzbar sind.
+  // Die Nährwerte ergeben sich aus den Zutaten, die mit den Stammdaten verknüpft sind (id + base = Menge in der
+  // Grundeinheit des Lebensmittels); die übrigen stehen in r.free. Rezepte ganz ohne verknüpfte Zutat bleiben außen vor.
+  KA.setUserRecipes = (list) => {
+    for (let k = RECIPES.length - 1; k >= 0; k--) {
+      if (!RECIPES[k].user) continue;
+      const id = RECIPES[k].id;
+      RECIPES.splice(k, 1);
+      delete REC[id]; delete perServCache[id]; delete flagCache[id];
+    }
+    let n = 0;
+    (list || []).forEach((u) => {
+      const linked = (x) => x.id && ING[x.id] && x.base > 0;
+      const sum = {};
+      (u.ings || []).filter(linked).forEach((x) => (sum[x.id] = (sum[x.id] || 0) + x.base));
+      if (!Object.keys(sum).length || REC[u.id]) return;
+      const r = {
+        id: u.id, name: u.title, types: TYPES_BY_CAT[u.cat] || ['m', 'a'], time: u.time || 30, diff: u.diff || 2, s: u.serv || 1,
+        i: Object.keys(sum).map((id) => [id, sum[id]]), st: u.steps || [], user: true, free: (u.ings || []).filter((x) => !linked(x)),
+      };
+      RECIPES.push(r);
+      REC[r.id] = r;
+      n++;
+    });
+    return n;
+  };
+
   /* ---------- Präferenzen / Filter ---------- */
   KA.recipeMatches = (r, prefs, slot) => {
     if (slot && !r.types.includes(slot)) return false;
+    if (prefs.onlyMine && !r.user) return false;
     if (prefs.maxTime && r.time > prefs.maxTime) return false;
     if (prefs.maxDiff && r.diff > prefs.maxDiff) return false;
     const flags = KA.recipeFlags(r);
@@ -80,13 +113,14 @@
     for (const d of prefs.diets || []) {
       const def = DIETS[d];
       if (!def) continue;
-      if (def.excl && def.excl.some((f) => flags.has(f))) return false;
+      // unbekannte Zutaten könnten gegen die Ernährungsform verstoßen -> vorsichtshalber ausschließen
+      if (def.excl && (flags.has('unbekannt') || def.excl.some((f) => flags.has(f)))) return false;
       if (def.macro === 'lowcarb' && (n[IDX.carb] * 4) / kcal > 0.3) return false;
       if (def.macro === 'highprotein' && (n[IDX.prot] * 4) / kcal < 0.22) return false;
     }
     const dis = (prefs.dislikes || []).map(KA.norm).filter(Boolean);
     if (dis.length) {
-      const hay = [KA.norm(r.name)].concat(r.i.map(([id]) => KA.norm(ING[id].name) + ' ' + id));
+      const hay = [KA.norm(r.name)].concat(r.i.map(([id]) => KA.norm(ING[id].name) + ' ' + id), (r.free || []).map((x) => KA.norm(x.name)));
       if (dis.some((d) => hay.some((h) => h.includes(d)))) return false;
     }
     return true;
@@ -333,7 +367,7 @@
   }
 
   KA.planSig = (prefs) =>
-    JSON.stringify([prefs.diets, prefs.dislikes, prefs.maxTime, prefs.maxDiff, prefs.meals, prefs.macro && prefs.macro.enabled ? prefs.macro : null, prefs.body && prefs.body.enabled ? prefs.body : null]);
+    JSON.stringify([prefs.diets, prefs.dislikes, prefs.maxTime, prefs.maxDiff, !!prefs.onlyMine, prefs.meals, prefs.macro && prefs.macro.enabled ? prefs.macro : null, prefs.body && prefs.body.enabled ? prefs.body : null]);
 
   KA.slotPool = (prefs, slot) => RECIPES.filter((r) => KA.recipeMatches(r, prefs, slot));
 
@@ -346,7 +380,7 @@
     for (const s of slots) {
       pools[s] = KA.slotPool(prefs, s);
       if (!pools[s].length)
-        return { error: `Für „${MEALS[s].label}“ gibt es mit den aktuellen Filtern kein passendes Rezept. Lockere Ernährungsform, Zeit oder Schwierigkeit.` };
+        return { error: `Für „${MEALS[s].label}“ gibt es mit den aktuellen Filtern kein passendes Rezept. Lockere Ernährungsform, Zeit oder Schwierigkeit${prefs.onlyMine ? ' – oder schalte „Nur meine eigenen Rezepte verwenden“ aus' : ''}.` };
     }
     const mk = (s, r) => ({ slot: s, rid: r.id, f: factorFor(r, T.kcal * share[s]), lock: false });
     const rnd = (a) => a[Math.floor(Math.random() * a.length)];
@@ -430,6 +464,74 @@
     if (subtractPantry) Object.keys(need).forEach((id) => (need[id] = Math.max(0, need[id] - (pantry[id] || 0))));
     return KA.buildList(need, prefs);
   };
+
+  /* ---------- Vorrat: Freitext-Eingabe („3 Bananen, 500 g Reis, Milch“) ---------- */
+  // Typische Packungsgrößen (Basiseinheit) für „1 Packung/Dose …“ oder eine bloße Zahl bei g/ml-Lebensmitteln
+  KA.PACK = {
+    milch: 1000, hafermilch: 1000, joghurt: 500, skyr: 450, quark: 500, feta: 200, mozzarella: 125, parmesan: 100,
+    kaese: 250, butter: 250, kokosmilch: 400, kichererbsen: 400, kidneybohnen: 400, dosentomaten: 400, mais: 300,
+    thunfisch: 150, tomatenmark: 200, tofu: 200, haehnchen: 400, rinderhack: 500, schinken: 125, lachs: 250,
+    garnelen: 250, spinat: 450, erbsen: 450, beeren: 300, champignons: 250, rucola: 125, tomaten: 500, vollkornbrot: 500,
+    eier: 10, tortilla: 8, mandeln: 200, walnuesse: 200, chia: 200, leinsamen: 250, kuerbiskerne: 200, tahin: 250, erdnussmus: 250,
+  };
+  // Durchschnittsgewicht pro Stück bei Lebensmitteln, die in Gramm geführt werden
+  KA.PIECE = { karotten: 80, kartoffeln: 150, tomaten: 100, suesskartoffel: 300, brokkoli: 400, blumenkohl: 700, kuerbis: 1000, lauch: 250, ingwer: 30 };
+  const ALIAS = {
+    kartoffel: 'kartoffeln', mohre: 'karotten', mohren: 'karotten', karotte: 'karotten', moehre: 'karotten', moehren: 'karotten',
+    nudel: 'nudeln', pasta: 'nudeln', spaghetti: 'nudeln', hack: 'rinderhack', hackfleisch: 'rinderhack', ei: 'eier',
+    tomate: 'tomaten', kase: 'kaese', gouda: 'kaese', brot: 'vollkornbrot', wraps: 'tortilla', wrap: 'tortilla', tortillas: 'tortilla',
+    ol: 'olivenoel', oel: 'olivenoel', bohnen: 'kidneybohnen', nusse: 'walnuesse', nuesse: 'walnuesse', hahnchen: 'haehnchen',
+    huhn: 'haehnchen', apfel: 'aepfel', aepfel: 'aepfel', zwiebeln: 'zwiebel', paprikas: 'paprika', zitronen: 'zitrone',
+    knoblauchzehen: 'knoblauch', zehe: 'knoblauch', zehen: 'knoblauch', hafer: 'haferflocken', sahne: null,
+  };
+  const baseName = (s) => KA.norm(s).replace(/\s*\(.*\)\s*/g, '').trim();
+  KA.findIng = (q) => {
+    const n = KA.norm(q).replace(/\s+/g, ' ');
+    if (!n) return null;
+    if (ALIAS[n] !== undefined) return ALIAS[n] ? ING[ALIAS[n]] : null;
+    const all = Object.values(ING);
+    const variants = [n, n.replace(/en$/, ''), n.replace(/n$/, ''), n.replace(/e$/, ''), n.replace(/s$/, ''), n + 'n', n + 'e', n + 'en'];
+    for (const v of variants) {
+      const hit = all.find((i) => i.id === v || KA.norm(i.name) === v || baseName(i.name) === v);
+      if (hit) return hit;
+    }
+    if (n.length < 3) return null;
+    return all.find((i) => baseName(i.name).startsWith(n)) || all.find((i) => KA.norm(i.name).includes(n)) || null;
+  };
+
+  const NUMW = { ein: 1, eine: 1, einen: 1, einer: 1, zwei: 2, drei: 3, vier: 4, funf: 5, fuenf: 5, sechs: 6, sieben: 7, acht: 8, neun: 9, zehn: 10, elf: 11, zwolf: 12, halbe: 0.5, halber: 0.5, halbes: 0.5 };
+  const UNITS = [
+    [/^(g|gr|gramm)$/, 'g'], [/^(kg|kilo|kilogramm)$/, 'kg'], [/^(ml|milliliter)$/, 'ml'], [/^(l|liter)$/, 'l'],
+    [/^(stk|stuck|stueck|x)$/, 'stk'],
+    [/^(pck|pckg|pkg|packung|packungen|packchen|dose|dosen|becher|glas|glaser|glaeser|flasche|flaschen|beutel|tute|tuten|tuete|tueten|netz|schale|schalen|bund)$/, 'pack'],
+  ];
+  // Text -> [{ text, ing, amount (Basiseinheit oder null = Menge offen) }]
+  KA.parsePantry = (text) => String(text || '').split(/[,;\n]+|\s+und\s+/i).map((s) => s.trim()).filter(Boolean).map((raw) => {
+    const words = raw.replace(/(\d)([a-zA-Zäöü])/g, '$1 $2').split(/\s+/);
+    let qty = null, unit = null;
+    const w0 = KA.norm(words[0]).replace(',', '.');
+    if (/^\d+(\.\d+)?$|^\d+\/\d+$|^[½¼¾]$/.test(w0)) {
+      qty = w0.includes('/') ? +w0.split('/')[0] / +w0.split('/')[1] : { '½': 0.5, '¼': 0.25, '¾': 0.75 }[w0] || parseFloat(w0);
+      words.shift();
+    } else if (NUMW[w0] != null && words.length > 1) { qty = NUMW[w0]; words.shift(); }
+    if (words.length > 1) {
+      const u = UNITS.find(([re]) => re.test(KA.norm(words[0]).replace(/\.$/, '')));
+      if (u) { unit = u[1]; words.shift(); }
+    }
+    const ing = KA.findIng(words.join(' '));
+    if (!ing || qty == null) return { text: raw, ing, amount: null };
+    const id = ing.id, pack = KA.PACK[id];
+    let amount;
+    if (ing.unit === 'Stk') {
+      if (unit === 'g' || unit === 'kg' || unit === 'ml' || unit === 'l') amount = KA.toBase(qty, unit) / ing.gpu;
+      else if (unit === 'pack') amount = qty * (pack || 1);
+      else amount = qty;
+    } else if (unit === 'g' || unit === 'kg' || unit === 'ml' || unit === 'l') amount = KA.toBase(qty, unit);
+    else if (unit === 'pack') amount = qty * (pack || (ing.unit === 'ml' ? 1000 : 500));
+    else if (KA.PIECE[id]) amount = qty * KA.PIECE[id];
+    else amount = qty >= 10 ? qty : qty * (pack || (ing.unit === 'ml' ? 1000 : 500));
+    return { text: raw, ing, amount: Math.round(amount * 100) / 100 };
+  });
 
   KA.DEMO_PANTRY = {
     reis: 500, kichererbsen: 400, spinat: 200, zwiebel: 3, eier: 6, paprika: 2, dosentomaten: 800,

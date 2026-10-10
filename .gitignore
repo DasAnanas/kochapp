@@ -5,6 +5,13 @@ desktop.ini
 .vscode/
 .claude/
 
+# Build-Ergebnis: wird nicht eingecheckt, sondern mit desktop\release.ps1 als GitHub-Release veröffentlicht
+Kochapp.exe
+dist/
+
 # Build-Zwischenstände
 *.pdb
 *.tmp
+
+# Entpackte macOS-App (Download wird als ZIP versioniert)
+Kochapp.app/
