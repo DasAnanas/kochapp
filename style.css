@@ -231,8 +231,21 @@ pre.json{background:#10171a;color:#cfe8d8;border-radius:10px;padding:.9rem;overf
 
 /* ---------- Rezeptbuch: Bibliothek ---------- */
 .fchips{margin-bottom:24px}
-.kchips{margin-top:-12px;align-items:center;padding:12px 14px;background:var(--side);border-radius:14px}
-.kchips .flabel{margin:0 4px 0 0}
+/* Küchenauswahl zum Ein- und Ausfahren */
+:root{interpolate-size:allow-keywords}
+details.ksel>summary{list-style:none;display:flex;align-items:center;gap:10px;margin:0;font-weight:500;border-radius:8px;user-select:none}
+details.ksel>summary::-webkit-details-marker{display:none}
+details.ksel>summary .flabel{margin:0}
+details.ksel>summary .ksel-cur{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 13px var(--body);color:var(--acc-deep);background:var(--acc-soft);padding:3px 10px;border-radius:999px}
+details.ksel>summary::after{content:"";flex:none;margin-left:auto;width:8px;height:8px;border:solid var(--muted);border-width:0 2px 2px 0;transform:translateY(-2px) rotate(45deg);transition:transform .22s}
+details.ksel[open]>summary::after{transform:translateY(2px) rotate(-135deg)}
+details.ksel>summary:hover::after{border-color:var(--ink)}
+details.ksel>summary:focus-visible{outline:2.5px solid var(--acc);outline-offset:4px}
+details.ksel::details-content{block-size:0;overflow:clip;transition:block-size .26s ease,content-visibility .26s allow-discrete}
+details.ksel[open]::details-content{block-size:auto}
+details.filt[open] details.ksel>summary{margin-bottom:0}
+.ksel-body{padding-top:12px} .ksel-body .fchips{margin-bottom:0} .ksel-body p{margin:.6rem 0 0}
+details.kbox{margin:-12px 0 24px;padding:12px 14px;background:var(--side);border-radius:14px}
 .kchips button{font-size:13px;padding:5px 12px;background:var(--card)}
 .kchips button i{font-style:normal;opacity:.6;margin-left:2px}
 .bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:14px}

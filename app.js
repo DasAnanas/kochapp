@@ -68,15 +68,20 @@
   /* ---------- Gemeinsame Bausteine ---------- */
   // Küchen, zu denen es Rezepte gibt (in der Reihenfolge von KA.KUECHEN)
   const usedCuisines = () => KA.KUECHEN.filter((k) => KA.RECIPES.some((r) => (r.k || 'International') === k) || (S.prefs.cuisines || []).includes(k));
+  // Küchenauswahl zum Ein- und Ausfahren: Kopfzeile zeigt die aktuelle Auswahl, ein Klick klappt die Liste auf oder zu
+  const cuisineFold = (key, cls, current, inner) => `<details class="ksel ${cls}" data-key="${key}" ${ui.open.has(key) ? 'open' : ''}>
+      <summary><span class="flabel">Küche</span><span class="ksel-cur">${esc(current)}</span></summary><div class="ksel-body">${inner}</div></details>`;
   function filterBar() {
     const p = S.prefs;
+    const ck = p.cuisines || [];
     return `
     <div class="fgroup"><div class="flabel">Ernährung <small>(frei kombinierbar)</small></div>
       <div class="chips">${Object.entries(DIETS).map(([k, d]) =>
         `<label class="chip"><input type="checkbox" data-diet="${k}" ${p.diets.includes(k) ? 'checked' : ''}><span>${esc(d.label)}</span></label>`).join('')}</div></div>
-    <div class="fgroup"><div class="flabel">Küche <small>(keine Auswahl = alle Küchen)</small></div>
-      <div class="chips">${usedCuisines().map((k) =>
-        `<label class="chip"><input type="checkbox" data-cuisine="${esc(k)}" ${(p.cuisines || []).includes(k) ? 'checked' : ''}><span>${esc(k)}</span></label>`).join('')}</div></div>
+    ${cuisineFold('kpref', 'fgroup', !ck.length ? 'alle Küchen' : ck.length > 3 ? ck.length + ' Küchen gewählt' : ck.join(', '),
+      `<div class="chips">${usedCuisines().map((k) =>
+        `<label class="chip"><input type="checkbox" data-cuisine="${esc(k)}" ${ck.includes(k) ? 'checked' : ''}><span>${esc(k)}</span></label>`).join('')}</div>
+      <p class="muted sm">Keine Auswahl = alle Küchen.</p>`)}
     <div class="frow">
       <div class="fgroup"><div class="flabel">Max. Zubereitungszeit</div>
         <div class="seg">${TIMES.map(([v, l]) => `<button class="${p.maxTime === v ? 'on' : ''}" data-act="setTime" data-v="${v}">${l}</button>`).join('')}</div></div>
@@ -787,8 +792,8 @@
   function cuisineChips() {
     const pool = allBook().filter((r) => ui.filter === 'Alle' || r.cat === ui.filter);
     const n = (k) => pool.filter((r) => (r.cuisine || 'International') === k).length;
-    return `<div class="fchips kchips" aria-label="Küche"><span class="flabel">Küche</span>${[['Alle', pool.length]].concat(KA.KUECHEN.map((k) => [k, n(k)]).filter((x) => x[1]))
-      .map(([k, c]) => `<button class="${ui.cuisine === k ? 'on' : ''}" data-act="bookcuisine" data-v="${k}">${k === 'Alle' ? 'Alle Küchen' : k} <i>${c}</i></button>`).join('')}</div>`;
+    return cuisineFold('kbook', 'kbox', ui.cuisine === 'Alle' ? 'Alle Küchen' : ui.cuisine, `<div class="fchips kchips">${[['Alle', pool.length]].concat(KA.KUECHEN.map((k) => [k, n(k)]).filter((x) => x[1]))
+      .map(([k, c]) => `<button class="${ui.cuisine === k ? 'on' : ''}" data-act="bookcuisine" data-v="${k}">${k === 'Alle' ? 'Alle Küchen' : k} <i>${c}</i></button>`).join('')}</div>`);
   }
 
   function viewLibrary() {
@@ -891,7 +896,7 @@
           <div class="fgroup"><div class="flabel">Kategorie</div><div class="fchips">${BOOK_CATS.map((c) => `<button class="${d.cat === c ? 'on' : ''}" data-act="dcat" data-v="${c}">${c}</button>`).join('')}</div></div>
           <div class="fgroup"><div class="flabel">Schwierigkeit</div><div class="seg">${[1, 2, 3].map((v) => `<button class="${d.diff === v ? 'on' : ''}" data-act="ddiff" data-v="${v}">${DIFF[v]}</button>`).join('')}</div></div>
         </div>
-        <div class="fgroup"><div class="flabel">Küche <small>(optional)</small></div><div class="fchips">${KA.KUECHEN.map((k) => `<button class="${d.cuisine === k ? 'on' : ''}" data-act="dcuisine" data-v="${k}">${k}</button>`).join('')}</div></div>
+        ${cuisineFold('kdraft', 'fgroup', d.cuisine || 'keine Angabe (optional)', `<div class="fchips">${KA.KUECHEN.map((k) => `<button class="${d.cuisine === k ? 'on' : ''}" data-act="dcuisine" data-v="${k}">${k}</button>`).join('')}</div>`)}
         </div>
         <label class="drop">Titelbild wählen<input id="d-img" type="file" accept="image/jpeg,image/png,image/webp">${d.image ? `<img src="${esc(d.image)}" alt="Titelbild-Vorschau">` : ''}<span>JPG, PNG oder WebP – wird verkleinert gespeichert. Ohne Foto bekommt das Rezept eine passende Illustration.</span></label>
       </div>
