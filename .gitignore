@@ -12,3 +12,6 @@ dist/
 # Build-Zwischenstände
 *.pdb
 *.tmp
+
+# Entpackte macOS-App (Download wird als ZIP versioniert)
+Kochapp.app/
