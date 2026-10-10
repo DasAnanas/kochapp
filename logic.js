@@ -9,6 +9,12 @@
   const REC = {};
   RECIPES.forEach((r) => (REC[r.id] = r));
   KA.REC = REC;
+  // Kategorie und Küche der mitgelieferten Rezepte (Zuordnung in rezepte.js)
+  const catOfTypes = (t) => (t.includes('m') || t.includes('a') ? 'Hauptgericht' : t.includes('f') ? 'Frühstück' : 'Snack');
+  RECIPES.forEach((r) => {
+    r.cat = ((KA.BUILTIN_META || {})[r.id] || {}).cat || catOfTypes(r.types);
+    r.k = (KA.KUECHE_VON || {})[r.id] || 'International';
+  });
 
   /* ---------- Hilfsfunktionen ---------- */
   KA.norm = (s) =>
@@ -64,22 +70,28 @@
     if (!flagCache[r.id]) {
       const s = new Set();
       r.i.forEach(([id]) => ING[id].flags.forEach((f) => s.add(f)));
-      // eigene Rezepte: erkannte Zutaten ohne umrechenbare Menge zählen für die Inhaltsstoffe mit;
-      // bei unbekannten Zutaten sind die Inhaltsstoffe nicht prüfbar
-      (r.free || []).forEach((x) => (x.id && ING[x.id] ? ING[x.id].flags.forEach((f) => s.add(f)) : s.add('unbekannt')));
+      // Rezeptbuch- und eigene Rezepte: Zutaten ohne umrechenbare Menge zählen für die Inhaltsstoffe mit. Die Tabelle
+      // in rezepte.js ergänzt Zutaten, die nicht in den Lebensmitteldaten stehen (oder dort zu grob erfasst sind);
+      // fehlen sie in beiden, sind die Inhaltsstoffe nicht prüfbar.
+      (r.free || []).forEach((x) => {
+        if (x.id && ING[x.id]) ING[x.id].flags.forEach((f) => s.add(f));
+        else if (!(KA.zutatFlags && KA.zutatFlags(x.name))) s.add('unbekannt');
+      });
+      (r.names || []).forEach((n) => ((KA.zutatFlags && KA.zutatFlags(n)) || []).forEach((f) => s.add(f)));
       flagCache[r.id] = s;
     }
     return flagCache[r.id];
   };
 
-  /* ---------- Eigene Rezepte des Nutzers für Finder und Wochenplan ---------- */
+  /* ---------- Eigene und Rezeptbuch-Rezepte für Finder und Wochenplan ---------- */
   const TYPES_BY_CAT = { 'Frühstück': ['f'], 'Hauptgericht': ['m', 'a'], 'Snack': ['s'], 'Backen': ['s'], 'Nachtisch': ['s'], 'Getränke': ['s'] };
-  // Übernimmt eigene Rezepte (Format des Rezeptbuchs) in den Rezeptbestand und liefert, wie viele nutzbar sind.
-  // Die Nährwerte ergeben sich aus den Zutaten, die mit den Stammdaten verknüpft sind (id + base = Menge in der
-  // Grundeinheit des Lebensmittels); die übrigen stehen in r.free. Rezepte ganz ohne verknüpfte Zutat bleiben außen vor.
-  KA.setUserRecipes = (list) => {
+  // Übernimmt Rezepte im Format des Rezeptbuchs in den Rezeptbestand. Die Nährwerte ergeben sich aus den Zutaten, die mit den
+  // Stammdaten verknüpft sind (id + base = Menge in der Grundeinheit des Lebensmittels); die übrigen stehen in r.free, dann
+  // sind die Nährwerte unvollständig (r.partial). kind: 'user' (eigene, nur mit mindestens einer verknüpften Zutat) oder
+  // 'book' (mitgelieferte Rezeptbuch-Rezepte; nur im Finder, nicht im Wochenplan, weil ihre Nährwerte meist unvollständig sind).
+  function setRecipes(list, kind) {
     for (let k = RECIPES.length - 1; k >= 0; k--) {
-      if (!RECIPES[k].user) continue;
+      if (!RECIPES[k][kind]) continue;
       const id = RECIPES[k].id;
       RECIPES.splice(k, 1);
       delete REC[id]; delete perServCache[id]; delete flagCache[id];
@@ -89,17 +101,22 @@
       const linked = (x) => x.id && ING[x.id] && x.base > 0;
       const sum = {};
       (u.ings || []).filter(linked).forEach((x) => (sum[x.id] = (sum[x.id] || 0) + x.base));
-      if (!Object.keys(sum).length || REC[u.id]) return;
+      if ((kind === 'user' && !Object.keys(sum).length) || REC[u.id]) return;
+      const free = (u.ings || []).filter((x) => !linked(x));
       const r = {
-        id: u.id, name: u.title, types: TYPES_BY_CAT[u.cat] || ['m', 'a'], time: u.time || 30, diff: u.diff || 2, s: u.serv || 1,
-        i: Object.keys(sum).map((id) => [id, sum[id]]), st: u.steps || [], user: true, free: (u.ings || []).filter((x) => !linked(x)),
+        id: u.id, name: u.title, types: TYPES_BY_CAT[u.cat] || ['m', 'a'], cat: u.cat || 'Hauptgericht', k: u.cuisine || 'International',
+        time: u.time || 30, diff: u.diff || 2, s: u.serv || 1, i: Object.keys(sum).map((id) => [id, sum[id]]), st: u.steps || [],
+        free, partial: free.length > 0, names: (u.ings || []).map((x) => x.name),
       };
+      r[kind] = true;
       RECIPES.push(r);
       REC[r.id] = r;
       n++;
     });
     return n;
-  };
+  }
+  KA.setUserRecipes = (list) => setRecipes(list, 'user');
+  KA.setBookRecipes = (list) => setRecipes(list, 'book');
 
   /* ---------- Präferenzen / Filter ---------- */
   KA.recipeMatches = (r, prefs, slot) => {
@@ -107,6 +124,7 @@
     if (prefs.onlyMine && !r.user) return false;
     if (prefs.maxTime && r.time > prefs.maxTime) return false;
     if (prefs.maxDiff && r.diff > prefs.maxDiff) return false;
+    if (prefs.cuisines && prefs.cuisines.length && !prefs.cuisines.includes(r.k || 'International')) return false;
     const flags = KA.recipeFlags(r);
     const n = KA.recipeNutr(r);
     const kcal = n[IDX.kcal] || 1;
@@ -115,6 +133,8 @@
       if (!def) continue;
       // unbekannte Zutaten könnten gegen die Ernährungsform verstoßen -> vorsichtshalber ausschließen
       if (def.excl && (flags.has('unbekannt') || def.excl.some((f) => flags.has(f)))) return false;
+      // Nährwert-Formen lassen sich nur mit vollständigen Nährwerten zusichern
+      if (def.macro && r.partial) return false;
       if (def.macro === 'lowcarb' && (n[IDX.carb] * 4) / kcal > 0.3) return false;
       if (def.macro === 'highprotein' && (n[IDX.prot] * 4) / kcal < 0.22) return false;
     }
@@ -367,9 +387,9 @@
   }
 
   KA.planSig = (prefs) =>
-    JSON.stringify([prefs.diets, prefs.dislikes, prefs.maxTime, prefs.maxDiff, !!prefs.onlyMine, prefs.meals, prefs.macro && prefs.macro.enabled ? prefs.macro : null, prefs.body && prefs.body.enabled ? prefs.body : null]);
+    JSON.stringify([prefs.diets, prefs.cuisines || [], prefs.dislikes, prefs.maxTime, prefs.maxDiff, !!prefs.onlyMine, prefs.meals, prefs.macro && prefs.macro.enabled ? prefs.macro : null, prefs.body && prefs.body.enabled ? prefs.body : null]);
 
-  KA.slotPool = (prefs, slot) => RECIPES.filter((r) => KA.recipeMatches(r, prefs, slot));
+  KA.slotPool = (prefs, slot) => RECIPES.filter((r) => !r.book && KA.recipeMatches(r, prefs, slot));
 
   KA.generatePlan = (prefs, oldPlan) => {
     const slots = KA.activeSlots(prefs);
@@ -380,7 +400,7 @@
     for (const s of slots) {
       pools[s] = KA.slotPool(prefs, s);
       if (!pools[s].length)
-        return { error: `Für „${MEALS[s].label}“ gibt es mit den aktuellen Filtern kein passendes Rezept. Lockere Ernährungsform, Zeit oder Schwierigkeit${prefs.onlyMine ? ' – oder schalte „Nur meine eigenen Rezepte verwenden“ aus' : ''}.` };
+        return { error: `Für „${MEALS[s].label}“ gibt es mit den aktuellen Filtern kein passendes Rezept. Lockere Ernährungsform, Küche, Zeit oder Schwierigkeit${prefs.onlyMine ? ' – oder schalte „Nur meine eigenen Rezepte verwenden“ aus' : ''}.` };
     }
     const mk = (s, r) => ({ slot: s, rid: r.id, f: factorFor(r, T.kcal * share[s]), lock: false });
     const rnd = (a) => a[Math.floor(Math.random() * a.length)];

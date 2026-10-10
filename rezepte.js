@@ -8,9 +8,9 @@
   const KA = (root.KA = root.KA || {});
 
   KA.BOOK_CATS = ['Frühstück', 'Hauptgericht', 'Snack', 'Backen', 'Nachtisch', 'Getränke'];
-  KA.KUECHEN = ['Italienisch', 'Deutsch', 'Mexikanisch', 'Indisch', 'Asiatisch', 'Griechisch', 'Orientalisch', 'Französisch', 'Spanisch', 'Amerikanisch', 'International'];
+  // Küchen: Liste und Zuordnung stehen unten im Abschnitt „Labels“
 
-  // Mitgelieferte Rezepte aus data.js: Küche (bei Hauptgerichten), Bild und ggf. abweichende Kategorie
+  // Mitgelieferte Rezepte aus data.js: Bild und ggf. abweichende Kategorie (Küche: siehe Abschnitt „Labels“)
   KA.BUILTIN_META = {
     'overnight-oats': { img: 'dessert:joghurt,vanille,beere' },
     'oats-vegan': { img: 'suppe:creme,banane,zimt' },
@@ -21,41 +21,41 @@
     'protein-pancakes': { img: 'pancakes:teig,honig,beere' },
     'quark-beeren': { img: 'suppe:joghurt,beere,nuss' },
     'chia-pudding': { img: 'dessert:kokos,sahne,beere' },
-    'tofu-ruehrei': { k: 'International', img: 'teller:mais,brot,paprika' },
-    shakshuka: { k: 'Orientalisch', img: 'ei:tomate,kraut' },
-    'spaghetti-pomodoro': { k: 'Italienisch', img: 'pasta:nudel,tomate,kraut' },
-    'pasta-haehnchen-brokkoli': { k: 'Italienisch', img: 'pasta:nudel,haehnchen,kraut' },
-    'rote-linsen-dal': { k: 'Indisch', img: 'curry:linse,reis,kraut' },
-    'gemuese-curry': { k: 'Indisch', img: 'curry:curry,paprika,spinat' },
-    'haehnchen-reis-pfanne': { k: 'Asiatisch', img: 'teller:reis,paprika,haehnchen' },
-    'lachs-ofenkartoffeln': { k: 'International', img: 'teller:lachs,kartoffel,kraut' },
-    'chili-sin-carne': { k: 'Mexikanisch', img: 'eintopf:tomate,bohne,mais' },
-    'chili-con-carne': { k: 'Mexikanisch', img: 'eintopf:sosse,bohne,mais' },
-    'tofu-pfanne': { k: 'Asiatisch', img: 'bowl:reis,karotte,kraut' },
-    'gemuese-omelett': { k: 'International', img: 'gefaltet:eigelb,paprika,kraut' },
-    'griechischer-quinoa': { k: 'Griechisch', img: 'salat:tomate,ei,oliv' },
-    'quinoa-suesskartoffel': { k: 'International', img: 'bowl:kuerbis,spinat,kichererbse' },
-    kartoffelsuppe: { k: 'Deutsch', img: 'suppe:kartoffel,karotte,kraut' },
-    kuerbissuppe: { k: 'International', img: 'suppe:kuerbis,kokos,kraut' },
-    'ofenpasta-mozzarella': { k: 'Italienisch', img: 'auflauf:tomate,ei,kraut' },
-    'gemuese-lasagne': { k: 'Italienisch', img: 'auflauf:tomate,kaese,kraut' },
-    'gnocchi-spinat': { k: 'Italienisch', img: 'teller:kartoffel,spinat,ei' },
-    'spinat-feta-wraps': { k: 'Griechisch', img: 'wrap:spinat,ei,tomate' },
-    'haehnchen-wraps': { k: 'International', img: 'wrap:haehnchen,paprika,gurke' },
-    'thunfisch-pasta': { k: 'Italienisch', img: 'pasta:nudel,tomate,fisch' },
-    'garnelen-reis': { k: 'Spanisch', img: 'teller:reis,garnele,zitrone' },
-    'hack-kartoffel-auflauf': { k: 'Deutsch', img: 'auflauf:kaese,kruste,kraut' },
-    'spinat-kichererbsen-eintopf': { k: 'Spanisch', img: 'eintopf:tomate,kartoffel,spinat' },
-    'linsen-bolognese': { k: 'Italienisch', img: 'pasta:nudel,sosse,kraut' },
-    'blumenkohl-curry': { k: 'Indisch', img: 'curry:curry,ei,kraut' },
-    'gefuellte-paprika-hack': { k: 'Deutsch', img: 'teller:paprika,reis,kaese' },
-    'gefuellte-paprika-veg': { k: 'International', img: 'teller:paprika,mais,ei' },
-    'pilz-risotto': { k: 'Italienisch', img: 'teller:creme,pilz,kraut' },
-    'ofengemuese-couscous': { k: 'Orientalisch', img: 'bowl:nudel,aubergine,paprika' },
-    'suesskartoffel-burrito': { k: 'Mexikanisch', img: 'wrap:kuerbis,bohne,avocado' },
-    'lachs-quinoa-bowl': { k: 'Asiatisch', img: 'bowl:lachs,avocado,gurke' },
-    'haehnchen-gemuesesuppe': { k: 'Deutsch', img: 'suppe:bruehe,karotte,kraut' },
-    'bratkartoffeln-ei': { k: 'Deutsch', img: 'ei:kartoffel,kraut' },
+    'tofu-ruehrei': { img: 'teller:mais,brot,paprika' },
+    shakshuka: { img: 'ei:tomate,kraut' },
+    'spaghetti-pomodoro': { img: 'pasta:nudel,tomate,kraut' },
+    'pasta-haehnchen-brokkoli': { img: 'pasta:nudel,haehnchen,kraut' },
+    'rote-linsen-dal': { img: 'curry:linse,reis,kraut' },
+    'gemuese-curry': { img: 'curry:curry,paprika,spinat' },
+    'haehnchen-reis-pfanne': { img: 'teller:reis,paprika,haehnchen' },
+    'lachs-ofenkartoffeln': { img: 'teller:lachs,kartoffel,kraut' },
+    'chili-sin-carne': { img: 'eintopf:tomate,bohne,mais' },
+    'chili-con-carne': { img: 'eintopf:sosse,bohne,mais' },
+    'tofu-pfanne': { img: 'bowl:reis,karotte,kraut' },
+    'gemuese-omelett': { img: 'gefaltet:eigelb,paprika,kraut' },
+    'griechischer-quinoa': { img: 'salat:tomate,ei,oliv' },
+    'quinoa-suesskartoffel': { img: 'bowl:kuerbis,spinat,kichererbse' },
+    kartoffelsuppe: { img: 'suppe:kartoffel,karotte,kraut' },
+    kuerbissuppe: { img: 'suppe:kuerbis,kokos,kraut' },
+    'ofenpasta-mozzarella': { img: 'auflauf:tomate,ei,kraut' },
+    'gemuese-lasagne': { img: 'auflauf:tomate,kaese,kraut' },
+    'gnocchi-spinat': { img: 'teller:kartoffel,spinat,ei' },
+    'spinat-feta-wraps': { img: 'wrap:spinat,ei,tomate' },
+    'haehnchen-wraps': { img: 'wrap:haehnchen,paprika,gurke' },
+    'thunfisch-pasta': { img: 'pasta:nudel,tomate,fisch' },
+    'garnelen-reis': { img: 'teller:reis,garnele,zitrone' },
+    'hack-kartoffel-auflauf': { img: 'auflauf:kaese,kruste,kraut' },
+    'spinat-kichererbsen-eintopf': { img: 'eintopf:tomate,kartoffel,spinat' },
+    'linsen-bolognese': { img: 'pasta:nudel,sosse,kraut' },
+    'blumenkohl-curry': { img: 'curry:curry,ei,kraut' },
+    'gefuellte-paprika-hack': { img: 'teller:paprika,reis,kaese' },
+    'gefuellte-paprika-veg': { img: 'teller:paprika,mais,ei' },
+    'pilz-risotto': { img: 'teller:creme,pilz,kraut' },
+    'ofengemuese-couscous': { img: 'bowl:nudel,aubergine,paprika' },
+    'suesskartoffel-burrito': { img: 'wrap:kuerbis,bohne,avocado' },
+    'lachs-quinoa-bowl': { img: 'bowl:lachs,avocado,gurke' },
+    'haehnchen-gemuesesuppe': { img: 'suppe:bruehe,karotte,kraut' },
+    'bratkartoffeln-ei': { img: 'ei:kartoffel,kraut' },
     'gemuesesticks-dip': { img: 'dip:creme,karotte,kraut' },
     'joghurt-nuesse': { img: 'suppe:joghurt,nuss,beere' },
     'apfel-erdnussmus': { img: 'dip:nuss,apfel,nuss' },
@@ -65,9 +65,9 @@
   };
 
   const B = (KA.BOOK = []);
-  let kat = '', kueche = '';
+  let kat = '';
   const r = (id, title, time, serv, img, ings, steps) =>
-    B.push({ id: 'b-' + id, title, cat: kat, cuisine: kat === 'Hauptgericht' ? kueche : '', time, serv, img, ings: ings.split('|'), steps: steps.split('|') });
+    B.push({ id: 'b-' + id, title, cat: kat, time, serv, img, ings: ings.split('|'), steps: steps.split('|') });
 
   /* ==================== Frühstück ==================== */
   kat = 'Frühstück';
@@ -216,7 +216,6 @@
   /* ==================== Hauptgerichte nach Küchen ==================== */
   kat = 'Hauptgericht';
 
-  kueche = 'Italienisch';
   r('pizza-margherita', 'Pizza Margherita', 90, 2, 'pizza:tomate,ei,kraut',
     '300 g Weizenmehl (Typ 00)|7 g Trockenhefe|190 ml Wasser|1 TL Salz|2 EL Olivenöl|200 g Passierte Tomaten|1 TL Oregano|250 g Mozzarella|1 Bund Basilikum',
     'Mehl, Hefe, Salz, Wasser und 1 EL Öl 8 Minuten zu einem glatten Teig kneten und 1 Stunde gehen lassen.|Ofen mit Blech auf höchster Stufe (250 °C) vorheizen.|Teig in 2 Portionen dünn ausziehen, mit gewürzten Tomaten bestreichen und Mozzarella darauf zupfen.|8–10 Minuten backen, mit Basilikum und restlichem Öl servieren.');
@@ -233,7 +232,6 @@
     '1 Zwiebel|2 Karotten|2 Stk Stangensellerie|1 Zucchini|400 g Dosentomaten (gehackt)|1 l Gemüsebrühe|240 g Weiße Bohnen (Dose)|80 g Suppennudeln|2 EL Olivenöl|30 g Parmesan|2 EL Pesto',
     'Zwiebel, Karotten und Sellerie würfeln und in Öl 5 Minuten andünsten.|Zucchini, Tomaten und Brühe zugeben und 15 Minuten köcheln.|Bohnen und Nudeln zufügen und weitere 10 Minuten garen.|Mit Parmesan und einem Klecks Pesto servieren.');
 
-  kueche = 'Deutsch';
   r('kaesespaetzle', 'Allgäuer Käsespätzle', 40, 4, 'auflauf:kaese,zwiebel,kraut',
     '400 g Weizenmehl|4 Eier|150 ml Wasser|1 TL Salz|250 g Bergkäse|3 Zwiebel|30 g Butter|0.5 Bund Schnittlauch',
     'Mehl, Eier, Wasser und Salz zu einem zähen Teig schlagen, bis er Blasen wirft.|Teig portionsweise in kochendes Salzwasser schaben oder drücken, aufschwimmende Spätzle abschöpfen.|Spätzle schichtweise mit geriebenem Käse in eine Form geben und warm halten.|Zwiebelringe in Butter goldbraun rösten und darüber verteilen, mit Schnittlauch bestreuen.');
@@ -262,7 +260,6 @@
     '1.2 kg Rinderbraten (Schaufel)|500 ml Rotwein|250 ml Rotweinessig|2 Zwiebel|1 Karotte|5 Stk Wacholderbeeren|2 Stk Lorbeerblätter|80 g Rosinen|60 g Printen oder Lebkuchen|1 kg Kartoffeln|700 g Rotkohl (Glas)',
     'Fleisch mit Wein, Essig, Gemüse und Gewürzen 3–5 Tage im Kühlschrank marinieren.|Fleisch trocken tupfen, rundum anbraten und mit der Marinade 2,5 Stunden schmoren.|Sauce durchsieben, mit zerbröselten Printen und Rosinen sämig einkochen.|Mit Kartoffelklößen oder Salzkartoffeln und Rotkohl servieren.');
 
-  kueche = 'Mexikanisch';
   r('haehnchen-tacos', 'Hähnchen-Tacos mit Pico de Gallo', 30, 4, 'taco:haehnchen,tomate,avocado',
     '8 Stk Mais-Tortillas (klein)|500 g Hähnchenbrust|1 TL Kreuzkümmel|1 TL Paprikapulver|3 Tomaten|1 Stk rote Zwiebel|1 Limette|0.5 Bund Koriander|1 Avocado|100 g Schmand',
     'Hähnchen in Streifen schneiden, mit Gewürzen und Öl marinieren und scharf anbraten.|Tomaten, Zwiebel und Koriander fein hacken, mit Limettensaft und Salz zu Pico de Gallo mischen.|Tortillas in einer trockenen Pfanne erwärmen.|Mit Hähnchen, Pico de Gallo, Avocado und Schmand füllen.');
@@ -282,7 +279,6 @@
     '1 Zwiebel|2 Zehen Knoblauch|1 Stk Chipotle-Chili|400 g Dosentomaten (gehackt)|1 l Hühnerbrühe|300 g Hähnchenbrust|4 Stk Mais-Tortillas|1 Avocado|100 g Feta|1 Limette',
     'Zwiebel, Knoblauch und Chili anbraten, Tomaten und Brühe zugeben und 15 Minuten köcheln, dann pürieren.|Hähnchen in der Suppe 15 Minuten garen, herausnehmen und zerzupfen.|Tortillas in Streifen schneiden und im Ofen knusprig backen.|Suppe mit Hähnchen, Tortillastreifen, Avocado, Käse und Limette servieren.');
 
-  kueche = 'Indisch';
   r('butter-chicken', 'Butter Chicken', 50, 4, 'curry:orange,haehnchen,kraut',
     '600 g Hähnchenbrust|150 g Naturjoghurt|2 TL Garam Masala|1 Zwiebel|3 Zehen Knoblauch|20 g Ingwer|40 g Butter|400 g Passierte Tomaten|150 ml Sahne|250 g Basmatireis',
     'Hähnchen würfeln und mit Joghurt und 1 TL Garam Masala 30 Minuten marinieren.|Hähnchen in einer Pfanne anbraten und herausnehmen.|Zwiebel, Knoblauch und Ingwer in Butter dünsten, restliches Garam Masala und Tomaten zugeben und 10 Minuten köcheln.|Sahne und Hähnchen zugeben, 10 Minuten ziehen lassen und mit Reis servieren.');
@@ -299,7 +295,6 @@
     '700 g Lammschulter|2 Zwiebel|3 Zehen Knoblauch|20 g Ingwer|2 TL Paprikapulver|1 TL Kreuzkümmel|1 TL Garam Masala|150 g Naturjoghurt|200 g Dosentomaten (gehackt)|250 g Basmatireis',
     'Lamm würfeln und portionsweise kräftig anbraten.|Zwiebeln, Knoblauch und Ingwer im Bratfett dünsten, Gewürze kurz mitrösten.|Joghurt löffelweise einrühren, Tomaten und Fleisch zugeben.|Zugedeckt 75 Minuten schmoren, bis das Fleisch zart ist. Mit Reis servieren.');
 
-  kueche = 'Asiatisch';
   r('pad-thai', 'Pad Thai', 30, 2, 'pasta:nudel,garnele,limette',
     '200 g Reisbandnudeln|200 g Garnelen|2 Eier|150 g Sojasprossen|3 Stk Frühlingszwiebeln|3 EL Fischsauce|2 EL Tamarindenpaste|1 EL Zucker|40 g Erdnüsse|1 Limette',
     'Nudeln in warmem Wasser einweichen.|Garnelen im Wok anbraten, zur Seite schieben und Eier darin stocken lassen.|Nudeln, Fischsauce, Tamarinde und Zucker zugeben und unter Rühren braten.|Sprossen und Frühlingszwiebeln unterheben, mit Erdnüssen und Limette servieren.');
@@ -325,7 +320,6 @@
     '500 g Hähnchenbrust|2 EL Speisestärke|1 Paprika|200 g Ananas|1 Zwiebel|4 EL Ketchup|3 EL Reisessig|2 EL Zucker|2 EL Sojasauce|250 g Reis',
     'Hähnchen würfeln, in Stärke wenden und knusprig braten.|Zwiebel, Paprika und Ananas kurz im Wok braten.|Ketchup, Essig, Zucker, Sojasauce und 100 ml Wasser verrühren und zugeben.|Hähnchen untermischen und mit Reis servieren.');
 
-  kueche = 'Griechisch';
   r('moussaka', 'Moussaka', 100, 6, 'auflauf:creme,kruste,kraut',
     '3 Aubergine|500 g Lammhack|1 Zwiebel|2 Zehen Knoblauch|400 g Dosentomaten (gehackt)|1 TL Zimt|1 TL Oregano|50 g Butter|50 g Weizenmehl|500 ml Milch|1 Eier|60 g Kefalotyri oder Parmesan',
     'Auberginen in Scheiben schneiden, mit Öl bestreichen und im Ofen vorbacken.|Hack mit Zwiebel und Knoblauch braten, Tomaten, Zimt und Oregano zugeben und 15 Minuten köcheln.|Béchamel aus Butter, Mehl und Milch kochen, Ei und die Hälfte des Käses unterrühren.|Auberginen und Hack schichten, mit Béchamel und Käse abschließen und bei 180 °C 45 Minuten backen.');
@@ -342,7 +336,6 @@
     '400 g Makkaroni|500 g Rinderhack|1 Zwiebel|400 g Dosentomaten (gehackt)|1 TL Zimt|60 g Butter|60 g Weizenmehl|700 ml Milch|2 Eier|100 g Parmesan',
     'Makkaroni bissfest kochen.|Hack mit Zwiebel braten, Tomaten und Zimt zugeben und 15 Minuten köcheln.|Béchamel kochen, Eier und Käse unterrühren.|Nudeln, Hack und Béchamel in eine Form schichten und 40 Minuten bei 180 °C goldbraun backen.');
 
-  kueche = 'Orientalisch';
   r('falafel-teller', 'Falafel-Teller mit Hummus', 50, 4, 'kugeln:kraut,sesam,tomate',
     '250 g Getrocknete Kichererbsen|1 Zwiebel|2 Zehen Knoblauch|1 Bund Petersilie|1 TL Kreuzkümmel|1 TL Backpulver|500 ml Sonnenblumenöl|200 g Hummus|2 Tomaten|1 Gurke|4 Stk Fladenbrot',
     'Kichererbsen über Nacht einweichen, abtropfen lassen.|Mit Zwiebel, Knoblauch, Petersilie und Gewürzen fein mixen, Backpulver unterrühren.|Bällchen formen und im heißen Öl 3–4 Minuten frittieren.|Mit Hummus, Tomaten-Gurken-Salat und Fladenbrot servieren.');
@@ -359,7 +352,6 @@
     '300 g Weizenmehl|7 g Trockenhefe|180 ml Wasser|250 g Rinderhack|1 Zwiebel|1 Paprika|2 EL Tomatenmark|1 TL Pul Biber|1 Bund Petersilie|1 Zitrone',
     'Mehl, Hefe, Wasser und Salz zu einem Teig kneten und 40 Minuten gehen lassen.|Hack mit sehr fein gehackter Zwiebel, Paprika, Tomatenmark und Gewürzen verkneten.|Teig in 4 sehr dünne Fladen ausrollen und hauchdünn mit der Hackmasse bestreichen.|Bei 250 °C 8 Minuten backen, mit Petersilie und Zitrone belegen und aufrollen.');
 
-  kueche = 'Französisch';
   r('coq-au-vin', 'Coq au Vin', 110, 4, 'eintopf:rotwein,haehnchen,pilz',
     '1.2 kg Hähnchenteile|150 g Speckwürfel|200 g Champignons|12 Stk Perlzwiebeln|2 Zehen Knoblauch|1 EL Tomatenmark|750 ml Rotwein (Burgunder)|2 Stk Lorbeerblätter|4 Stk Thymianzweige|1 EL Weizenmehl',
     'Hähnchen salzen, rundum anbraten und herausnehmen.|Speck, Zwiebeln und Pilze im Bratfett bräunen, Knoblauch, Tomatenmark und Mehl kurz mitrösten.|Mit Wein ablöschen, Hähnchen und Kräuter zugeben und zugedeckt 75 Minuten schmoren.|Sauce bei Bedarf einkochen und mit Baguette oder Kartoffeln servieren.');
@@ -379,7 +371,6 @@
     '250 g Weizenmehl|150 ml Wasser|2 EL Olivenöl|200 g Schmand|150 g Speckwürfel|2 Zwiebel|1 Prise Muskat',
     'Mehl, Wasser, Öl und Salz zu einem glatten Teig kneten (ohne Hefe).|Sehr dünn ausrollen und auf ein Backpapier legen.|Mit gewürztem Schmand bestreichen, Speck und Zwiebelringe darauf verteilen.|Bei 250 °C 10–12 Minuten knusprig backen.');
 
-  kueche = 'Spanisch';
   r('paella', 'Paella mit Meeresfrüchten', 60, 4, 'teller:curry,garnele,zitrone',
     '300 g Paella-Reis|1 Zwiebel|2 Zehen Knoblauch|1 Paprika|1 Pck Safranfäden|1 TL Paprikapulver (geräuchert)|900 ml Fischfond|300 g Garnelen|300 g Miesmuscheln|150 g Erbsen (TK)|1 Zitrone',
     'Zwiebel, Knoblauch und Paprika in Öl in einer großen Pfanne dünsten.|Reis, Safran und Paprikapulver zugeben und kurz anrösten.|Fond angießen und 15 Minuten ohne Rühren köcheln.|Garnelen, Muscheln und Erbsen darauf verteilen und 10 Minuten garen. Mit Zitrone servieren.');
@@ -396,7 +387,6 @@
     '1 kg Hähnchenschenkel|1 Stk Knoblauchknolle|100 ml Olivenöl|150 ml Weißwein|2 Stk Lorbeerblätter|1 Bund Petersilie|800 g Kartoffeln',
     'Hähnchen in Stücke teilen, salzen und im Öl rundum goldbraun braten.|Ungeschälte Knoblauchzehen und Lorbeer zugeben und 5 Minuten mitbraten.|Mit Wein ablöschen und zugedeckt 25 Minuten schmoren.|Mit Petersilie bestreuen und mit Bratkartoffeln servieren.');
 
-  kueche = 'Amerikanisch';
   r('cheeseburger', 'Klassischer Cheeseburger', 30, 4, 'burger:hack,kaese,tomate',
     '600 g Rinderhack|4 Stk Burger-Brötchen|4 Stk Cheddar (Scheiben)|1 Tomaten|1 Stk rote Zwiebel|4 Stk Salatblätter|4 EL Burgersauce|2 Stk Gewürzgurken',
     'Hack salzen, pfeffern und zu 4 flachen Patties formen.|In einer heißen Pfanne 3–4 Minuten pro Seite braten, zuletzt mit Cheddar belegen und schmelzen lassen.|Brötchen anrösten und mit Sauce bestreichen.|Mit Salat, Tomate, Zwiebel, Gurke und Patty belegen.');
@@ -416,7 +406,6 @@
     '100 g Speckwürfel|1 Zwiebel|2 Stk Stangensellerie|500 g Kartoffeln|500 ml Fischfond|300 g Venusmuscheln (Dose)|250 ml Sahne|1 Bund Petersilie',
     'Speck auslassen, Zwiebel und Sellerie darin dünsten.|Kartoffelwürfel und Fond zugeben und 15 Minuten garen.|Muscheln mit Saft und Sahne zugeben und 5 Minuten ziehen lassen.|Mit Petersilie und Crackern servieren.');
 
-  kueche = 'International';
   r('chili-cheese-ofenkartoffel', 'Gefüllte Ofenkartoffeln', 70, 4, 'teller:kartoffel,creme,kraut',
     '4 Stk Große Kartoffeln|150 g Kräuterquark|100 g Gouda / Schnittkäse|100 g Schinkenwürfel|2 Stk Frühlingszwiebeln',
     'Kartoffeln waschen, einstechen und bei 200 °C 60 Minuten backen.|Aufschneiden und etwas Fruchtfleisch herauslösen.|Mit Schinken und Käse mischen, wieder einfüllen und 10 Minuten überbacken.|Mit Kräuterquark und Frühlingszwiebeln servieren.');
@@ -426,7 +415,6 @@
 
   /* ==================== Backen ==================== */
   kat = 'Backen';
-  kueche = '';
   r('apfelkuchen', 'Gedeckter Apfelkuchen', 90, 12, 'torte:apfel,kruste,zimt',
     '400 g Weizenmehl|200 g Butter|120 g Zucker|1 Pck Vanillezucker|1 Eier|1 TL Backpulver|1.2 kg Aepfel|1 Zitrone|1 TL Zimt|50 g Rosinen|1 EL Puderzucker',
     'Mehl, Backpulver, Butter, Zucker, Vanillezucker und Ei zu einem Mürbeteig kneten und 30 Minuten kühlen.|Äpfel schälen, in Scheiben schneiden und mit Zitronensaft, Zimt und Rosinen mischen.|Zwei Drittel des Teigs in eine Springform mit Rand drücken, Äpfel einfüllen und mit dem restlichen Teig abdecken.|Bei 180 °C 50 Minuten backen und mit Puderzucker bestäuben.');
@@ -703,4 +691,122 @@
   r('gurken-wasser', 'Gurken-Limetten-Wasser', 5, 6, 'glas:wasser,keine,limette',
     '1.5 l Wasser|0.5 Gurke|1 Limette|1 Bund Minze',
     'Gurke und Limette in dünne Scheiben schneiden.|Mit Minze in eine Karaffe geben und mit kaltem Wasser auffüllen.|Mindestens 1 Stunde im Kühlschrank ziehen lassen.');
+
+  /* ==================== Labels ====================
+   * Einzige Quelle für Küche, Schwierigkeit und die Inhaltsstoffe der Zutaten aller mitgelieferten Rezepte.
+   * Ernährungs-Labels (vegan, vegetarisch, glutenfrei …) werden daraus berechnet, nicht von Hand gesetzt.
+   * Prüfen nach Änderungen: node tools/labels-check.mjs
+   */
+  // Reihenfolge = Reihenfolge der Auswahl-Chips. Küchen ohne Rezept werden in Filtern ausgeblendet,
+  // stehen aber für eigene Rezepte zur Wahl.
+  KA.KUECHEN = ['Deutsch', 'Österreichisch', 'Schweizerisch', 'Italienisch', 'Französisch', 'Spanisch', 'Griechisch', 'Britisch',
+    'Skandinavisch', 'Osteuropäisch', 'Türkisch', 'Orientalisch', 'Indisch', 'Thailändisch', 'Vietnamesisch', 'Chinesisch', 'Japanisch',
+    'Koreanisch', 'Asiatisch', 'Mexikanisch', 'Amerikanisch', 'Karibisch', 'Afrikanisch', 'International'];
+
+  // Küche je Rezept (IDs aus data.js und rezepte.js ohne „b-“)
+  const KUECHE = {
+    Deutsch: 'bauernfruehstueck strammer-max griessbrei gefuellte-eier obazda kaesespaetzle rouladen koenigsberger-klopse schnitzel-kartoffelsalat ' +
+      'linseneintopf frikadellen-pueree maultaschen himmel-und-erde sauerbraten apfelkuchen kaesekuchen marmorkuchen zitronenkuchen schwarzwaelder ' +
+      'streuselkuchen butterkuchen hefezopf broetchen vollkornbrot laugenbrezeln donauwelle erdbeerkuchen zwetschgendatschi bienenstich zupfkuchen ' +
+      'milchreis rote-gruetze schokopudding bratapfel dampfnudeln quarkspeise griessflammeri eiskaffee holunder-schorle kinderpunsch rhabarber-schorle ' +
+      'gluehwein kartoffelsuppe hack-kartoffel-auflauf gefuellte-paprika-hack haehnchen-gemuesesuppe bratkartoffeln-ei quark-beeren quark-dip',
+    'Österreichisch': 'vanillekipferl linzer-torte kaiserschmarrn apfelstrudel germknoedel',
+    Schweizerisch: 'bircher-muesli schokofondue',
+    Italienisch: 'caprese-toast bruschetta caprese-spiesse pizza-margherita carbonara arrabbiata saltimbocca minestrone focaccia tiramisu panna-cotta ' +
+      'affogato zitronensorbet zabaione aperol-spritz spaghetti-pomodoro pasta-haehnchen-brokkoli ofenpasta-mozzarella gemuese-lasagne gnocchi-spinat ' +
+      'thunfisch-pasta linsen-bolognese pilz-risotto',
+    'Französisch': 'coq-au-vin ratatouille quiche-lorraine boeuf-bourguignon zwiebelsuppe flammkuchen baguette madeleines mousse-au-chocolat ' +
+      'creme-brulee lava-cake crepes',
+    Spanisch: 'patatas-bravas datteln-speck paella tortilla-espanola gazpacho albondigas pollo-al-ajillo churros sangria garnelen-reis spinat-kichererbsen-eintopf',
+    Griechisch: 'tzatziki-gemuese moussaka gyros-tzatziki souvlaki briam pastitsio spanakopita frappe griechischer-quinoa spinat-feta-wraps',
+    Britisch: 'scones eton-mess apfel-crumble trifle',
+    'Türkisch': 'menemen koefte-bulgur lahmacun baklava ayran',
+    Orientalisch: 'hummus baba-ganoush falafel-teller haehnchen-tajine mujaddara minztee shakshuka ofengemuese-couscous',
+    Indisch: 'butter-chicken chana-masala palak-paneer gemuese-biryani rogan-josh mango-lassi chai-latte golden-milk rote-linsen-dal gemuese-curry blumenkohl-curry',
+    'Thailändisch': 'pad-thai gruenes-thai-curry mango-sticky-rice',
+    Vietnamesisch: 'sommerrollen pho-bo',
+    Chinesisch: 'gebratener-reis suess-sauer bubble-tea',
+    Japanisch: 'tamagoyaki edamame gurken-maki ramen teriyaki-haehnchen matcha-latte',
+    Koreanisch: 'bibimbap',
+    Asiatisch: 'haehnchen-reis-pfanne tofu-pfanne lachs-quinoa-bowl',
+    Mexikanisch: 'huevos-rancheros fruehstuecks-burrito guacamole nachos-ueberbacken haehnchen-tacos enchiladas quesadillas fajitas burrito-bowl ' +
+      'sopa-de-tortilla agua-fresca horchata chili-sin-carne chili-con-carne suesskartoffel-burrito',
+    Amerikanisch: 'pancakes french-toast granola eggs-benedict lachs-bagel pb-bananen-toast mozzarella-sticks cheeseburger mac-and-cheese pulled-pork ' +
+      'jambalaya meatloaf clam-chowder bananenbrot brownies schokomuffins blaubeermuffins karottenkuchen cookies banana-split erdbeer-milchshake',
+    International: 'waffeln smoothie-bowl kaese-schinken-omelett ei-muffins huettenkaese-bowl buchweizen-porridge ofen-kichererbsen zimt-popcorn ' +
+      'energy-balls muesliriegel suesskartoffel-pommes gemuesechips obstspiesse gewuerznuesse joghurt-bites wrap-roellchen chili-cheese-ofenkartoffel ' +
+      'buddha-bowl zimtschnecken pizzaschnecken pavlova vanilleeis nicecream erdbeer-bananen-smoothie heisse-schokolade pfirsich-eistee ' +
+      'zitronenlimonade ingwer-shot bananenmilch virgin-mojito virgin-pina-colada ingwer-zitronen-tee protein-shake gurken-wasser overnight-oats ' +
+      'oats-vegan ruehrei-spinat skyr-bowl porridge-apfel avocado-toast tofu-ruehrei protein-pancakes chia-pudding lachs-ofenkartoffeln ' +
+      'gemuese-omelett quinoa-suesskartoffel kuerbissuppe haehnchen-wraps gefuellte-paprika-veg gemuesesticks-dip joghurt-nuesse apfel-erdnussmus ' +
+      'hafer-kekse gruener-smoothie',
+  };
+  KA.KUECHE_VON = {};
+  Object.keys(KUECHE).forEach((k) => KUECHE[k].split(/\s+/).forEach((id) => (KA.KUECHE_VON[id] = k)));
+
+  // Schwierigkeit der Rezeptbuch-Rezepte (1 einfach, 2 mittel, 3 anspruchsvoll); die Rezepte aus data.js haben sie bereits
+  const DIFF = {
+    3: 'eggs-benedict moussaka pastitsio schwarzwaelder laugenbrezeln donauwelle baguette bienenstich apfelstrudel germknoedel dampfnudeln',
+    2: 'huevos-rancheros fruehstuecks-burrito tamagoyaki patatas-bravas sommerrollen mozzarella-sticks gurken-maki pizza-margherita carbonara ' +
+      'saltimbocca kaesespaetzle rouladen koenigsberger-klopse schnitzel-kartoffelsalat frikadellen-pueree sauerbraten haehnchen-tacos enchiladas ' +
+      'burrito-bowl sopa-de-tortilla butter-chicken palak-paneer gemuese-biryani rogan-josh pad-thai ramen bibimbap pho-bo suess-sauer gyros-tzatziki ' +
+      'falafel-teller haehnchen-tajine koefte-bulgur mujaddara lahmacun coq-au-vin quiche-lorraine boeuf-bourguignon zwiebelsuppe flammkuchen paella ' +
+      'tortilla-espanola albondigas pulled-pork jambalaya clam-chowder apfelkuchen kaesekuchen karottenkuchen streuselkuchen butterkuchen hefezopf ' +
+      'broetchen vollkornbrot vanillekipferl erdbeerkuchen zwetschgendatschi linzer-torte madeleines zupfkuchen spanakopita tiramisu mousse-au-chocolat ' +
+      'creme-brulee kaiserschmarrn pavlova zitronensorbet vanilleeis lava-cake mango-sticky-rice churros baklava zabaione',
+  };
+  KA.DIFF_VON = {};
+  Object.keys(DIFF).forEach((d) => DIFF[d].split(/\s+/).forEach((id) => (KA.DIFF_VON[id] = Number(d))));
+  B.forEach((b) => {
+    const id = b.id.slice(2);
+    b.cuisine = KA.KUECHE_VON[id] || 'International';
+    b.diff = KA.DIFF_VON[id] || 1;
+  });
+
+  // Inhaltsstoffe von Zutaten, die nicht (oder nicht genau genug) in den Lebensmitteldaten stehen.
+  // Schlüssel: Zutatenname in Kleinbuchstaben ohne Umlaute und ohne Klammerzusatz („Bacon (Scheiben)“ -> „bacon“).
+  // Leerer Eintrag = geprüft, enthält nichts davon. Diese Angaben ergänzen die Flags aus data.js.
+  const ZUTATEN = {
+    'fleisch schwein': 'bacon|blutwurst|chorizo|guanciale oder pancetta|parmaschinken|schweinebauch|schweinenacken|schweineschnitzel|' +
+      'schweineschulter|wiener wurstchen|gemischtes hackfleisch|kochschinken|speckwurfel|schinkenwurfel',
+    fleisch: 'hahnchenschenkel|hahnchenteile|huhnerbruhe|kalbsschnitzel|lammhack|lammschulter|rinderbraten|rinderbruhe|rinderfilet|rinderfond|' +
+      'rinderhuftsteak|rinderrouladen',
+    'fleisch gluten ei': 'maultaschen',
+    fisch: 'fischfond|fischsauce|worcestersauce',
+    schalentier: 'miesmuscheln|venusmuscheln|grune currypaste',
+    milch: 'bergkase|camembert|cheddar|clotted cream|ghee|gruyere|krauterquark|mascarpone|mini-mozzarella|paneer|pecorino|ziegenfrischkase|' +
+      'tzatziki|vanillepudding|vanillesosse|schokososse|schokoraspel|schokotropfen',
+    'milch ei': 'kugeln eis|kugeln vanilleeis',
+    ei: 'eigelb|eiweiss|baisers|aioli|burgersauce',
+    gluten: 'bagels|bauernbrot|brotchen|burger-brotchen|ciabatta|dinkelvollkornmehl|english muffins|filoteig|fladenbrot|laugenbrezeln|makkaroni|' +
+      'pita-brote|pizzateig|ramen-nudeln|strudelteig|vollkorntoast|weichweizengriess|bulgur',
+    'gluten ei': 'loffelbiskuits|biskuitboden|suppennudeln',
+    'gluten nuss': 'granola',
+    'gluten ei nuss': 'amarettini',
+    'gluten nuss honig': 'printen oder lebkuchen',
+    nuss: 'gehackte nusse|nussmischung|pistazien|marzipan|mandelblattchen',
+    'nuss milch': 'pesto',
+    sesam: 'sesamol|hummus',
+    'soja gluten': 'gochujang',
+    alkohol: 'amaretto|aperol|brandy|kirschwasser|marsala|prosecco|rotwein|weisswein|mirin',
+    gelatine: 'gelatineblatter',
+    '': 'aepfel|agavendicksaft|ananassaft|ananasstucke|backpulver|balsamico-creme|basilikumblatter|bbq-rub|bbq-sauce|biryani-gewurz|' +
+      'cajun-gewurz|chiliflocken|chilipulver|chilischote|chipotle-chili|cocktailkirschen|cranberrys|crushed ice|dill|eiswurfel|erdbeermarmelade|' +
+      'espresso|fruchtetee|fruhlingszwiebeln|garam masala|gewurzgurken|grune chilischote|gruner tee|guacamole|gyrosgewurz|hagelsalz|hagelzucker|' +
+      'himbeermarmelade|holunderblutensirup|ingwerpulver|instantkaffee|jalapeno|jalapenos|jasminreis|kaffee|kapern|kardamom|kardamomkapseln|' +
+      'kirschsaft|kirschtomaten|kiwi|klebreis|knoblauchknolle|kokosol|kokosraspeln|koriander|krauter der provence|kreuzkummel|kummel|kurkuma|' +
+      'limette|lorbeerblatter|mais-tortillas|majoran|mandarinen|mangos|matcha-pulver|meersalz|milchreis|minzblatter|minze|muskat|nana-minze|' +
+      'natron|nelken|noriblatt|noriblatter|orangenscheibe|oregano|paella-reis|pak choi|passionsfrucht|perlzwiebeln|pfirsich|pfirsiche|' +
+      'pflaumenmus|popcornmais|puderzucker|pul biber|reisbandnudeln|reisessig|reisnudeln|reispapier|rhabarber|rohrzucker|rosmarinzweige|' +
+      'rotweinessig|safranfaden|sahnesteif|salatblatter|salbeiblatter|salsa|salzzitronen|sauerkirschen|schwarzteebeutel|sherryessig|sodawasser|' +
+      'sojasprossen|spitzpaprika|sprudelwasser|sternanis|sushireis|tamarindenpaste|tapiokaperlen|thai-basilikum|thymianzweige|tomatensauce|' +
+      'tortenguss|tortilla-chips|trockenhefe|vanilleextrakt|vanillepuddingpulver|vanilleschote|vanillesossenpulver|vanillezucker|wacholderbeeren|' +
+      'wassermelone|zartbitterkuverture|zimtstange|zimtstangen|zimtzucker|zuckerschoten|zwetschgen|zwetschgenroster|gemahlener mohn',
+  };
+  KA.ZUTAT_FLAGS = {};
+  Object.keys(ZUTATEN).forEach((f) => ZUTATEN[f].split('|').forEach((n) => (KA.ZUTAT_FLAGS[n] = f ? f.split(' ') : [])));
+  // Schlüssel zu einem Zutatennamen; liefert die Flags oder undefined, wenn die Zutat nicht erfasst ist
+  KA.zutatKey = (name) => String(name || '').toLowerCase().replace(/ß/g, 'ss').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+  KA.zutatFlags = (name) => KA.ZUTAT_FLAGS[KA.zutatKey(name)];
 })(typeof window !== 'undefined' ? window : globalThis);

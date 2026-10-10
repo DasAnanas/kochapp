@@ -38,16 +38,17 @@
 
   // Ernährungsformen: ausgeschlossene Inhaltsstoff-Flags
   KA.DIETS = {
-    vegan:        { label: 'Vegan',            excl: ['fleisch', 'fisch', 'schalentier', 'milch', 'ei', 'honig'] },
-    vegetarisch:  { label: 'Vegetarisch',      excl: ['fleisch', 'fisch', 'schalentier'] },
-    pescetarisch: { label: 'Pescetarisch',     excl: ['fleisch'] },
+    vegan:        { label: 'Vegan',            excl: ['fleisch', 'fisch', 'schalentier', 'milch', 'ei', 'honig', 'gelatine'] },
+    vegetarisch:  { label: 'Vegetarisch',      excl: ['fleisch', 'fisch', 'schalentier', 'gelatine'] },
+    pescetarisch: { label: 'Pescetarisch',     excl: ['fleisch', 'gelatine'] },
     glutenfrei:   { label: 'Glutenfrei',       excl: ['gluten'] },
     laktosefrei:  { label: 'Laktosefrei',      excl: ['milch'] },
     nussfrei:     { label: 'Nussfrei',         excl: ['nuss', 'erdnuss'] },
     eifrei:       { label: 'Eifrei',           excl: ['ei'] },
     sojafrei:     { label: 'Sojafrei',         excl: ['soja'] },
     sesamfrei:    { label: 'Sesamfrei',        excl: ['sesam'] },
-    halal:        { label: 'Halal (ohne Schwein)', excl: ['schwein', 'alkohol'] },
+    halal:        { label: 'Halal (ohne Schwein)', excl: ['schwein', 'alkohol', 'gelatine'] },
+    alkoholfrei:  { label: 'Ohne Alkohol',     excl: ['alkohol'] },
     lowcarb:      { label: 'Low Carb',         macro: 'lowcarb' },
     highprotein:  { label: 'High Protein',     macro: 'highprotein' },
   };
