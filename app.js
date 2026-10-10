@@ -416,7 +416,7 @@
   // „200 g Mehl“ -> { qty, unit, name }
   function parseLine(t) {
     t = t.trim();
-    const m = t.match(/^([\d.,½¼¾\/]+)?\s*(kg|g|ml|l|EL|TL|Stk|Zehen?|Prise|Bund|Dose|Becher|Pck)?\.?\s+(.+)$/i);
+    const m = t.match(/^([\d.,½¼¾\/]+)?\s*(kg|g|ml|l|EL|TL|Stk|Stück|Zehen?|Prisen?|Bund|Dosen?|Becher|Pck|Packung)?\.?\s+(.+)$/i);
     if (!m || (!m[1] && !m[2])) return { qty: null, unit: '', name: t };
     let q = null;
     if (m[1]) {
@@ -428,15 +428,46 @@
 
   // Verknüpft eine freie Zutat mit den Stammdaten, wenn Name und Einheit eindeutig passen
   // (dann greifen Kategorien, Preise und das Zusammenfassen auf der Einkaufsliste).
+  // Ergebnis: die Zutat wie eingetippt (qty, unit, name) plus id des Lebensmittels und base = Menge in dessen
+  // Grundeinheit (g, ml oder Stk). base ist null, wenn sich die Einheit nicht umrechnen lässt.
+  let nameIndex = null;
+  function findFood(name) {
+    if (!nameIndex) {
+      nameIndex = {};
+      const put = (n, i) => { const k = KA.norm(n); if (k && !nameIndex[k]) nameIndex[k] = i; };
+      Object.values(ING).forEach((i) => put(i.name, i));
+      Object.values(ING).forEach((i) => (i.meta.a || []).forEach((n) => put(n, i)));
+    }
+    const n = KA.norm(name);
+    const head = n.split(/[,(]/)[0].trim(); // „Paprikapulver, edelsüß“ -> „paprikapulver“
+    const words = head.split(/\s+/);
+    const tries = [n, head, head.replace(/^bio[- ]?/, ''), words.length > 1 ? words[words.length - 1] : '']; // „rote Zwiebel“ -> „zwiebel“
+    for (const t of tries) if (t && nameIndex[t]) return nameIndex[t];
+    return null;
+  }
+  const UNIT_KEY = { g: 'g', kg: 'kg', ml: 'ml', l: 'l', el: 'el', tl: 'tl', prise: 'prise', prisen: 'prise', bund: 'bund', dose: 'dose', dosen: 'dose',
+    becher: 'becher', pck: 'pck', packung: 'pck', stk: 'stk', 'stück': 'stk', zehe: 'stk', zehen: 'stk' };
+  // Haushaltsmaße sind Näherungen (Gewichte je Lebensmittel in data.js, KA.ING_META)
+  function toBaseAmount(ing, qty, unit) {
+    const u = UNIT_KEY[(unit || 'stk').toLowerCase()];
+    const m = ing.meta;
+    if (ing.unit === 'Stk') return u === 'stk' ? qty : u === 'g' ? qty / ing.gpu : u === 'kg' ? (qty * 1000) / ing.gpu : null;
+    if (u === 'g' || u === 'ml') return qty; // bei Flüssigkeiten 1 g ≈ 1 ml
+    if (u === 'kg' || u === 'l') return qty * 1000;
+    const tl = ing.unit === 'ml' ? 5 : m.tl;
+    if (u === 'tl' && tl) return qty * tl;
+    if (u === 'el' && tl) return qty * tl * 3;
+    if (u === 'prise' && ing.unit === 'g') return qty * 0.4;
+    if (m[u]) return qty * m[u];
+    return null;
+  }
   function linkIng(p) {
-    if (p.id || p.qty == null) return p;
-    const n = KA.norm(p.name);
-    const ing = Object.values(ING).find((i) => KA.norm(i.name) === n);
-    if (!ing) return p;
-    const u = (p.unit || '').toLowerCase();
-    const ok = ing.unit === 'g' ? ['g', 'kg'] : ing.unit === 'ml' ? ['ml', 'l'] : ['stk'];
-    if (!ok.includes(u)) return p;
-    return { id: ing.id, qty: KA.toBase(p.qty, u), unit: ing.unit, name: ing.name };
+    const ing = findFood(p.name);
+    const out = { qty: p.qty, unit: p.unit, name: p.name };
+    if (!ing) return out;
+    out.id = ing.id;
+    out.base = p.qty == null ? null : toBaseAmount(ing, p.qty, p.unit);
+    return out;
   }
 
   const hash = (s) => Array.from(s).reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -447,7 +478,7 @@
     if (!r || r.user) return S.my.find((x) => x.id === id) || null;
     return {
       id, title: r.name, cat: builtinCat(r), time: r.time, serv: r.s, source: 'Kochapp', builtin: true, tone: hash(id) % TONES.length,
-      ings: r.i.map(([iid, a]) => ({ id: iid, qty: a, unit: ING[iid].unit, name: ING[iid].name })), steps: r.st,
+      ings: r.i.map(([iid, a]) => ({ id: iid, qty: a, base: a, unit: ING[iid].unit, name: ING[iid].name, std: true })), steps: r.st,
     };
   }
   const builtins = () => KA.RECIPES.filter((r) => !r.user);
@@ -456,6 +487,10 @@
   // Eigene Rezepte in Finder und Wochenplan bereitstellen; Verweise auf gelöschte Rezepte aufräumen
   let usableMine = 0;
   function syncRecipes() {
+    // Zutaten (neu) mit den Stammdaten verknüpfen – auch für Rezepte aus älteren Versionen
+    S.my.forEach((r) => {
+      r.ings = r.ings.map((i) => (i.id && i.base === undefined ? Object.assign({}, i, { base: i.qty }) : i.id ? i : linkIng(i)));
+    });
     usableMine = KA.setUserRecipes(S.my);
     S.sel = S.sel.filter((id) => REC[id]);
     if (S.plan && S.plan.days.some((day) => day.some((m) => !REC[m.rid]))) S.plan = null;
@@ -477,7 +512,8 @@
   const planList = () => KA.planShopping(S.plan, S.prefs, S.pantry, S.subPantry)
     .concat(freeItems(S.plan.days.reduce((all, day) => all.concat(day.map((m) => ({ rid: m.rid, k: (m.f * (S.prefs.persons || 1)) / REC[m.rid].s }))), [])));
   const srcLabel = (r) => (r.source === 'Web' ? 'Web · ' + r.domain : r.source);
-  const ingQty = (i, f) => (i.qty == null ? i.unit || '' : i.id ? KA.fmtAmount(i.id, i.qty * f) : fmtQ(i.qty * f, i.unit));
+  // mitgelieferte Rezepte in Stammdaten-Einheiten, eigene so, wie sie eingetippt wurden
+  const ingQty = (i, f) => (i.qty == null ? i.unit || '' : i.std ? KA.fmtAmount(i.id, i.base * f) : fmtQ(i.qty * f, i.unit));
   const toneStyle = (r) => `--a:${TONES[r.tone % TONES.length][0]};--b:${TONES[r.tone % TONES.length][1]}`;
   const recImg = (r) => (r.image ? `<img src="${esc(r.image)}" alt="${esc(r.title)}">` : '');
 
@@ -506,11 +542,28 @@
       <div class="bgrid" id="bk-cards">${bookCards()}</div>`;
   }
 
+  // Nährwerte einer Portion, zusammengerechnet aus den Zutaten (Werte je 100 g aus den Stammdaten)
+  function nutritionCard(r, base) {
+    if (!base) return '<div class="card ingcard"><h2>Nährwerte</h2><p class="muted">Für dieses Rezept lassen sich keine Nährwerte berechnen: Keine Zutat wurde als bekanntes Lebensmittel mit Menge erkannt.</p></div>';
+    const n = KA.recipeNutr(base);
+    const T = KA.targets(S.prefs);
+    const rows = NUTRIENTS.map((nu, i) => {
+      const pct = (n[i] / T[nu.k]) * 100;
+      return `<div class="nurow"><span>${nu.label}</span><b>${KA.fmtNum(n[i], n[i] < 10 ? 1 : 0)} ${nu.unit}</b><div class="bar"><i style="width:${Math.min(100, pct)}%"></i></div><span class="muted">${r0(pct)} %</span></div>`;
+    }).join('');
+    // eigene Rezepte: offenlegen, welche Zutaten in die Rechnung eingehen
+    const open = r.builtin ? [] : r.ings.filter((i) => !(i.id && i.base > 0)).map((i) => i.name);
+    const counted = r.builtin ? '' : `<p class="${open.length ? 'warn' : 'muted sm'}">${r.ings.length - open.length} von ${r.ings.length} Zutaten berücksichtigt${
+      open.length ? ` – nicht eingerechnet: ${esc(open.join(', '))}. Die tatsächlichen Werte liegen höher.` : '.'}</p>`;
+    return `<div class="card ingcard"><div class="lh"><h2>Nährwerte</h2><span class="muted sm">pro Portion · % vom Tagesbedarf</span></div>${rows}${counted}
+      <p class="muted sm">Berechnet aus den Zutaten. Lebensmittelwerte: Schweizer Nährwertdatenbank (BLV), geprüft gegen USDA FoodData Central. Näherungswerte, keine Ernährungsberatung.</p></div>`;
+  }
+
   function viewDetail() {
     const r = bookRecipe(ui.selId);
     const f = ui.detailServ / r.serv;
     const inL = S.list.find((l) => l.id === r.id);
-    const base = r.builtin ? REC[r.id] : null;
+    const base = REC[r.id] || null; // fehlt bei eigenen Rezepten ohne erkannte Zutat
     const fact = (l, v) => `<div><span>${l}</span><b>${v}</b></div>`;
     return `<div class="detail">
       <button class="back" data-act="booklib">← Alle Rezepte</button>
@@ -523,13 +576,12 @@
         <div class="servbox"><span class="muted">Portionen</span>
           <div class="step"><button data-act="dserv" data-d="-1" aria-label="Weniger">−</button><span>${persons(ui.detailServ)}</span><button data-act="dserv" data-d="1" aria-label="Mehr">+</button></div>
           <button class="btn dark" data-act="addlistd">${inL ? (inL.serv === ui.detailServ ? '✓ Auf der Liste' : 'Liste aktualisieren') : 'Auf Einkaufsliste'}</button></div>
-        ${r.builtin ? '' : `<p class="muted sm">${REC[r.id]
-          ? `Im Vorrats-Finder und Wochenplan nutzbar – ${REC[r.id].i.length} von ${r.ings.length} Zutaten sind mit Nährwerten verknüpft.`
-          : 'Nicht im Vorrats-Finder und Wochenplan nutzbar: Keine Zutat ist mit der Lebensmittelliste verknüpft (Name wie bei „Mein Vorrat“, Menge in g, ml oder Stk).'}</p>`}
+        ${r.builtin ? '' : `<p class="muted sm">${base ? 'Im Vorrats-Finder und Wochenplan nutzbar.' : 'Nicht im Vorrats-Finder und Wochenplan nutzbar: Keine Zutat wurde als bekanntes Lebensmittel mit Menge erkannt.'}</p>`}
       </div><div class="dt-img" style="${toneStyle(r)}">${recImg(r)}</div></div>
       <div class="dt-body">
-        <div class="card ingcard"><div class="lh"><h2>Zutaten</h2><span class="muted sm">für ${persons(ui.detailServ)}</span></div>
+        <div class="col"><div class="card ingcard"><div class="lh"><h2>Zutaten</h2><span class="muted sm">für ${persons(ui.detailServ)}</span></div>
           ${r.ings.map((i) => `<div class="irow"><span class="${f !== 1 ? 'chg' : ''}">${esc(ingQty(i, f))}</span><span>${esc(i.name)}</span></div>`).join('')}</div>
+        ${nutritionCard(r, base)}</div>
         <div><h2>Zubereitung</h2>
           ${r.steps.length ? r.steps.map((s, k) => `<div class="srow"><span>${k + 1}</span><p>${esc(s)}</p></div>`).join('') : '<p class="muted">Keine Schritte hinterlegt.</p>'}
           ${r.builtin ? '' : '<div class="btnrow"><button class="btn ghost" data-act="delrec">Rezept löschen</button></div>'}</div>
@@ -551,11 +603,14 @@
     ['link', '03', 'Linkimport (Demo)', 'Demo mit einem Beispielrezept; kein echter Webimport.']];
   let demoTimer;
 
+  const linkHint = (l) => (!l.id ? '· kein bekanntes Lebensmittel – ohne Nährwerte'
+    : l.base > 0 ? `✓ Nährwerte: ${esc(ING[l.id].name)} (≈ ${esc(KA.fmtAmount(l.id, l.base))})`
+      : `· ${esc(ING[l.id].name)} erkannt, aber ${l.qty == null ? 'ohne Menge' : 'Einheit nicht umrechenbar'} – ohne Nährwerte`);
   const previewHTML = (text) => {
     if (!text.trim()) return '';
     const p = parseLine(text);
     return `<span>Erkannt:</span><b>${esc(p.qty != null ? fmtQ(p.qty, '') : '–')}</b><b>${esc(p.unit || '–')}</b><b>${esc(p.name)}</b>
-      <span>${linkIng(p).id ? '✓ Nährwerte bekannt' : '· ohne Nährwerte (zählt nicht für Finder & Wochenplan)'}</span>`;
+      <span>${linkHint(linkIng(p))}</span>`;
   };
   const stepList = (steps, removable) => steps.map((s, k) => `<div class="lrow st"><span class="no">${k + 1}</span><span>${esc(s)}</span>${removable ? `<button class="x" data-act="delstep" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
   const ingList = (ings, removable) => ings.map((i, k) => `<div class="lrow"><b>${esc(ingQty(i, 1))}</b><span>${esc(i.name)}</span>${removable ? `<button class="x" data-act="deling" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
@@ -679,9 +734,10 @@
       const f = l.serv / r.serv;
       r.ings.forEach((i) => {
         if (i.id && S.prefs.assumeStaples && ING[i.id].staple) return;
-        const key = i.id ? 'i|' + i.id : 'x|' + KA.norm(i.name) + '|' + (i.unit || '');
-        const a = agg[key] || (agg[key] = { key, id: i.id || null, name: i.name, unit: i.unit || '', cat: i.id ? ING[i.id].cat : 'SO', qty: 0, from: [] });
-        if (i.qty != null) a.qty += i.qty * f;
+        const std = i.id && i.base > 0; // in Stammdaten-Einheit summierbar
+        const key = std ? 'i|' + i.id : 'x|' + KA.norm(i.name) + '|' + (i.unit || '');
+        const a = agg[key] || (agg[key] = { key, id: std ? i.id : null, name: std ? ING[i.id].name : i.name, unit: std ? ING[i.id].unit : i.unit || '', cat: i.id ? ING[i.id].cat : 'SO', qty: 0, from: [] });
+        if (std) a.qty += i.base * f; else if (i.qty != null) a.qty += i.qty * f;
         if (!a.from.includes(r.title)) a.from.push(r.title);
       });
     });
@@ -795,7 +851,7 @@
     const n = KA.norm(q);
     if (!n) return null;
     const all = Object.values(ING);
-    return all.find((i) => KA.norm(i.name) === n || i.id === n) ||
+    return all.find((i) => KA.norm(i.name) === n || i.id === n) || findFood(q) ||
       all.find((i) => KA.norm(i.name).startsWith(n)) ||
       all.find((i) => KA.norm(i.name).includes(n));
   }

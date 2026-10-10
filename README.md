@@ -37,5 +37,12 @@ Einen konkreten Händler anbinden: in `KA.Providers` einen Eintrag mit `fields`,
 ## Dateien
 `index.html` · `style.css` · `data.js` (50 Rezepte, 76 Lebensmittel, Nährwerte) · `logic.js` (Filter, Finder, Planer) · `app.js` (UI) · `order.js` · `server.js` · `start.bat` · `Kochapp.exe` · `desktop\Program.cs` · `desktop\build.ps1` · `desktop\lib` (WebView2-DLLs zum Einbetten)
 
+## Nährwerte aus den Zutaten
+- Die Rezeptseite zeigt die **Nährwerte pro Portion** (Energie, 4 Makro- und 10 Mikronährstoffe, jeweils mit Anteil am Tagesbedarf). Sie werden aus den Zutaten zusammengerechnet – bei mitgelieferten und bei eigenen Rezepten.
+- Eigene Zutaten werden beim Eintippen einem Lebensmittel zugeordnet, auch mit anderen Namen („Möhren“, „rote Zwiebel“, „Weißweinessig“) und Haushaltsmaßen (EL, TL, Prise, Bund, Dose, Becher, Stück). Die Vorschau zeigt, welches Lebensmittel und welche Menge erkannt wurde. Haushaltsmaße sind Näherungen.
+- Nicht erkannte Zutaten gehen nicht in die Rechnung ein; die Rezeptseite nennt sie ausdrücklich.
+- **Datenquellen:** Schweizer Nährwertdatenbank V 7.1 (Bundesamt für Lebensmittelsicherheit und Veterinärwesen BLV, https://naehrwertdaten.ch) und USDA FoodData Central, SR Legacy (https://fdc.nal.usda.gov). Jeder Wert der 154 Lebensmittel wurde in beiden Datenbanken nachgeschlagen und verglichen; das Ergebnis steht in `tools/naehrwerte/PRUEFBERICHT.md`.
+- Neu erzeugen: `tools\naehrwerte\fetch.ps1 -Out <Ordner>` lädt beide Datenbanken, `tools\naehrwerte\verify.ps1 -Data <Ordner> -Apply` vergleicht und trägt die Werte in `data.js` ein. Die Zuordnung der Lebensmittel steht in `tools\naehrwerte\foods.tsv`.
+
 ## Hinweise
 Nährwerte und Preise sind gerundete Näherungswerte, keine Ernährungsberatung. Vitamin D (und bei veganer Kost B12) werden im Plan ehrlich als Lücke angezeigt.

@@ -64,7 +64,9 @@
     if (!flagCache[r.id]) {
       const s = new Set();
       r.i.forEach(([id]) => ING[id].flags.forEach((f) => s.add(f)));
-      if (r.free && r.free.length) s.add('unbekannt'); // Zutaten ohne Stammdaten: Inhaltsstoffe nicht prüfbar
+      // eigene Rezepte: erkannte Zutaten ohne umrechenbare Menge zählen für die Inhaltsstoffe mit;
+      // bei unbekannten Zutaten sind die Inhaltsstoffe nicht prüfbar
+      (r.free || []).forEach((x) => (x.id && ING[x.id] ? ING[x.id].flags.forEach((f) => s.add(f)) : s.add('unbekannt')));
       flagCache[r.id] = s;
     }
     return flagCache[r.id];
@@ -73,8 +75,8 @@
   /* ---------- Eigene Rezepte des Nutzers für Finder und Wochenplan ---------- */
   const TYPES_BY_CAT = { 'Frühstück': ['f'], 'Hauptgericht': ['m', 'a'], 'Snack': ['s'], 'Backen': ['s'] };
   // Übernimmt eigene Rezepte (Format des Rezeptbuchs) in den Rezeptbestand und liefert, wie viele nutzbar sind.
-  // Gerechnet wird nur mit Zutaten, die mit den Stammdaten verknüpft sind (id + Menge); die übrigen stehen in
-  // r.free. Rezepte ganz ohne verknüpfte Zutat bleiben außen vor.
+  // Die Nährwerte ergeben sich aus den Zutaten, die mit den Stammdaten verknüpft sind (id + base = Menge in der
+  // Grundeinheit des Lebensmittels); die übrigen stehen in r.free. Rezepte ganz ohne verknüpfte Zutat bleiben außen vor.
   KA.setUserRecipes = (list) => {
     for (let k = RECIPES.length - 1; k >= 0; k--) {
       if (!RECIPES[k].user) continue;
@@ -84,9 +86,9 @@
     }
     let n = 0;
     (list || []).forEach((u) => {
-      const linked = (x) => x.id && ING[x.id] && x.qty > 0;
+      const linked = (x) => x.id && ING[x.id] && x.base > 0;
       const sum = {};
-      (u.ings || []).filter(linked).forEach((x) => (sum[x.id] = (sum[x.id] || 0) + x.qty));
+      (u.ings || []).filter(linked).forEach((x) => (sum[x.id] = (sum[x.id] || 0) + x.base));
       if (!Object.keys(sum).length || REC[u.id]) return;
       const r = {
         id: u.id, name: u.title, types: TYPES_BY_CAT[u.cat] || ['m', 'a'], time: u.time || 30, diff: u.diff || 2, s: u.serv || 1,
