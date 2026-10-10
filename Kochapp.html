@@ -59,11 +59,9 @@ main{padding:40px 48px 90px;min-width:0}
 .ph>div{display:flex;flex-direction:column;gap:6px} .ph p{margin:0;color:var(--muted)}
 .search{width:300px;background:var(--card);padding:11px 14px}
 
-.fab{position:fixed;right:28px;bottom:28px;z-index:20;border:0;cursor:pointer;background:var(--ink);color:var(--bg);padding:13px 14px 13px 18px;border-radius:999px;display:flex;gap:10px;align-items:center;font:600 14px var(--body);box-shadow:0 14px 30px -12px rgba(20,35,28,.5)}
-.fab:hover{background:var(--ink2)} .fab span{background:var(--acc);color:var(--acc-ink);border-radius:999px;padding:3px 9px;font-size:12px}
 
 @media (max-width:999px){
-  .shell{grid-template-columns:minmax(0,1fr)} .side,.fab{display:none}
+  .shell{grid-template-columns:minmax(0,1fr)} .side{display:none}
   main{padding:18px 16px 110px}
   h1{font-size:32px} .search{width:100%}
   .mtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
@@ -185,6 +183,8 @@ details summary .muted{font-weight:400;margin-left:.5rem;font-size:.88rem}
 .chk input:focus-visible + span{outline:2.5px solid var(--acc);outline-offset:2px}
 .total{margin-top:1rem;font-size:16px}
 .lh{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.4rem}
+.olines{list-style:none;padding:0;margin:.7rem 0 0;font-size:14px} .olines li{padding:5px 0;border-top:1px solid var(--line2)} .olines li.bad{color:var(--low)}
+.zip-err{color:var(--low);font-weight:600;margin:0;min-height:1.2em}
 pre.json{background:#10171a;color:#cfe8d8;border-radius:10px;padding:.9rem;overflow:auto;max-height:340px;font-size:12px;margin-top:.8rem}
 
 /* ---------- Wochenplan ---------- */
@@ -243,6 +243,9 @@ pre.json{background:#10171a;color:#cfe8d8;border-radius:10px;padding:.9rem;overf
 .ingcard{padding:22px 22px 10px;margin:0}
 .irow{display:grid;grid-template-columns:86px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--line2);line-height:1.35}
 .irow span:first-child{font-weight:600;text-align:right} .irow .chg{color:var(--acc)}
+.nurow{display:grid;grid-template-columns:1fr auto 56px 44px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line2);font-size:14px}
+.nurow b{font-weight:600;font-variant-numeric:tabular-nums} .nurow .muted{text-align:right;font-size:12px}
+.dt-body .col{gap:16px} .dt-body .ingcard{padding-bottom:14px}
 .srow{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:16px 0;border-top:1px solid var(--line)}
 .srow span{font:500 28px/1 var(--head);color:var(--acc)}
 .srow p{margin:0;font-size:17px;line-height:1.6;max-width:60ch;text-wrap:pretty}
@@ -320,7 +323,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 @media (max-width:999px){#toast{bottom:96px}}
 
 @media print{
-  .side,.mtop,.tabbar,#fab,#overlay,.ph,.noprint,#toast,dialog,.card:not(.printable){display:none!important}
+  .side,.mtop,.tabbar,#overlay,.ph,.noprint,#toast,dialog,.card:not(.printable){display:none!important}
   /* Einkaufsliste als Zettel zum Abhaken: leere Kästchen, Menge vor Artikel, zwei Spalten, ohne Preise */
   @page{margin:14mm 16mm}
   html,body{background:#fff!important}
@@ -360,15 +363,15 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   </main>
 </div>
 <nav class="tabbar" id="tabbar" aria-label="Bereiche"></nav>
-<div id="fab"></div>
 <div id="overlay"></div>
 <dialog id="dlg"><div id="dlg-body"></div></dialog>
 <div id="toast" role="status" aria-live="polite"></div>
 <noscript>Diese App benötigt JavaScript.</noscript>
 <script>
 /* Kochapp – Daten: Nährstoffe, Lebensmittel, Rezepte
- * Nährwerte sind gerundete Näherungswerte pro 100 g bzw. 100 ml (angelehnt an gängige
- * Nährwerttabellen). Sie dienen der Orientierung, nicht der medizinischen Beratung.
+ * Nährwerte pro 100 g bzw. 100 ml stammen aus der Schweizer Nährwertdatenbank (BLV) und sind gegen
+ * USDA FoodData Central geprüft – siehe tools/naehrwerte/PRUEFBERICHT.md. Sie dienen der Orientierung,
+ * nicht der medizinischen Beratung.
  */
 (function (root) {
   const KA = (root.KA = root.KA || {});
@@ -422,94 +425,317 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   // [id, Name, Kategorie, Einheit, g pro Einheit, Preis €/kg|l|Stk, Flags, Nährwerte/100g, Basiszutat?]
   const ING_RAW = [
     // Getreide & Brot
-    ['haferflocken', 'Haferflocken', 'GB', 'g', 1, 2.0, ['gluten'], [372,13.5,58.7,7,10,0,0,0,0,87,54,4.4,130,4,370]],
-    ['vollkornnudeln', 'Vollkornnudeln', 'GB', 'g', 1, 2.8, ['gluten'], [350,13,66,2.5,8,0,0,0,0,40,30,3.5,100,2.5,380]],
-    ['nudeln', 'Nudeln', 'GB', 'g', 1, 1.6, ['gluten'], [360,12.5,72,1.5,3,0,0,0,0,18,25,1.3,50,1.5,200]],
-    ['reis', 'Reis', 'GB', 'g', 1, 2.5, [], [350,7.5,78,0.6,1,0,0,0,0,9,10,0.8,25,1.1,115]],
-    ['quinoa', 'Quinoa', 'GB', 'g', 1, 7.0, [], [368,14,64,6,7,0,1,0,0,184,47,4.6,197,3.1,563]],
-    ['couscous', 'Couscous', 'GB', 'g', 1, 3.0, ['gluten'], [360,12.5,73,1.6,5,0,0,0,0,24,24,1.1,44,0.8,166]],
-    ['kartoffeln', 'Kartoffeln', 'OG', 'g', 1, 1.5, [], [77,2,17,0.1,2.2,19.7,0,0,0,16,12,0.8,23,0.3,421]],
-    ['suesskartoffel', 'Süßkartoffel', 'OG', 'g', 1, 3.0, [], [86,1.6,20,0.1,3,2.4,709,0,0,11,30,0.6,25,0.3,337]],
-    ['vollkornbrot', 'Vollkornbrot', 'GB', 'g', 1, 4.0, ['gluten'], [250,8.5,43,2,7,0,0,0,0,40,60,2.5,60,1.8,230]],
-    ['tortilla', 'Weizen-Tortilla', 'GB', 'Stk', 60, 0.35, ['gluten'], [310,8,52,7,3,0,0,0,0,30,150,3,25,0.8,130]],
-    ['mehl', 'Weizenmehl', 'GB', 'g', 1, 1.2, ['gluten'], [350,10,73,1,3,0,0,0,0,26,20,1.2,25,0.7,130]],
+    ['haferflocken', 'Haferflocken', 'GB', 'g', 1, 2.0, ['gluten'], [381,13.5,59.5,7.5,10.5,0,0,0,0,20,54,3.5,130,3.2,390]],
+    ['vollkornnudeln', 'Vollkornnudeln', 'GB', 'g', 1, 2.8, ['gluten'], [338,12.6,60.6,2.5,11.5,0,0,0,0,40,34,3.9,120,3,390]],
+    ['nudeln', 'Nudeln', 'GB', 'g', 1, 1.6, ['gluten'], [353,12.6,70.5,1.2,5.1,0,0,0,0,31,22,1.5,56,1.5,200]],
+    ['reis', 'Reis', 'GB', 'g', 1, 2.5, [], [352,7.4,78,0.9,1,0,0,0,0,19,6,0.2,24,1.1,85]],
+    ['quinoa', 'Quinoa', 'GB', 'g', 1, 7.0, [], [362,13.3,58.2,6.6,8.3,0.5,1,0,0,135,41,3.6,180,2.9,800]],
+    ['couscous', 'Couscous', 'GB', 'g', 1, 3.0, ['gluten'], [376,12.8,72,0.6,5,0,0,0,0,20,24,1.1,44,0.8,166]],
+    ['kartoffeln', 'Kartoffeln', 'OG', 'g', 1, 1.5, [], [76,2,15.6,0.1,2.1,19.4,1,0,0,21,5,0.3,23,0.2,400]],
+    ['suesskartoffel', 'Süßkartoffel', 'OG', 'g', 1, 3.0, [], [81,1.6,17.1,0.1,3,19.3,373,0,0,11,41,0.6,26,0.3,420]],
+    ['vollkornbrot', 'Vollkornbrot', 'GB', 'g', 1, 4.0, ['gluten'], [213,8.6,38.3,1.3,7,0,0,0,0,22,20,3.1,82,2.2,250]],
+    ['tortilla', 'Weizen-Tortilla', 'GB', 'Stk', 60, 0.35, ['gluten'], [306,8.2,46,8,3.5,0,0,0,0,94,146,3.6,22,0.5,125]],
+    ['mehl', 'Weizenmehl', 'GB', 'g', 1, 1.2, ['gluten'], [344,12,69.5,1.3,3.2,0,0,0,0,16,11,1.5,34,1.1,180]],
     // Hülsenfrüchte, Nüsse, Samen
-    ['linsen', 'Rote Linsen', 'HN', 'g', 1, 3.0, [], [350,24,50,1.5,11,2,0,0,0,479,35,7.5,90,4,680]],
-    ['kichererbsen', 'Kichererbsen (Dose)', 'KO', 'g', 1, 2.8, [], [140,8,20,2.5,6,1,1,0,0,100,50,2,35,1.3,250]],
-    ['kidneybohnen', 'Kidneybohnen (Dose)', 'KO', 'g', 1, 2.5, [], [105,7,14,0.5,6,1,0,0,0,80,30,2.2,40,1,350]],
-    ['tofu', 'Tofu', 'HN', 'g', 1, 7.0, ['soja'], [120,13,2,7,1,0,0,0,0,20,350,2.5,50,1.5,150]],
-    ['erdnussmus', 'Erdnussmus', 'HN', 'g', 1, 8.0, ['erdnuss'], [600,25,13,50,6,0,0,0,0,80,50,2,170,3,650]],
-    ['mandeln', 'Mandeln', 'HN', 'g', 1, 10.0, ['nuss'], [580,21,10,50,12,0,0,0,0,44,260,3.7,270,3.1,730]],
-    ['walnuesse', 'Walnüsse', 'HN', 'g', 1, 12.0, ['nuss'], [650,15,7,65,7,1,1,0,0,98,98,2.9,158,3.1,441]],
-    ['chia', 'Chiasamen', 'HN', 'g', 1, 12.0, [], [490,17,8,31,34,2,0,0,0,49,630,7.7,335,4.6,407]],
-    ['leinsamen', 'Leinsamen', 'HN', 'g', 1, 5.0, [], [530,18,2,42,27,0,0,0,0,87,255,5.7,392,4.3,813]],
-    ['kuerbiskerne', 'Kürbiskerne', 'HN', 'g', 1, 12.0, [], [560,30,11,49,6,2,1,0,0,58,46,8.8,592,7.8,809]],
-    ['tahin', 'Tahin (Sesammus)', 'HN', 'g', 1, 12.0, ['sesam'], [595,17,21,54,9,0,1,0,0,98,426,6.4,95,4.6,414]],
+    ['linsen', 'Rote Linsen', 'HN', 'g', 1, 3.0, [], [325,27,41.8,1.5,18.2,4.7,3,0,0,88,33,5.6,83,3,900]],
+    ['kichererbsen', 'Kichererbsen (Dose)', 'KO', 'g', 1, 2.8, [], [131,7.3,16.8,2,8.4,1.2,5,0,0,68,44,1.9,48,0.9,330]],
+    ['kidneybohnen', 'Kidneybohnen (Dose)', 'KO', 'g', 1, 2.5, [], [124,8,16,1,5.5,0.2,0,0,0,28,57,1.5,30,0.8,277]],
+    ['tofu', 'Tofu', 'HN', 'g', 1, 7.0, ['soja'], [148,14.7,2.9,8.5,0.5,0.5,0,0,0,25,120,2,100,1.3,150]],
+    ['erdnussmus', 'Erdnussmus', 'HN', 'g', 1, 8.0, ['erdnuss'], [636,26.1,12.5,51.8,7.6,0,0,0,0,53,37,2,180,3,700]],
+    ['mandeln', 'Mandeln', 'HN', 'g', 1, 10.0, ['nuss'], [624,25.6,7.8,52.1,10.6,0.5,0,0,0,56,270,3.3,240,3.3,740]],
+    ['walnuesse', 'Walnüsse', 'HN', 'g', 1, 12.0, ['nuss'], [709,15.7,6.9,67.3,6.7,0.8,2,0,0,112,78,2.6,140,2.7,420]],
+    ['chia', 'Chiasamen', 'HN', 'g', 1, 12.0, [], [482,21.4,1.8,34.1,40.9,1.6,0,0,0,71,550,6.5,320,5.1,640]],
+    ['leinsamen', 'Leinsamen', 'HN', 'g', 1, 5.0, [], [533,21.3,3.6,42.2,26.9,0,0,0,0,72,240,6.3,320,4.3,680]],
+    ['kuerbiskerne', 'Kürbiskerne', 'HN', 'g', 1, 12.0, [], [615,35.6,4.7,49.1,6,1.9,1,0,0,129,63,8.2,520,5,900]],
+    ['tahin', 'Tahin (Sesammus)', 'HN', 'g', 1, 12.0, ['sesam'], [595,17,12,53.8,9.3,0,3,0,0,98,426,9,95,4.6,414]],
     // Milch & Eier
-    ['milch', 'Milch', 'MI', 'ml', 1, 1.1, ['milch'], [47,3.4,4.8,1.5,0,1,15,0.1,0.4,5,120,0,12,0.4,150]],
-    ['hafermilch', 'Hafermilch (angereichert)', 'MI', 'ml', 1, 1.8, [], [45,1,7,1.5,0.8,0,0,0.75,0.38,3,120,0.1,10,0.1,100]],
-    ['joghurt', 'Naturjoghurt', 'MI', 'g', 1, 2.0, ['milch'], [61,3.5,4.7,3.3,0,1,30,0,0.4,7,121,0.1,12,0.6,155]],
+    ['milch', 'Milch', 'MI', 'ml', 1, 1.1, ['milch'], [47,3.3,4.9,1.5,0,1.8,14,0,0.26,10,124,0,12,0.4,175]],
+    ['hafermilch', 'Hafermilch (angereichert)', 'MI', 'ml', 1, 1.8, [], [49,0.5,8,1.5,0.9,0,0,0.9,0.26,2,113,0,4,0,31]],
+    ['joghurt', 'Naturjoghurt', 'MI', 'g', 1, 2.0, ['milch'], [66,3.9,4.5,3.6,0,2,37,0.1,0.3,5,140,0,12,0.4,170]],
     ['skyr', 'Skyr', 'MI', 'g', 1, 3.5, ['milch'], [63,11,4,0.2,0,0,0,0,0.5,7,120,0.1,11,0.4,150]],
-    ['quark', 'Magerquark', 'MI', 'g', 1, 2.6, ['milch'], [67,12,4,0.3,0,1,2,0,0.9,24,110,0.1,11,0.5,140]],
-    ['feta', 'Feta', 'MI', 'g', 1, 9.0, ['milch'], [264,14,4,21,0,0,125,0.4,1.7,32,493,0.7,19,2.9,62]],
-    ['mozzarella', 'Mozzarella', 'MI', 'g', 1, 7.0, ['milch'], [250,18,2,19,0,0,170,0.2,2,10,505,0.4,20,2.9,76]],
-    ['parmesan', 'Parmesan', 'MI', 'g', 1, 22.0, ['milch'], [431,38,4,29,0,0,270,0.5,1.2,7,1184,0.8,44,2.8,92]],
-    ['kaese', 'Gouda / Schnittkäse', 'MI', 'g', 1, 10.0, ['milch'], [356,25,2,28,0,0,260,0.5,1.5,20,740,0.3,30,3.9,91]],
-    ['butter', 'Butter', 'MI', 'g', 1, 8.0, ['milch'], [717,0.9,0.1,81,0,0,684,1.5,0.2,3,24,0,2,0.1,24]],
-    ['eier', 'Eier', 'MI', 'Stk', 55, 0.35, ['ei'], [143,12.6,0.7,9.5,0,0,160,2,0.9,47,56,1.8,12,1.3,138]],
-    ['kokosmilch', 'Kokosmilch', 'KO', 'ml', 1, 3.0, [], [197,2,3,21,0,3,0,0,0,16,16,1.6,37,0.7,263]],
+    ['quark', 'Magerquark', 'MI', 'g', 1, 2.6, ['milch'], [61,10.6,4.2,0.2,0,0.1,3,0,0.42,19,110,0,10,0.5,140]],
+    ['feta', 'Feta', 'MI', 'g', 1, 9.0, ['milch'], [281,14.8,0.7,24.3,0,0,218,0.1,0.41,19,220,0.1,12,1.2,66]],
+    ['mozzarella', 'Mozzarella', 'MI', 'g', 1, 7.0, ['milch'], [256,19.5,0.7,19.5,0,0,194,0.3,1.4,16,340,0.1,10,2.6,8]],
+    ['parmesan', 'Parmesan', 'MI', 'g', 1, 22.0, ['milch'], [401,30.5,3,31,0,0,288,0.8,1.75,20,1340,0.7,44,4,100]],
+    ['kaese', 'Gouda / Schnittkäse', 'MI', 'g', 1, 10.0, ['milch'], [395,26.6,0,32.1,0,0,318,0.6,1.49,13,910,0.3,32,4.3,86]],
+    ['butter', 'Butter', 'MI', 'g', 1, 8.0, ['milch'], [746,0.7,0.7,82.3,0,0,802,1.1,0.07,0,18,0,2,0.2,21]],
+    ['eier', 'Eier', 'MI', 'Stk', 55, 0.35, ['ei'], [140,12.6,0.3,9.8,0,0,112,2.8,1.31,67,48,1.8,12,1.2,150]],
+    ['kokosmilch', 'Kokosmilch', 'KO', 'ml', 1, 3.0, [], [214,2.4,3.1,21.3,0.1,1,0,0,0,14,18,3.3,46,0.6,220]],
     // Fleisch & Fisch
-    ['haehnchen', 'Hähnchenbrust', 'FF', 'g', 1, 10.0, ['fleisch'], [110,23,0,1.5,0,0,6,0.1,0.3,7,5,0.4,28,0.7,350]],
-    ['rinderhack', 'Rinderhack', 'FF', 'g', 1, 11.0, ['fleisch'], [220,18,0,16,0,0,0,0.1,2.5,8,12,2.1,18,4.5,300]],
-    ['schinken', 'Schinkenwürfel', 'FF', 'g', 1, 12.0, ['fleisch', 'schwein'], [140,20,1,6,0,0,0,0.6,0.6,2,8,0.8,20,1.8,350]],
-    ['lachs', 'Lachsfilet', 'FF', 'g', 1, 20.0, ['fisch'], [200,20,0,13,0,0,50,11,3.2,26,12,0.3,27,0.4,360]],
-    ['thunfisch', 'Thunfisch (Dose)', 'KO', 'g', 1, 12.0, ['fisch'], [110,25,0,1,0,0,10,4,3,5,10,1,30,0.8,250]],
-    ['garnelen', 'Garnelen', 'FF', 'g', 1, 18.0, ['schalentier'], [85,18,0,1,0,0,0,0,1.5,3,64,0.5,37,1.3,185]],
+    ['haehnchen', 'Hähnchenbrust', 'FF', 'g', 1, 10.0, ['fleisch'], [107,24.6,0,1,0,0,6,1.5,0.29,12,3,0.3,27,0.5,350]],
+    ['rinderhack', 'Rinderhack', 'FF', 'g', 1, 11.0, ['fleisch'], [208,19.2,0,14.6,0,0,6,0.2,3,4,4,1.7,18,4.2,290]],
+    ['schinken', 'Schinkenwürfel', 'FF', 'g', 1, 12.0, ['fleisch', 'schwein'], [104,20.2,0.7,2.3,0,60.8,4,0.6,0.09,2,17,0.6,24,1.9,450]],
+    ['lachs', 'Lachsfilet', 'FF', 'g', 1, 20.0, ['fisch'], [223,19.9,0,15.9,0,1,11,8.3,6.9,13,12,0.4,28,0.4,440]],
+    ['thunfisch', 'Thunfisch (Dose)', 'KO', 'g', 1, 12.0, ['fisch'], [109,24.9,0,1,0,0,26,1.1,3.4,3,10,1.5,27,0.9,230]],
+    ['garnelen', 'Garnelen', 'FF', 'g', 1, 18.0, ['schalentier'], [74,16.6,0,0.8,0,0,0,0.1,2.07,11,46,0.5,32,1.1,110]],
     // Obst & Gemüse
-    ['zwiebel', 'Zwiebel', 'OG', 'Stk', 80, 0.3, [], [40,1.1,9,0.1,1.7,7,0,0,0,19,23,0.2,10,0.2,146]],
-    ['knoblauch', 'Knoblauchzehe', 'OG', 'Stk', 4, 0.1, [], [149,6.4,33,0.5,2.1,31,0,0,0,3,181,1.7,25,1.2,401]],
-    ['tomaten', 'Tomaten', 'OG', 'g', 1, 3.5, [], [18,0.9,3.9,0.2,1.2,14,42,0,0,15,10,0.3,11,0.2,237]],
-    ['dosentomaten', 'Dosentomaten (gehackt)', 'KO', 'g', 1, 1.6, [], [24,1.2,4,0.2,1.3,9,20,0,0,10,24,1,12,0.2,240]],
-    ['tomatenmark', 'Tomatenmark', 'KO', 'g', 1, 4.0, [], [82,4.3,19,0.5,4,21,0,0,0,40,35,3,40,0.8,1000]],
-    ['paprika', 'Paprika', 'OG', 'Stk', 160, 0.9, [], [31,1,6,0.3,2.1,128,157,0,0,46,7,0.4,12,0.3,211]],
-    ['zucchini', 'Zucchini', 'OG', 'Stk', 250, 0.9, [], [17,1.2,3.1,0.3,1,17.9,10,0,0,24,16,0.4,18,0.3,261]],
-    ['aubergine', 'Aubergine', 'OG', 'Stk', 300, 1.2, [], [25,1,6,0.2,3,2,1,0,0,22,9,0.2,14,0.2,230]],
-    ['gurke', 'Gurke', 'OG', 'Stk', 350, 0.8, [], [15,0.7,3.6,0.1,0.5,2.8,5,0,0,7,16,0.3,13,0.2,147]],
-    ['karotten', 'Karotten', 'OG', 'g', 1, 1.3, [], [41,0.9,9.6,0.2,2.8,6,835,0,0,19,33,0.3,12,0.2,320]],
-    ['brokkoli', 'Brokkoli', 'OG', 'g', 1, 3.0, [], [34,2.8,7,0.4,2.6,89,31,0,0,63,47,0.7,21,0.4,316]],
-    ['spinat', 'Spinat', 'OG', 'g', 1, 4.0, [], [23,2.9,3.6,0.4,2.2,28,469,0,0,194,99,2.7,79,0.5,558]],
-    ['blumenkohl', 'Blumenkohl', 'OG', 'g', 1, 2.5, [], [25,1.9,5,0.3,2,48,0,0,0,57,22,0.4,15,0.3,299]],
-    ['champignons', 'Champignons', 'OG', 'g', 1, 4.5, [], [22,3.1,3.3,0.3,1,2,0,0.2,0.04,17,3,0.5,9,0.5,318]],
-    ['rucola', 'Rucola', 'OG', 'g', 1, 10.0, [], [25,2.6,3.7,0.7,1.6,15,119,0,0,97,160,1.5,47,0.5,369]],
-    ['lauch', 'Lauch', 'OG', 'g', 1, 3.0, [], [31,1.8,7,0.3,2.6,12,83,0,0,64,59,2.1,28,1.1,180]],
-    ['kuerbis', 'Kürbis (Hokkaido)', 'OG', 'g', 1, 2.5, [], [26,1,6,0.1,0.5,9,426,0,0,16,21,0.8,12,0.3,340]],
-    ['mais', 'Mais (Dose)', 'KO', 'g', 1, 3.0, [], [80,2.5,15,1.2,2.4,5,10,0,0,40,3,0.5,26,0.5,200]],
-    ['erbsen', 'Erbsen (TK)', 'OG', 'g', 1, 2.8, [], [80,5,14,0.4,5,40,38,0,0,60,25,1.5,33,1.2,244]],
-    ['ingwer', 'Ingwer', 'OG', 'g', 1, 8.0, [], [80,1.8,18,0.8,2,5,0,0,0,11,16,0.6,43,0.3,415]],
-    ['avocado', 'Avocado', 'OG', 'Stk', 150, 1.2, [], [160,2,9,15,7,10,7,0,0,81,12,0.6,29,0.6,485]],
-    ['zitrone', 'Zitrone', 'OG', 'Stk', 80, 0.4, [], [29,1.1,9,0.3,2.8,53,1,0,0,11,26,0.6,8,0.1,138]],
-    ['bananen', 'Banane', 'OG', 'Stk', 120, 0.25, [], [89,1.1,23,0.3,2.6,8.7,3,0,0,20,5,0.3,27,0.15,358]],
-    ['aepfel', 'Apfel', 'OG', 'Stk', 180, 0.5, [], [52,0.3,14,0.2,2.4,4.6,3,0,0,3,6,0.1,5,0.04,107]],
-    ['beeren', 'Beeren (TK-Mix)', 'OG', 'g', 1, 5.5, [], [45,0.8,10,0.4,3.5,25,3,0,0,15,15,0.7,10,0.2,150]],
+    ['zwiebel', 'Zwiebel', 'OG', 'Stk', 80, 0.3, [], [39,1.1,6.3,0.6,1.9,5,1,0,0,30,20,0.2,8,0.2,140]],
+    ['knoblauch', 'Knoblauchzehe', 'OG', 'Stk', 4, 0.1, [], [149,6.4,31,0.5,2.1,31.2,0,0,0,3,181,1.7,25,1.2,401]],
+    ['tomaten', 'Tomaten', 'OG', 'g', 1, 3.5, [], [21,0.9,3.3,0.3,1.2,25.5,39,0,0,18,8,0.1,8,0.1,240]],
+    ['dosentomaten', 'Dosentomaten (gehackt)', 'KO', 'g', 1, 1.6, [], [22,1.1,3.8,0.1,0.8,11,25,0,0,11,11,0.6,10,0.1,210]],
+    ['tomatenmark', 'Tomatenmark', 'KO', 'g', 1, 4.0, [], [77,4.5,12.9,0.2,2.8,38,38,0,0,54,48,1.6,48,0.7,1150]],
+    ['paprika', 'Paprika', 'OG', 'Stk', 160, 0.9, [], [32,0.9,5.9,0.1,1.7,149,36,0,0,41,7,0.3,12,0.1,240]],
+    ['zucchini', 'Zucchini', 'OG', 'Stk', 250, 0.9, [], [17,1.2,1.8,0.3,1.1,14.8,12,0,0,29,19,0.4,18,0.3,260]],
+    ['aubergine', 'Aubergine', 'OG', 'Stk', 300, 1.2, [], [21,1.1,2.4,0.1,2.7,1.9,4,0,0,24,12,0.3,14,0.1,240]],
+    ['gurke', 'Gurke', 'OG', 'Stk', 350, 0.8, [], [12,0.7,1.8,0,0.8,8.9,12,0,0,10,16,0.2,10,0.1,140]],
+    ['karotten', 'Karotten', 'OG', 'g', 1, 1.3, [], [42,0.6,7.6,0.4,2.7,3.1,692,0,0,59,29,0.1,7,0.2,220]],
+    ['brokkoli', 'Brokkoli', 'OG', 'g', 1, 3.0, [], [39,3.6,3.2,0.6,3.2,102.9,46,0,0,60,46,0.9,21,0.5,390]],
+    ['spinat', 'Spinat', 'OG', 'g', 1, 4.0, [], [25,2.6,1.3,0.6,1.9,51,284,0,0,94,100,1.8,89,0.6,590]],
+    ['blumenkohl', 'Blumenkohl', 'OG', 'g', 1, 2.5, [], [26,1.8,2.1,0.7,2,60.2,1,0,0,56,23,0.3,10,0.3,270]],
+    ['champignons', 'Champignons', 'OG', 'g', 1, 4.5, [], [25,3.7,1.1,0.3,1.9,2.1,0,1.9,0,22,7,1,11,0.5,370]],
+    ['rucola', 'Rucola', 'OG', 'g', 1, 10.0, [], [22,3.6,0.1,0.4,1.7,55.5,183,0,0,92,190,1.4,28,0.4,350]],
+    ['lauch', 'Lauch', 'OG', 'g', 1, 3.0, [], [32,2,4,0.2,3.2,14.5,23,0,0,23,25,0.3,8,0.2,220]],
+    ['kuerbis', 'Kürbis (Hokkaido)', 'OG', 'g', 1, 2.5, [], [28,1.1,4.6,0.1,2.2,14.9,340,0,0,20,41,0.2,8,0.1,400]],
+    ['mais', 'Mais (Dose)', 'KO', 'g', 1, 3.0, [], [86,2.6,15.1,1.5,2.2,1.4,6,0,0,36,4,0.4,18,0.4,166]],
+    ['erbsen', 'Erbsen (TK)', 'OG', 'g', 1, 2.8, [], [81,5.3,10.8,0.7,5.3,22,22,0,0,50,36,1.8,26,0.8,170]],
+    ['ingwer', 'Ingwer', 'OG', 'g', 1, 8.0, [], [56,1.5,9.7,0.9,2.4,2.8,2,0.2,0,11,14,0.5,34,0.3,368]],
+    ['avocado', 'Avocado', 'OG', 'Stk', 150, 1.2, [], [158,1.6,1.2,15.1,5.5,3.7,9,0,0,58,15,0.5,29,0.5,430]],
+    ['zitrone', 'Zitrone', 'OG', 'Stk', 80, 0.4, [], [24,0.8,2.9,0.6,2,54.7,1,0,0,11,25,0.5,16,0.1,150]],
+    ['bananen', 'Banane', 'OG', 'Stk', 120, 0.25, [], [90,1.1,19.7,0.2,2.7,11.9,7,0,0,26,5,0.2,28,0.1,320]],
+    ['aepfel', 'Apfel', 'OG', 'Stk', 180, 0.5, [], [52,0.3,11.6,0.3,1.4,7.2,2,0,0,6,5,0.1,6,0.1,120]],
+    ['beeren', 'Beeren (TK-Mix)', 'OG', 'g', 1, 5.5, [], [43,0.9,7,0.5,3.7,47.3,1,0,0,29,20,0.3,13,0.1,150]],
     // Basics & Gewürze (Basiszutaten)
-    ['olivenoel', 'Olivenöl', 'BA', 'ml', 1, 9.0, [], [810,0,0,92,0,0,0,0,0,0,1,0.6,0,0,1], true],
-    ['salz', 'Salz', 'BA', 'g', 1, 0.8, [], [0,0,0,0,0,0,0,0,0,0,24,0.3,1,0,8], true],
-    ['pfeffer', 'Pfeffer', 'BA', 'g', 1, 30.0, [], [251,10,64,3,25,0,27,0,0,10,443,10,171,1.2,1329], true],
-    ['bruehe', 'Gemüsebrühe', 'BA', 'ml', 1, 1.0, [], [4,0.2,0.6,0.1,0,0,0,0,0,0,5,0,2,0,20], true],
+    ['olivenoel', 'Olivenöl', 'BA', 'ml', 1, 9.0, [], [828,0,0,92,0,0,6,0,0,0,0,0.1,1,0,1], true],
+    ['salz', 'Salz', 'BA', 'g', 1, 0.8, [], [0,0,0,0,0,0,0,0,0,0,10,0.3,1,0.1,4], true],
+    ['pfeffer', 'Pfeffer', 'BA', 'g', 1, 30.0, [], [251,10.4,39,3.3,25.3,0,27,0,0,17,443,9.7,171,1.2,1329], true],
+    ['bruehe', 'Gemüsebrühe', 'BA', 'ml', 1, 1.0, [], [6,0.3,0.4,0.4,0,0,0,0,0,1,1,0.1,4,0,8], true],
     ['wasser', 'Wasser', 'BA', 'ml', 1, 0, [], [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], true],
-    ['curry', 'Currypulver', 'BA', 'g', 1, 25.0, [], [325,14,58,14,53,1,2,0,0,10,478,19,255,4,1543], true],
-    ['zimt', 'Zimt', 'BA', 'g', 1, 20.0, [], [247,4,81,1.2,53,4,15,0,0,6,1002,8,60,2,431], true],
+    ['curry', 'Currypulver', 'BA', 'g', 1, 25.0, [], [325,14.3,3,14,53.2,0.7,1,0,0,56,525,19.1,255,4.7,1170], true],
+    ['zimt', 'Zimt', 'BA', 'g', 1, 20.0, [], [282,3.9,41.5,2.2,38.8,1.9,15,0,0,3,1116,23.2,58,1.9,466], true],
     ['kraeuter', 'Kräuter (italienisch)', 'BA', 'g', 1, 30.0, [], [265,11,40,4,25,50,100,0,0,200,1500,40,270,3,1500], true],
-    ['paprikapulver', 'Paprikapulver', 'BA', 'g', 1, 20.0, [], [282,14,54,13,35,0,2463,0,0,49,229,21,178,4,2280], true],
-    ['sojasauce', 'Sojasauce', 'BA', 'ml', 1, 4.0, ['soja', 'gluten'], [60,6,5,0,0.8,0,0,0,0,14,20,2,40,0.5,200]],
-    ['honig', 'Honig', 'BA', 'g', 1, 9.0, ['honig'], [304,0.3,82,0,0,0.5,0,0,0,2,6,0.4,2,0.2,52]],
+    ['paprikapulver', 'Paprikapulver', 'BA', 'g', 1, 20.0, [], [320,14.5,27,12.9,27.9,0.4,2746,0,0,24,204,22.6,184,4.2,2310], true],
+    ['sojasauce', 'Sojasauce', 'BA', 'ml', 1, 4.0, ['soja', 'gluten'], [64,9.3,4.7,0.7,0.9,0,0,0,0,16,38,1.7,85,1,506]],
+    ['honig', 'Honig', 'BA', 'g', 1, 9.0, ['honig'], [306,0.4,76,0,0,1.7,0,0,0,5,5,0.5,3,0.4,47]],
   ];
+
+  // >>> generiert von tools/naehrwerte/verify.ps1 (Quellen und Prüfung: tools/naehrwerte/PRUEFBERICHT.md) – nicht von Hand ändern
+  ING_RAW.push(
+    ['zucker', 'Zucker', 'BA', 'g', 1, 1.2, [], [400,0,100,0,0,0,0,0,0,0,1,0.1,0,0,2]],
+    ['vollkornmehl', 'Weizenvollkornmehl', 'GB', 'g', 1, 1.5, ['gluten'], [338,13.5,61,2,11,0,0,0,0,50,26,5,130,3.4,390]],
+    ['speisestaerke', 'Speisestärke', 'BA', 'g', 1, 3.0, [], [354,0.3,88,0,0.6,0,16,0,0,1,1,0.5,2,0.6,5]],
+    ['hefe', 'Hefe (frisch)', 'BA', 'g', 1, 6.0, [], [96,16.7,1.1,1.2,6.9,0,0,0,0,642,16,2.9,41,2.4,570]],
+    ['sahne', 'Sahne', 'MI', 'ml', 1, 5.0, ['milch'], [334,2,3.1,34.8,0,0.7,368,0.5,0.21,7,71,0.1,6,0.2,120]],
+    ['saure_sahne', 'Saure Sahne', 'MI', 'g', 1, 4.0, ['milch'], [186,2.6,4.1,18,0,0.9,161,0.2,0.22,8,100,0.1,10,0.4,128]],
+    ['frischkaese', 'Frischkäse', 'MI', 'g', 1, 7.0, ['milch'], [350,6.2,6,34.4,0,0,308,0,0.22,9,97,0.1,9,0.5,132]],
+    ['huettenkaese', 'Hüttenkäse', 'MI', 'g', 1, 5.0, ['milch'], [100,12.4,2.4,4.5,0,0,47,0.1,0.52,15,69,0,6,0.4,72]],
+    ['sonnenblumenoel', 'Sonnenblumenöl', 'BA', 'ml', 1, 2.5, [], [828,0,0,92,0,0,0,0,0,0,1,0.1,0,0.1,1]],
+    ['rapsoel', 'Rapsöl', 'BA', 'ml', 1, 2.5, [], [828,0,0,92,0,0,2,0,0,0,0,0,0,0,0]],
+    ['essig', 'Essig', 'BA', 'ml', 1, 2.0, [], [21,0.1,0.7,0,0,0,0,0,0,0,7,0.2,8,0.2,35]],
+    ['balsamico', 'Balsamicoessig', 'BA', 'ml', 1, 8.0, [], [113,0.6,22.5,0.3,0.5,0.3,0,0.3,0,6,24,0.9,13,0.1,143]],
+    ['senf', 'Senf', 'BA', 'g', 1, 5.0, [], [92,5.4,2.9,5.5,4.6,0.4,4,0,0,12,86,1.7,72,0.9,176]],
+    ['ketchup', 'Ketchup', 'BA', 'g', 1, 4.0, [], [117,2,26,0.4,0.9,15,17,0,0,10,19,0.9,19,0.1,480]],
+    ['mayonnaise', 'Mayonnaise', 'BA', 'g', 1, 6.0, ['ei'], [693,1.4,2.6,75.2,0.3,0.5,11,0.5,0.39,16,18,0.3,6,0.1,28]],
+    ['petersilie', 'Petersilie', 'OG', 'g', 1, 25.0, [], [58,3.9,7.4,0.5,4.3,182,385,0,0,132,210,5.9,37,0.8,850]],
+    ['schnittlauch', 'Schnittlauch', 'OG', 'g', 1, 40.0, [], [30,3,1.9,0.6,2.3,60,218,0,0,130,86,1.5,40,0.5,280]],
+    ['basilikum', 'Basilikum', 'OG', 'g', 1, 50.0, [], [46,3.1,5.1,0.8,3.1,26,405,0,0,50,250,5.5,11,0.7,300]],
+    ['thymian', 'Thymian', 'OG', 'g', 1, 60.0, [], [76,3.5,8.6,1.4,8.5,80,238,0,0,32,358,18.7,98,1.4,370]],
+    ['rosmarin', 'Rosmarin', 'OG', 'g', 1, 60.0, [], [96,2.1,7.4,4.2,8.5,19.2,96,0,0,54,264,5.7,64,0.7,414]],
+    ['orange', 'Orange', 'OG', 'Stk', 180, 0.5, [], [45,0.8,8,0.2,2.7,50.9,14,0,0,19,45,0.3,15,0.2,180]],
+    ['zitronensaft', 'Zitronensaft', 'OG', 'ml', 1, 6.0, [], [29,0.4,2.6,0.2,0.3,39.9,0,0,0,21,6,0.1,6,0.1,103]],
+    ['erdbeeren', 'Erdbeeren', 'OG', 'g', 1, 6.0, [], [38,0.6,6,0.4,3.8,55.8,0,0,0,41,18,0.2,12,0.1,140]],
+    ['himbeeren', 'Himbeeren', 'OG', 'g', 1, 14.0, [], [44,1.2,5.8,0.8,4.3,20.7,2,0,0,26,16,0.4,20,0.2,170]],
+    ['heidelbeeren', 'Heidelbeeren', 'OG', 'g', 1, 12.0, [], [51,0.9,10.6,0.2,1.5,7.5,2,0,0,9,10,0.6,5,0.1,66]],
+    ['birne', 'Birne', 'OG', 'Stk', 170, 0.5, [], [54,0.5,10.9,0.3,2.9,4.5,1,0,0,12,6,0.1,8,0.1,130]],
+    ['trauben', 'Weintrauben', 'OG', 'g', 1, 4.5, [], [69,0.7,15.2,0.3,1.5,2.9,1,0,0,16,12,0.4,8,0,200]],
+    ['mango', 'Mango', 'OG', 'Stk', 350, 1.5, [], [68,0.6,14.3,0.6,1.6,37.3,44,0,0,50,15,0.1,9,0.1,150]],
+    ['ananas', 'Ananas', 'OG', 'g', 1, 2.5, [], [52,0.5,11.7,0.1,1.2,56.5,4,0,0,9,14,0.2,11,0.1,120]],
+    ['rosinen', 'Rosinen', 'OG', 'g', 1, 6.0, [], [321,3,73.2,0.9,4.2,0.2,0,0,0,4,80,2.3,41,0.2,780]],
+    ['datteln', 'Datteln', 'OG', 'g', 1, 9.0, [], [287,2.4,64.7,0.4,7.5,0.2,1,0,0,18,68,2.2,55,0.4,730]],
+    ['fenchel', 'Fenchel', 'OG', 'g', 1, 3.5, [], [23,1,2.6,0.4,2.6,3.3,1,0,0,20,37,0.2,11,0.2,320]],
+    ['staudensellerie', 'Staudensellerie', 'OG', 'g', 1, 3.0, [], [18,0.6,2.4,0.2,2.2,9.8,5,0,0,57,46,0.1,11,0.1,390]],
+    ['knollensellerie', 'Knollensellerie', 'OG', 'g', 1, 2.5, [], [32,1.4,4,0.3,3.8,7.1,3,0,0,39,40,0.4,13,0.4,460]],
+    ['rote_bete', 'Rote Bete', 'OG', 'g', 1, 2.5, [], [48,1.7,8.4,0.3,2.3,4.8,1,0,0,91,18,0.3,20,0.3,410]],
+    ['weisskohl', 'Weißkohl', 'OG', 'g', 1, 1.2, [], [36,1.4,4.6,0.6,3.5,56.3,2,0,0,45,52,0.3,10,0.1,230]],
+    ['rotkohl', 'Rotkohl', 'OG', 'g', 1, 1.5, [], [29,1.1,4.3,0.2,2.6,52.7,1,0,0,23,34,0.4,11,0.2,280]],
+    ['rosenkohl', 'Rosenkohl', 'OG', 'g', 1, 4.0, [], [41,4,3.3,0.4,4,145.6,10,0,0,46,31,0.6,21,0.4,430]],
+    ['gruene_bohnen', 'Grüne Bohnen', 'OG', 'g', 1, 5.0, [], [32,1.9,4.1,0.2,3,10.8,29,0,0,53,52,1,25,0.4,260]],
+    ['spargel', 'Spargel', 'OG', 'g', 1, 9.0, [], [26,2.2,2.8,0.3,1.8,14.8,13,0,0,79,16,0.4,11,0.5,220]],
+    ['kopfsalat', 'Kopfsalat', 'OG', 'g', 1, 4.0, [], [16,1.3,1.1,0.4,1.3,8.2,92,0,0,50,41,0.5,12,0.3,230]],
+    ['eisbergsalat', 'Eisbergsalat', 'OG', 'g', 1, 2.5, [], [15,0.8,2.1,0.2,1,4,9,0,0,31,22,0.3,7,0.2,180]],
+    ['radieschen', 'Radieschen', 'OG', 'g', 1, 5.0, [], [14,0.9,1.5,0.1,1.4,16.3,1,0,0,45,32,0.3,10,0.1,300]],
+    ['kohlrabi', 'Kohlrabi', 'OG', 'g', 1, 3.0, [], [27,1.9,3.7,0.2,1.4,57.6,1,0,0,40,23,0.2,16,0.2,310]],
+    ['gruenkohl', 'Grünkohl', 'OG', 'g', 1, 4.0, [], [44,4.3,2.5,0.9,4.2,74,236,0,0,85,240,1.4,38,0.7,440]],
+    ['pastinake', 'Pastinake', 'OG', 'g', 1, 3.5, [], [62,1.3,12.1,0.4,2.1,19.7,2,0,0,43,42,0.4,21,0.5,430]],
+    ['schalotte', 'Schalotte', 'OG', 'Stk', 25, 0.2, [], [66,1.8,12.2,0.5,2.6,8,0,0,0,10,10,0.1,8,0.2,220]],
+    ['oliven', 'Oliven', 'KO', 'g', 1, 9.0, [], [176,1.4,0.8,17.2,6.2,0.5,22,0,0,5,80,8.5,16,0.1,19]],
+    ['putenbrust', 'Putenbrust', 'FF', 'g', 1, 11.0, ['fleisch'], [109,24,0,1.5,0,0,3,0.2,0.57,8,8,0.7,32,1.8,330]],
+    ['schweinefilet', 'Schweinefilet', 'FF', 'g', 1, 12.0, ['fleisch', 'schwein'], [121,22.2,0,3.6,0,0,3,0.7,0.7,4,8,1.2,25,2,420]],
+    ['schweinehack', 'Schweinehack', 'FF', 'g', 1, 8.0, ['fleisch', 'schwein'], [211,18.7,0,14.8,0,0.4,2,0.4,0.75,4,9,1,19,2.4,308]],
+    ['rindfleisch', 'Rindfleisch (Gulasch)', 'FF', 'g', 1, 14.0, ['fleisch'], [128,21.8,0,4.5,0,0,2,0.1,2.3,3,13,2.1,21,5.4,367]],
+    ['speck', 'Speck', 'FF', 'g', 1, 12.0, ['fleisch', 'schwein'], [358,15.7,0.3,32.4,0,12.2,8,0.5,0.42,2,8,0.4,14,1.6,236]],
+    ['kabeljau', 'Kabeljau', 'FF', 'g', 1, 18.0, ['fisch'], [78,18.1,0,0.6,0,0,2,1.8,1.4,11,13,0.2,23,0.4,410]],
+    ['forelle', 'Forelle', 'FF', 'g', 1, 15.0, ['fisch'], [127,17.7,0,6.2,0,2.9,12,5.9,5,9,14,2,30,0.4,470]],
+    ['raeucherlachs', 'Räucherlachs', 'FF', 'g', 1, 30.0, ['fisch'], [173,23.2,0,8.9,0,0,7,6.3,4.3,3,10,0,27,0.4,410]],
+    ['tempeh', 'Tempeh', 'HN', 'g', 1, 12.0, ['soja'], [174,18.9,8,7.8,6.2,0.2,0,0.2,0.05,31,100,2.2,74,1.3,376]],
+    ['kichererbsen_trocken', 'Kichererbsen (getrocknet)', 'HN', 'g', 1, 3.5, [], [338,18.6,44.3,4.9,21,5.1,13,0,0,340,120,5.4,140,2.4,1090]],
+    ['linsen_braun', 'Linsen (braun)', 'HN', 'g', 1, 3.0, [], [313,24.4,38.8,1.5,23.2,6.8,2,0,0,150,57,8,96,3.6,860]],
+    ['edamame', 'Edamame', 'OG', 'g', 1, 6.0, ['soja'], [143,11.5,5.1,7.4,5.5,15.4,4,0,0,108,70,1.9,60,1.2,400]],
+    ['haselnuesse', 'Haselnüsse', 'HN', 'g', 1, 12.0, ['nuss'], [661,16.4,10.1,59.5,9.7,2,0,0,0,77,160,3.6,160,2.9,720]],
+    ['cashew', 'Cashewkerne', 'HN', 'g', 1, 14.0, ['nuss'], [619,21.5,23.2,48.1,3.6,0.5,0,0,0,46,40,5.9,270,4,660]],
+    ['erdnuesse', 'Erdnüsse', 'HN', 'g', 1, 6.0, ['erdnuss'], [637,26.8,11.3,51.9,8.7,0,0,0,0,97,58,1.6,180,2.8,630]],
+    ['sonnenblumenkerne', 'Sonnenblumenkerne', 'HN', 'g', 1, 5.0, [], [621,25.1,3.6,54.5,8,1,3,0,0,227,86,5,330,5.8,750]],
+    ['sesam', 'Sesam', 'HN', 'g', 1, 8.0, ['sesam'], [619,23.1,4,53.8,13.3,0,0,0,0,171,930,7.7,330,5.5,500]],
+    ['pinienkerne', 'Pinienkerne', 'HN', 'g', 1, 40.0, ['nuss'], [688,16.5,13,61.9,6.3,0.5,0,0,0,63,20,6.5,370,5.8,810]],
+    ['kokosraspel', 'Kokosraspel', 'HN', 'g', 1, 7.0, [], [653,7.6,5.3,61.3,24.7,0,0,0,0,21,11,2.8,100,1.5,710]],
+    ['hirse', 'Hirse', 'GB', 'g', 1, 3.5, [], [360,10.6,68.8,3.9,3.8,0,0,0,0,20,10,6.9,120,2.9,170]],
+    ['buchweizen', 'Buchweizen', 'GB', 'g', 1, 4.5, [], [341,13.1,62.4,3.1,5.8,0,1,0,0,60,15,2.1,200,1.6,420]],
+    ['polenta', 'Polenta (Maisgrieß)', 'GB', 'g', 1, 2.5, [], [350,8.8,73.8,1.1,5,0,13,0,0,5,4,1,20,0.4,80]],
+    ['griess', 'Hartweizengrieß', 'GB', 'g', 1, 1.8, ['gluten'], [347,13.3,66.8,1.6,6.3,0,1,0,0,47,23,2.6,54,1.8,210]],
+    ['paniermehl', 'Paniermehl', 'GB', 'g', 1, 2.5, ['gluten'], [373,12.7,73.5,2.1,4.5,0,0,0,0,39,50,1.2,23,0.9,130]],
+    ['weissbrot', 'Weißbrot', 'GB', 'g', 1, 3.0, ['gluten'], [242,8.5,48.9,0.8,2.5,0,0,0,0,17,8,0.6,15,0.5,130]],
+    ['vollkornreis', 'Vollkornreis', 'GB', 'g', 1, 3.5, [], [350,7.4,71.4,2.8,5,0,0,0,0,48,11,1.1,120,1.6,220]],
+    ['schokolade', 'Zartbitterschokolade', 'BA', 'g', 1, 15.0, [], [537,5.7,53.4,31.8,7,0,2,0,0,7,48,6.7,120,2.2,830]],
+    ['kakao', 'Kakaopulver', 'BA', 'g', 1, 12.0, [], [380,22.4,11.6,20.6,29.5,0.5,0,2.7,0,107,140,49,500,6.4,3900]],
+    ['ahornsirup', 'Ahornsirup', 'BA', 'g', 1, 20.0, [], [271,0,67.2,0.2,0,0,0,0,0,0,73,0.1,23,2,220]],
+    ['konfituere', 'Konfitüre', 'BA', 'g', 1, 5.0, [], [246,0.5,58.7,0.5,2.2,4,5,0,0,11,18,1.4,2,0.2,100]],
+    ['sojadrink', 'Sojadrink', 'MI', 'ml', 1, 1.5, ['soja'], [41,3.7,1.5,2.2,0.6,0,0,0,0,18,12,0.5,21,0.3,165]],
+    ['orangensaft', 'Orangensaft', 'OG', 'ml', 1, 1.8, [], [44,0.6,10,0.1,0.3,38.5,2,0,0,31,8,0.1,10,0,177]],
+  );
+  // Andere Namen (a) und Haushaltsmaße je Lebensmittel: Gramm bzw. ml pro Teelöffel (tl), Stück (stk), Bund, Dose, Becher, Packung (pck)
+  KA.ING_META = {
+    haferflocken: { a: ['Hafer'], tl: 3.3 },
+    vollkornnudeln: { a: ['Vollkornpasta', 'Vollkornspaghetti'] },
+    nudeln: { a: ['Pasta', 'Spaghetti', 'Penne', 'Fusilli', 'Teigwaren'] },
+    reis: { a: ['Basmatireis', 'Langkornreis', 'Risottoreis'], tl: 4.5 },
+    kartoffeln: { a: ['Kartoffel'], stk: 120 },
+    suesskartoffel: { a: ['Süßkartoffeln'], stk: 300 },
+    tortilla: { a: ['Tortilla', 'Tortillas', 'Wrap', 'Wraps'] },
+    mehl: { a: ['Mehl'], tl: 3 },
+    linsen: { a: ['Linsen (rot)'] },
+    kichererbsen: { a: ['Kichererbsen'], dose: 240 },
+    kidneybohnen: { a: ['Kidneybohnen'], dose: 255 },
+    tofu: { a: ['Naturtofu'], stk: 200, pck: 200 },
+    erdnussmus: { a: ['Erdnussbutter'], tl: 5.5 },
+    mandeln: { a: ['Mandel'], tl: 3.3, stk: 1.2 },
+    walnuesse: { a: ['Walnuss', 'Walnusskerne'], tl: 3, stk: 5 },
+    chia: { a: ['Chia'], tl: 4 },
+    leinsamen: { tl: 3.5 },
+    kuerbiskerne: { tl: 3.3 },
+    tahin: { a: ['Tahin', 'Tahini', 'Sesammus'], tl: 5 },
+    hafermilch: { a: ['Haferdrink', 'Hafermilch'] },
+    joghurt: { a: ['Joghurt'], tl: 5, becher: 150 },
+    quark: { a: ['Quark'], tl: 5 },
+    feta: { a: ['Schafskäse', 'Hirtenkäse'], stk: 150 },
+    mozzarella: { stk: 125, pck: 125 },
+    parmesan: { tl: 2.5 },
+    kaese: { a: ['Käse', 'Gouda', 'Schnittkäse', 'Reibekäse'], tl: 3 },
+    butter: { tl: 5, pck: 250 },
+    eier: { a: ['Ei'] },
+    kokosmilch: { dose: 400 },
+    haehnchen: { a: ['Hähnchen', 'Hähnchenbrustfilet', 'Hühnerbrust', 'Hühnchen', 'Poulet'], stk: 180 },
+    rinderhack: { a: ['Rinderhackfleisch', 'Hackfleisch'] },
+    schinken: { a: ['Schinken', 'Kochschinken'] },
+    lachs: { a: ['Lachs'], stk: 150 },
+    thunfisch: { a: ['Thunfisch'], dose: 150 },
+    garnelen: { a: ['Garnele', 'Shrimps', 'Crevetten'] },
+    zwiebel: { a: ['Zwiebeln'] },
+    knoblauch: { a: ['Knoblauch', 'Knoblauchzehen'] },
+    tomaten: { a: ['Tomate'], stk: 120 },
+    dosentomaten: { a: ['Dosentomaten', 'gehackte Tomaten', 'Tomaten (Dose)', 'stückige Tomaten'], dose: 400 },
+    tomatenmark: { tl: 5 },
+    paprika: { a: ['Paprikaschote', 'Paprikaschoten'] },
+    aubergine: { a: ['Auberginen'] },
+    gurke: { a: ['Salatgurke', 'Gurken'] },
+    karotten: { a: ['Karotte', 'Möhre', 'Möhren'], stk: 80, bund: 500 },
+    brokkoli: { a: ['Broccoli'], stk: 400 },
+    spinat: { a: ['Babyspinat', 'Blattspinat'] },
+    blumenkohl: { stk: 800 },
+    champignons: { a: ['Champignon', 'Pilze'], stk: 20 },
+    rucola: { a: ['Rauke'], bund: 80 },
+    lauch: { a: ['Porree'], stk: 180 },
+    kuerbis: { a: ['Kürbis', 'Hokkaido', 'Hokkaido-Kürbis'], stk: 1000 },
+    mais: { a: ['Mais'], dose: 285 },
+    erbsen: { a: ['Erbsen'] },
+    ingwer: { tl: 2 },
+    avocado: { a: ['Avocados'] },
+    zitrone: { a: ['Zitronen'] },
+    bananen: { a: ['Bananen'] },
+    aepfel: { a: ['Äpfel'] },
+    beeren: { a: ['Beeren'] },
+    salz: { tl: 6 },
+    pfeffer: { tl: 2.5 },
+    bruehe: { a: ['Brühe'] },
+    curry: { a: ['Curry'], tl: 2.5 },
+    zimt: { tl: 2.5 },
+    paprikapulver: { tl: 2.5 },
+    honig: { tl: 7 },
+    zucker: { tl: 4 },
+    vollkornmehl: { a: ['Vollkornmehl'], tl: 3 },
+    speisestaerke: { a: ['Maisstärke', 'Stärke'], tl: 3 },
+    hefe: { a: ['Hefe', 'Frischhefe'], stk: 42 },
+    sahne: { a: ['Schlagsahne', 'Rahm'], becher: 200 },
+    'saure_sahne': { a: ['Schmand', 'Sauerrahm'], tl: 5, becher: 200 },
+    frischkaese: { tl: 5 },
+    huettenkaese: { a: ['Körniger Frischkäse'], tl: 5, becher: 200 },
+    rapsoel: { a: ['Öl', 'Pflanzenöl'] },
+    essig: { a: ['Weißweinessig', 'Apfelessig', 'Weinessig'] },
+    balsamico: { a: ['Balsamico', 'Aceto Balsamico'] },
+    senf: { tl: 5 },
+    ketchup: { a: ['Tomatenketchup'], tl: 5.5 },
+    mayonnaise: { a: ['Mayo'], tl: 5 },
+    petersilie: { tl: 1.3, bund: 30 },
+    schnittlauch: { tl: 1, bund: 25 },
+    basilikum: { tl: 1, bund: 20 },
+    thymian: { tl: 0.8, bund: 15 },
+    rosmarin: { tl: 0.7, bund: 15 },
+    orange: { a: ['Orangen', 'Apfelsine'] },
+    erdbeeren: { a: ['Erdbeere'], stk: 15 },
+    himbeeren: { a: ['Himbeere'] },
+    heidelbeeren: { a: ['Blaubeeren', 'Heidelbeere'] },
+    birne: { a: ['Birnen'] },
+    trauben: { a: ['Trauben'] },
+    ananas: { stk: 900 },
+    rosinen: { a: ['Sultaninen'], tl: 4 },
+    datteln: { a: ['Dattel'], stk: 8 },
+    fenchel: { stk: 250 },
+    staudensellerie: { a: ['Stangensellerie', 'Sellerie'], stk: 50 },
+    knollensellerie: { stk: 600 },
+    'rote_bete': { a: ['Rote Beete', 'Randen'], stk: 120 },
+    weisskohl: { a: ['Weisskohl', 'Spitzkohl'] },
+    rotkohl: { a: ['Blaukraut'] },
+    'gruene_bohnen': { a: ['Bohnen', 'Buschbohnen'] },
+    kopfsalat: { a: ['Salat', 'Blattsalat'], stk: 250 },
+    eisbergsalat: { stk: 400 },
+    radieschen: { stk: 10, bund: 250 },
+    kohlrabi: { stk: 250 },
+    gruenkohl: { a: ['Federkohl'] },
+    pastinake: { a: ['Pastinaken'], stk: 120 },
+    schalotte: { a: ['Schalotten'] },
+    oliven: { a: ['Olive'], stk: 4 },
+    putenbrust: { a: ['Pute', 'Putenschnitzel', 'Truthahn'], stk: 150 },
+    schweinefilet: { a: ['Schweinefleisch'] },
+    schweinehack: { a: ['Schweinehackfleisch', 'Mett'] },
+    rindfleisch: { a: ['Rindfleisch', 'Rindergulasch', 'Gulasch'] },
+    speck: { a: ['Bacon', 'Speckwürfel'] },
+    kabeljau: { a: ['Dorsch', 'Kabeljaufilet'], stk: 150 },
+    forelle: { stk: 250 },
+    tempeh: { pck: 200 },
+    'linsen_braun': { a: ['Braune Linsen', 'Tellerlinsen', 'Berglinsen'] },
+    haselnuesse: { a: ['Haselnuss'], tl: 3.3, stk: 1.5 },
+    cashew: { a: ['Cashews', 'Cashewnüsse'], tl: 3.3 },
+    erdnuesse: { a: ['Erdnuss'], tl: 3.3 },
+    sonnenblumenkerne: { tl: 3.3 },
+    sesam: { a: ['Sesamsamen'], tl: 3 },
+    pinienkerne: { tl: 3.3 },
+    kokosraspel: { a: ['Kokosflocken'], tl: 2 },
+    polenta: { a: ['Polenta', 'Maisgrieß'], tl: 4 },
+    griess: { a: ['Grieß'], tl: 4 },
+    paniermehl: { a: ['Semmelbrösel'], tl: 3 },
+    weissbrot: { a: ['Toastbrot', 'Baguette', 'Brot'] },
+    vollkornreis: { a: ['Naturreis'] },
+    schokolade: { a: ['Schokolade', 'dunkle Schokolade'] },
+    kakao: { a: ['Kakao', 'Backkakao'], tl: 2.5 },
+    ahornsirup: { tl: 6.5 },
+    konfituere: { a: ['Marmelade'], tl: 7 },
+    sojadrink: { a: ['Sojamilch'] },
+  };
+  // <<< generiert
 
   KA.ING = {};
   ING_RAW.forEach((r) => {
     KA.ING[r[0]] = {
       id: r[0], name: r[1], cat: r[2], unit: r[3], gpu: r[4], price: r[5],
-      flags: r[6], n: r[7], staple: !!r[8],
+      flags: r[6], n: r[7], staple: !!r[8], meta: KA.ING_META[r[0]] || {},
     };
   });
 
@@ -750,14 +976,47 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     if (!flagCache[r.id]) {
       const s = new Set();
       r.i.forEach(([id]) => ING[id].flags.forEach((f) => s.add(f)));
+      // eigene Rezepte: erkannte Zutaten ohne umrechenbare Menge zählen für die Inhaltsstoffe mit;
+      // bei unbekannten Zutaten sind die Inhaltsstoffe nicht prüfbar
+      (r.free || []).forEach((x) => (x.id && ING[x.id] ? ING[x.id].flags.forEach((f) => s.add(f)) : s.add('unbekannt')));
       flagCache[r.id] = s;
     }
     return flagCache[r.id];
   };
 
+  /* ---------- Eigene Rezepte des Nutzers für Finder und Wochenplan ---------- */
+  const TYPES_BY_CAT = { 'Frühstück': ['f'], 'Hauptgericht': ['m', 'a'], 'Snack': ['s'], 'Backen': ['s'] };
+  // Übernimmt eigene Rezepte (Format des Rezeptbuchs) in den Rezeptbestand und liefert, wie viele nutzbar sind.
+  // Die Nährwerte ergeben sich aus den Zutaten, die mit den Stammdaten verknüpft sind (id + base = Menge in der
+  // Grundeinheit des Lebensmittels); die übrigen stehen in r.free. Rezepte ganz ohne verknüpfte Zutat bleiben außen vor.
+  KA.setUserRecipes = (list) => {
+    for (let k = RECIPES.length - 1; k >= 0; k--) {
+      if (!RECIPES[k].user) continue;
+      const id = RECIPES[k].id;
+      RECIPES.splice(k, 1);
+      delete REC[id]; delete perServCache[id]; delete flagCache[id];
+    }
+    let n = 0;
+    (list || []).forEach((u) => {
+      const linked = (x) => x.id && ING[x.id] && x.base > 0;
+      const sum = {};
+      (u.ings || []).filter(linked).forEach((x) => (sum[x.id] = (sum[x.id] || 0) + x.base));
+      if (!Object.keys(sum).length || REC[u.id]) return;
+      const r = {
+        id: u.id, name: u.title, types: TYPES_BY_CAT[u.cat] || ['m', 'a'], time: u.time || 30, diff: u.diff || 2, s: u.serv || 1,
+        i: Object.keys(sum).map((id) => [id, sum[id]]), st: u.steps || [], user: true, free: (u.ings || []).filter((x) => !linked(x)),
+      };
+      RECIPES.push(r);
+      REC[r.id] = r;
+      n++;
+    });
+    return n;
+  };
+
   /* ---------- Präferenzen / Filter ---------- */
   KA.recipeMatches = (r, prefs, slot) => {
     if (slot && !r.types.includes(slot)) return false;
+    if (prefs.onlyMine && !r.user) return false;
     if (prefs.maxTime && r.time > prefs.maxTime) return false;
     if (prefs.maxDiff && r.diff > prefs.maxDiff) return false;
     const flags = KA.recipeFlags(r);
@@ -766,13 +1025,14 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     for (const d of prefs.diets || []) {
       const def = DIETS[d];
       if (!def) continue;
-      if (def.excl && def.excl.some((f) => flags.has(f))) return false;
+      // unbekannte Zutaten könnten gegen die Ernährungsform verstoßen -> vorsichtshalber ausschließen
+      if (def.excl && (flags.has('unbekannt') || def.excl.some((f) => flags.has(f)))) return false;
       if (def.macro === 'lowcarb' && (n[IDX.carb] * 4) / kcal > 0.3) return false;
       if (def.macro === 'highprotein' && (n[IDX.prot] * 4) / kcal < 0.22) return false;
     }
     const dis = (prefs.dislikes || []).map(KA.norm).filter(Boolean);
     if (dis.length) {
-      const hay = [KA.norm(r.name)].concat(r.i.map(([id]) => KA.norm(ING[id].name) + ' ' + id));
+      const hay = [KA.norm(r.name)].concat(r.i.map(([id]) => KA.norm(ING[id].name) + ' ' + id), (r.free || []).map((x) => KA.norm(x.name)));
       if (dis.some((d) => hay.some((h) => h.includes(d)))) return false;
     }
     return true;
@@ -1019,7 +1279,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   }
 
   KA.planSig = (prefs) =>
-    JSON.stringify([prefs.diets, prefs.dislikes, prefs.maxTime, prefs.maxDiff, prefs.meals, prefs.macro && prefs.macro.enabled ? prefs.macro : null, prefs.body && prefs.body.enabled ? prefs.body : null]);
+    JSON.stringify([prefs.diets, prefs.dislikes, prefs.maxTime, prefs.maxDiff, !!prefs.onlyMine, prefs.meals, prefs.macro && prefs.macro.enabled ? prefs.macro : null, prefs.body && prefs.body.enabled ? prefs.body : null]);
 
   KA.slotPool = (prefs, slot) => RECIPES.filter((r) => KA.recipeMatches(r, prefs, slot));
 
@@ -1032,7 +1292,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     for (const s of slots) {
       pools[s] = KA.slotPool(prefs, s);
       if (!pools[s].length)
-        return { error: `Für „${MEALS[s].label}“ gibt es mit den aktuellen Filtern kein passendes Rezept. Lockere Ernährungsform, Zeit oder Schwierigkeit.` };
+        return { error: `Für „${MEALS[s].label}“ gibt es mit den aktuellen Filtern kein passendes Rezept. Lockere Ernährungsform, Zeit oder Schwierigkeit${prefs.onlyMine ? ' – oder schalte „Nur meine eigenen Rezepte verwenden“ aus' : ''}.` };
     }
     const mk = (s, r) => ({ slot: s, rid: r.id, f: factorFor(r, T.kcal * share[s]), lock: false });
     const rnd = (a) => a[Math.floor(Math.random() * a.length)];
@@ -1162,7 +1422,104 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+  /* ---------- REWE: Warenkorb auf rewe.de füllen (lokale REWE-Bridge, Ordner rewe-bridge) ---------- */
+  // In der Desktop-App laufen die Aufrufe über die App-Hülle (/api/rewe), die auch den API-Schlüssel setzt.
+  // Im Browser spricht die Seite die Bridge direkt an; Adresse und Schlüssel stehen dann in der Konfiguration.
+  const reweBase = (cfg) => (root.KA_DESKTOP ? '/api/rewe' : String(cfg.url || 'http://localhost:8765').replace(/\/+$/, ''));
+  async function reweCall(cfg, path, body) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (!root.KA_DESKTOP && cfg.apiKey) headers.Authorization = 'Bearer ' + cfg.apiKey;
+    const res = await fetch(reweBase(cfg) + path, body === undefined ? { headers } : { method: 'POST', headers, body: JSON.stringify(body) });
+    let json = null;
+    try { json = await res.json(); } catch (e) { /* leere Antwort */ }
+    if (res.status === 401) throw new Error('Die REWE-Bridge lehnt den API-Schlüssel ab. Er steht im Fenster der Bridge.');
+    if (!res.ok) throw new Error((json && json.error) || 'Die REWE-Bridge antwortete mit HTTP ' + res.status + '.');
+    return json || {};
+  }
+  const reweAlive = async (cfg) => { try { await reweCall(cfg, '/health'); return true; } catch (e) { return false; } };
+
+  // Einkaufsliste der App -> Format der Bridge. Stückware bekommt das Stückgewicht mit (für Packungen nach Gewicht).
+  function reweItems(items) {
+    return items.filter((i) => i.checked !== false).map((i) => {
+      const ing = i.id && KA.ING[i.id];
+      const search = String(i.name).replace(/[()]/g, ' ').split('/')[0].replace(/\s+/g, ' ').trim(); // „Kichererbsen (Dose)“ -> „Kichererbsen Dose“
+      if (!ing) return { name: i.name, search, packages: 1 }; // frei eingetragener Artikel: Menge nicht umrechenbar
+      const it = { sku: i.id, name: i.name, search, quantity: i.amount, unit: i.unit };
+      if (ing.unit === 'Stk' && ing.gpu > 1) it.gramsPerUnit = ing.gpu;
+      return it;
+    });
+  }
+
   KA.Providers = {
+    rewe: {
+      label: 'REWE – Warenkorb füllen (du bestellst selbst auf rewe.de)',
+      help:
+        'Legt die Artikel der Liste in deinen Warenkorb auf rewe.de und öffnet ihn im REWE-Fenster. Es wird nichts bestellt: ' +
+        'Prüfen, Liefertermin wählen und „Bestellen“ machst du selbst auf rewe.de. Nach dem Klick wird deine Postleitzahl abgefragt. ' +
+        (root.KA_DESKTOP
+          ? 'Die REWE-Bridge (eigenes Chrome-Fenster) startet bei Bedarf automatisch.'
+          : 'Im Browser musst du vorher rewe-bridge\\start-rewe-bridge.cmd starten und den dort angezeigten API-Schlüssel hier eintragen.'),
+      fields: root.KA_DESKTOP ? [] : [
+        { k: 'url', label: 'Adresse der REWE-Bridge', placeholder: 'http://localhost:8765', type: 'url' },
+        { k: 'apiKey', label: 'API-Schlüssel der Bridge', placeholder: 'steht im Fenster der Bridge', type: 'password' },
+      ],
+      needsZip: true,
+      preview: (items, cfg) => ({ ziel: reweBase(cfg), market: { zipCode: cfg.zip || '(wird abgefragt)', service: cfg.service || 'DELIVERY' },
+        order: { items: reweItems(items), options: { mode: 'set', openCheckout: true } } }),
+      /** ctx: { zip, service, onProgress(text) } */
+      async submit(items, cfg, customer, ctx) {
+        const say = (t) => ctx && ctx.onProgress && ctx.onProgress(t);
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+        const zip = String((ctx && ctx.zip) || '').trim();
+        if (!/^\d{5}$/.test(zip)) throw new Error('Bitte eine fünfstellige Postleitzahl angeben.');
+        const service = ctx.service === 'PICKUP' ? 'PICKUP' : 'DELIVERY';
+
+        // 1. Bridge erreichbar? In der Desktop-App bei Bedarf starten.
+        if (!(await reweAlive(cfg))) {
+          if (!root.KA_DESKTOP) throw new Error('Die REWE-Bridge läuft nicht. Bitte rewe-bridge\\start-rewe-bridge.cmd starten und erneut versuchen.');
+          say('REWE-Bridge wird gestartet …');
+          await reweCall(cfg, '/start', {});
+          let up = false;
+          for (let i = 0; i < 60 && !up; i++) { await wait(1000); up = await reweAlive(cfg); }
+          if (!up) throw new Error('Die REWE-Bridge ist nicht gestartet. Bitte das Konsolenfenster prüfen (Chrome oder Edge wird benötigt).');
+        }
+
+        // 2. Markt zur Postleitzahl wählen und warten, bis die Bridge ihn übernommen hat
+        say(`REWE-Markt für ${zip} wird gewählt …`);
+        await reweCall(cfg, '/market', { zipCode: zip, service });
+        let shop = null;
+        for (let i = 0; i < 120; i++) {
+          await wait(1000);
+          const st = await reweCall(cfg, '/status');
+          if (!st.busy && !st.queued) { shop = st.shop; break; } // Marktwahl ist abgearbeitet
+        }
+        if (shop && shop.challenge) throw new Error('rewe.de zeigt eine Sicherheitsprüfung. Bitte im REWE-Fenster bestätigen und erneut versuchen.');
+        if (!shop || shop.zipCode !== zip || !shop.marketCode) {
+          throw new Error(`Für die Postleitzahl ${zip} konnte kein REWE-${service === 'PICKUP' ? 'Abholmarkt' : 'Lieferservice'} gewählt werden. Bitte im REWE-Fenster prüfen oder die andere Variante wählen.`);
+        }
+
+        // 3. Liste übergeben und Fortschritt abfragen. Die Bridge legt nur in den Warenkorb – bestellt wird nie.
+        const list = reweItems(items);
+        let job = await reweCall(cfg, '/orders', { items: list, options: { mode: 'set', openCheckout: true, background: true } });
+        while (job.status === 'queued' || job.status === 'running') {
+          await wait(1000);
+          job = await reweCall(cfg, '/orders/' + encodeURIComponent(job.orderId));
+          if (job.progress) say(`REWE-Warenkorb wird gefüllt … ${job.progress.done} von ${job.progress.total}`);
+        }
+        if (job.status !== 'done') throw new Error(job.message || 'Die REWE-Bridge meldet einen Fehler.');
+        const lines = (job.results || []).map((r) => (r.ok
+          ? { ok: true, text: `${r.packages}× ${r.product.name}${r.product.price != null ? ' · ' + KA.fmtEUR(r.product.price) : ''} – für ${r.name}${r.note ? ' (' + r.note + ')' : ''}` }
+          : { ok: false, text: `${r.name}: ${r.error}` }));
+        const sum = job.summary || {};
+        return {
+          ok: true, orderId: job.orderId, lines,
+          message: `${sum.added} von ${list.length} Artikeln liegen im REWE-Warenkorb` + (sum.estimatedTotal ? ` (ca. ${KA.fmtEUR(sum.estimatedTotal)})` : '') +
+            '. Es wurde nichts bestellt – bitte den Warenkorb im REWE-Fenster prüfen und die Bestellung dort selbst abschließen.',
+          raw: job,
+        };
+      },
+    },
+
     mock: {
       label: 'Demo-Shop (Simulation)',
       help: 'Simuliert eine Bestellung ohne Netzwerk. Gut zum Ausprobieren der Abläufe.',
@@ -1270,13 +1627,13 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     tab: 'book',
     my: [], list: [], extras: [], done: {}, // Rezeptbuch: eigene Rezepte, Rezepte auf der Einkaufsliste, freie Artikel, Häkchen
     prefs: {
-      diets: [], dislikes: [], maxTime: 60, maxDiff: 3, persons: 2, assumeStaples: true,
+      diets: [], dislikes: [], maxTime: 60, maxDiff: 3, persons: 2, assumeStaples: true, onlyMine: false,
       meals: { f: 1, m: 1, a: 1, s: 0 },
       macro: { enabled: false, p: 20, c: 50, f: 30 },
       body: { enabled: false, sex: 'm', age: 30, height: 175, weight: 70, activity: 1.6, goal: 'keep' },
     },
     pantry: {}, sel: [], comboN: 3, plan: null, shop: null, subPantry: true,
-    order: { provider: 'mock', cfg: { rest: { method: 'POST', authHeader: 'Authorization' }, mailto: {}, mock: {} }, customer: { name: '', street: '', zip: '', city: '' } },
+    order: { provider: 'rewe', cfg: { rewe: { service: 'DELIVERY' }, rest: { method: 'POST', authHeader: 'Authorization' }, mailto: {}, mock: {} }, customer: { name: '', street: '', zip: '', city: '' } },
   });
   const merge = (a, b) => {
     if (b && typeof b === 'object' && !Array.isArray(b) && a && typeof a === 'object' && !Array.isArray(a)) {
@@ -1288,7 +1645,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   let S = DEF();
   try { S = merge(DEF(), JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) { /* ignore */ }
   const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { toast('Speichern fehlgeschlagen – der lokale Speicher ist voll.'); } };
-  const emptyDraft = () => ({ title: '', serv: 4, time: '', cat: 'Hauptgericht', ings: [], steps: [], image: '' });
+  const emptyDraft = () => ({ title: '', serv: 4, time: '', cat: 'Hauptgericht', diff: 2, ings: [], steps: [], image: '' });
   const ui = {
     open: new Set(), nutDay: -1, preview: false, orderResult: null, ordering: false, planError: '', focus: null,
     book: 'library', selId: null, detailServ: 2, filter: 'Alle', query: '', addMode: 'manual', draft: emptyDraft(),
@@ -1345,7 +1702,9 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   const tag = (txt, cls) => `<span class="tag ${cls || ''}">${esc(txt)}</span>`;
   function recipeTags(r) {
     const f = KA.recipeFlags(r);
-    const t = [];
+    const t = r.user ? ['eigenes'] : [];
+    // Bei Zutaten ohne Stammdaten lässt sich keine Ernährungsform zusichern
+    if (f.has('unbekannt')) return t.concat('Nährwerte unvollständig').map((x) => tag(x)).join('');
     if (!f.has('fleisch') && !f.has('fisch') && !f.has('schalentier')) t.push(!f.has('milch') && !f.has('ei') && !f.has('honig') ? 'vegan' : 'vegetarisch');
     else if (!f.has('fleisch')) t.push('pescetarisch');
     if (!f.has('gluten')) t.push('glutenfrei');
@@ -1369,7 +1728,9 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       }
       return `<tr><td>${esc(ING[id].name)}</td><td class="num">${KA.fmtAmount(id, need)}</td><td>${st}</td></tr>`;
     }).join('');
-    return `<table class="ings"><tbody>${rows}</tbody></table>`;
+    // eigene Rezepte: Zutaten ohne Stammdaten werden nur aufgeführt, nicht mit dem Vorrat verrechnet
+    const free = (r.free || []).map((i) => `<tr><td>${esc(i.name)}</td><td class="num">${esc(ingQty(i, k))}</td><td>${ev ? '<span class="st basic">nicht verrechnet</span>' : ''}</td></tr>`).join('');
+    return `<table class="ings"><tbody>${rows}${free}</tbody></table>`;
   }
 
   function recipeFacts(r) {
@@ -1410,7 +1771,10 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
         <div class="fgroup"><div class="flabel">Personen (Portionen)</div>
           <input class="narrow" type="number" min="1" max="12" step="1" value="${p.persons}" data-bind="prefs.persons" data-num="1"></div>
         <label class="switch"><input type="checkbox" data-bind="prefs.assumeStaples" ${p.assumeStaples ? 'checked' : ''}><span>Salz, Pfeffer, Öl, Brühe & Gewürze sind immer da</span></label>
-      </div></section>`;
+        <label class="switch"><input type="checkbox" data-bind="prefs.onlyMine" ${p.onlyMine ? 'checked' : ''}><span>Nur meine eigenen Rezepte verwenden <span class="muted">(${usableMine} von ${S.my.length} nutzbar)</span></span></label>
+      </div>
+      ${p.onlyMine && !usableMine ? `<p class="warn">${S.my.length ? 'Keines deiner Rezepte ist hier nutzbar: Dafür braucht mindestens eine Zutat einen Namen aus der Lebensmittelliste (wie bei „Mein Vorrat“) und eine Menge in g, ml oder Stk.' : 'Du hast noch keine eigenen Rezepte angelegt.'} <button class="btn sm" data-act="bookadd">Rezept anlegen</button></p>` : ''}
+      </section>`;
   }
 
   const MACRO_PRESETS = { balanced: ['Ausgewogen', 20, 50, 30], highprotein: ['Eiweißreich', 30, 40, 30], lowcarb: ['Low Carb', 30, 25, 45], lowfat: ['Fettarm', 25, 55, 20] };
@@ -1513,7 +1877,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
           <p>Damit werden <b>${usage.touched} von ${usage.count}</b> Vorratsartikeln verwendet (ca. ${r0(usage.massFrac * 100)} % der Mengen).</p>
           <button class="btn" data-act="takecombo" ${same ? 'disabled' : ''}>${same ? '✔ Übernommen' : 'Kombination übernehmen'}</button></section>`;
 
-        const list = sel.length ? KA.shoppingForRecipes(sel, S.pantry, p) : [];
+        const list = sel.length ? finderList(sel) : [];
         out += `<section class="card"><h2>Einkaufsliste für die Reste</h2>${
           sel.length
             ? `<p class="muted">Für ${sel.length} ausgewählte${sel.length > 1 ? '' : 's'} Gericht${sel.length > 1 ? 'e' : ''}: ${sel.map((id) => esc(REC[id].name)).join(' · ')}</p>${listHTML(list)}
@@ -1613,7 +1977,20 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       `<label>${l}<input value="${esc(c[k])}" data-bind="order.customer.${k}"></label>`).join('');
     const items = S.shop.items;
     const prev = ui.preview ? `<pre class="json">${esc(JSON.stringify(prov.preview(items, cfg, c), null, 2))}</pre>` : '';
-    const res = ui.orderResult ? `<div class="card ${ui.orderResult.ok ? 'okbox' : 'err'}">${esc(ui.orderResult.message)}</div>` : '';
+    const r = ui.orderResult;
+    const res = r ? `<div class="card ${r.ok ? 'okbox' : 'err'}">${esc(r.message)}${r.lines && r.lines.length
+      ? `<ul class="olines">${r.lines.map((l) => `<li class="${l.ok ? '' : 'bad'}">${l.ok ? '✓' : '✗'} ${esc(l.text)}</li>`).join('')}</ul>` : ''}</div>` : '';
+    if (prov.needsZip) {
+      // REWE: füllt nur den Warenkorb; Postleitzahl wird nach dem Klick abgefragt, bestellt wird auf rewe.de
+      return `<section class="card"><h2>Bestellen</h2>
+        <label>Anbieter / Schnittstelle<select data-bind="order.provider">${Object.entries(KA.Providers).map(([k, v]) => `<option value="${k}" ${o.provider === k ? 'selected' : ''}>${esc(v.label)}</option>`).join('')}</select></label>
+        <p class="muted sm">${esc(prov.help)}</p>
+        <div class="grid2">${f}</div>
+        <div class="btnrow"><button class="btn ghost" data-act="preview">${ui.preview ? 'Anfrage ausblenden' : 'Anfrage ansehen'}</button>
+        <button class="btn" data-act="order" ${ui.ordering ? 'disabled' : ''}>${ui.ordering ? 'Warenkorb wird gefüllt …' : 'Bei REWE in den Warenkorb …'}</button></div>
+        ${ui.ordering ? `<p class="muted" id="order-progress">${esc(ui.orderProgress || 'Verbindung zur REWE-Bridge …')}</p>` : ''}
+        ${prev}${res}</section>`;
+    }
     return `<section class="card"><h2>Bestellen</h2>
       <label>Anbieter / Schnittstelle<select data-bind="order.provider">${Object.entries(KA.Providers).map(([k, v]) => `<option value="${k}" ${o.provider === k ? 'selected' : ''}>${esc(v.label)}</option>`).join('')}</select></label>
       <p class="muted sm">${esc(prov.help)}</p>
@@ -1669,7 +2046,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   // „200 g Mehl“ -> { qty, unit, name }
   function parseLine(t) {
     t = t.trim();
-    const m = t.match(/^([\d.,½¼¾\/]+)?\s*(kg|g|ml|l|EL|TL|Stk|Zehen?|Prise|Bund|Dose|Becher|Pck)?\.?\s+(.+)$/i);
+    const m = t.match(/^([\d.,½¼¾\/]+)?\s*(kg|g|ml|l|EL|TL|Stk|Stück|Zehen?|Prisen?|Bund|Dosen?|Becher|Pck|Packung)?\.?\s+(.+)$/i);
     if (!m || (!m[1] && !m[2])) return { qty: null, unit: '', name: t };
     let q = null;
     if (m[1]) {
@@ -1681,15 +2058,46 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 
   // Verknüpft eine freie Zutat mit den Stammdaten, wenn Name und Einheit eindeutig passen
   // (dann greifen Kategorien, Preise und das Zusammenfassen auf der Einkaufsliste).
+  // Ergebnis: die Zutat wie eingetippt (qty, unit, name) plus id des Lebensmittels und base = Menge in dessen
+  // Grundeinheit (g, ml oder Stk). base ist null, wenn sich die Einheit nicht umrechnen lässt.
+  let nameIndex = null;
+  function findFood(name) {
+    if (!nameIndex) {
+      nameIndex = {};
+      const put = (n, i) => { const k = KA.norm(n); if (k && !nameIndex[k]) nameIndex[k] = i; };
+      Object.values(ING).forEach((i) => put(i.name, i));
+      Object.values(ING).forEach((i) => (i.meta.a || []).forEach((n) => put(n, i)));
+    }
+    const n = KA.norm(name);
+    const head = n.split(/[,(]/)[0].trim(); // „Paprikapulver, edelsüß“ -> „paprikapulver“
+    const words = head.split(/\s+/);
+    const tries = [n, head, head.replace(/^bio[- ]?/, ''), words.length > 1 ? words[words.length - 1] : '']; // „rote Zwiebel“ -> „zwiebel“
+    for (const t of tries) if (t && nameIndex[t]) return nameIndex[t];
+    return null;
+  }
+  const UNIT_KEY = { g: 'g', kg: 'kg', ml: 'ml', l: 'l', el: 'el', tl: 'tl', prise: 'prise', prisen: 'prise', bund: 'bund', dose: 'dose', dosen: 'dose',
+    becher: 'becher', pck: 'pck', packung: 'pck', stk: 'stk', 'stück': 'stk', zehe: 'stk', zehen: 'stk' };
+  // Haushaltsmaße sind Näherungen (Gewichte je Lebensmittel in data.js, KA.ING_META)
+  function toBaseAmount(ing, qty, unit) {
+    const u = UNIT_KEY[(unit || 'stk').toLowerCase()];
+    const m = ing.meta;
+    if (ing.unit === 'Stk') return u === 'stk' ? qty : u === 'g' ? qty / ing.gpu : u === 'kg' ? (qty * 1000) / ing.gpu : null;
+    if (u === 'g' || u === 'ml') return qty; // bei Flüssigkeiten 1 g ≈ 1 ml
+    if (u === 'kg' || u === 'l') return qty * 1000;
+    const tl = ing.unit === 'ml' ? 5 : m.tl;
+    if (u === 'tl' && tl) return qty * tl;
+    if (u === 'el' && tl) return qty * tl * 3;
+    if (u === 'prise' && ing.unit === 'g') return qty * 0.4;
+    if (m[u]) return qty * m[u];
+    return null;
+  }
   function linkIng(p) {
-    if (p.id || p.qty == null) return p;
-    const n = KA.norm(p.name);
-    const ing = Object.values(ING).find((i) => KA.norm(i.name) === n);
-    if (!ing) return p;
-    const u = (p.unit || '').toLowerCase();
-    const ok = ing.unit === 'g' ? ['g', 'kg'] : ing.unit === 'ml' ? ['ml', 'l'] : ['stk'];
-    if (!ok.includes(u)) return p;
-    return { id: ing.id, qty: KA.toBase(p.qty, u), unit: ing.unit, name: ing.name };
+    const ing = findFood(p.name);
+    const out = { qty: p.qty, unit: p.unit, name: p.name };
+    if (!ing) return out;
+    out.id = ing.id;
+    out.base = p.qty == null ? null : toBaseAmount(ing, p.qty, p.unit);
+    return out;
   }
 
   const hash = (s) => Array.from(s).reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -1697,15 +2105,45 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   // Einheitliche Sicht auf mitgelieferte und eigene Rezepte
   function bookRecipe(id) {
     const r = REC[id];
-    if (!r) return S.my.find((x) => x.id === id) || null;
+    if (!r || r.user) return S.my.find((x) => x.id === id) || null;
     return {
       id, title: r.name, cat: builtinCat(r), time: r.time, serv: r.s, source: 'Kochapp', builtin: true, tone: hash(id) % TONES.length,
-      ings: r.i.map(([iid, a]) => ({ id: iid, qty: a, unit: ING[iid].unit, name: ING[iid].name })), steps: r.st,
+      ings: r.i.map(([iid, a]) => ({ id: iid, qty: a, base: a, unit: ING[iid].unit, name: ING[iid].name, std: true })), steps: r.st,
     };
   }
-  const allBook = () => S.my.concat(KA.RECIPES.map((r) => bookRecipe(r.id)));
+  const builtins = () => KA.RECIPES.filter((r) => !r.user);
+  const allBook = () => S.my.concat(builtins().map((r) => bookRecipe(r.id)));
+
+  // Eigene Rezepte in Finder und Wochenplan bereitstellen; Verweise auf gelöschte Rezepte aufräumen
+  let usableMine = 0;
+  function syncRecipes() {
+    // Zutaten (neu) mit den Stammdaten verknüpfen – auch für Rezepte aus älteren Versionen
+    S.my.forEach((r) => {
+      r.ings = r.ings.map((i) => (i.id && i.base === undefined ? Object.assign({}, i, { base: i.qty }) : i.id ? i : linkIng(i)));
+    });
+    usableMine = KA.setUserRecipes(S.my);
+    S.sel = S.sel.filter((id) => REC[id]);
+    if (S.plan && S.plan.days.some((day) => day.some((m) => !REC[m.rid]))) S.plan = null;
+  }
+
+  // Zutaten ohne Stammdaten aus eigenen Rezepten als freie Artikel für die Einkaufsliste; entries: [{ rid, k }]
+  function freeItems(entries) {
+    const agg = {};
+    entries.forEach(({ rid, k }) => (REC[rid].free || []).forEach((i) => {
+      const key = KA.norm(i.name) + '|' + (i.unit || '');
+      const a = agg[key] || (agg[key] = { name: i.name, unit: i.unit || '', qty: 0 });
+      if (i.qty != null) a.qty += i.qty * k;
+    }));
+    return Object.values(agg).sort((a, b) => a.name.localeCompare(b.name, 'de')).map((a) =>
+      ({ id: null, name: a.name, cat: 'SO', amount: a.qty ? Math.round(a.qty * 100) / 100 : null, unit: a.unit, label: a.qty ? fmtQ(a.qty, a.unit) : '', price: 0, checked: true }));
+  }
+  const finderList = (sel) => KA.shoppingForRecipes(sel, S.pantry, S.prefs)
+    .concat(freeItems(sel.map((rid) => ({ rid, k: (S.prefs.persons || 2) / REC[rid].s }))));
+  const planList = () => KA.planShopping(S.plan, S.prefs, S.pantry, S.subPantry)
+    .concat(freeItems(S.plan.days.reduce((all, day) => all.concat(day.map((m) => ({ rid: m.rid, k: (m.f * (S.prefs.persons || 1)) / REC[m.rid].s }))), [])));
   const srcLabel = (r) => (r.source === 'Web' ? 'Web · ' + r.domain : r.source);
-  const ingQty = (i, f) => (i.qty == null ? i.unit || '' : i.id ? KA.fmtAmount(i.id, i.qty * f) : fmtQ(i.qty * f, i.unit));
+  // mitgelieferte Rezepte in Stammdaten-Einheiten, eigene so, wie sie eingetippt wurden
+  const ingQty = (i, f) => (i.qty == null ? i.unit || '' : i.std ? KA.fmtAmount(i.id, i.base * f) : fmtQ(i.qty * f, i.unit));
   const toneStyle = (r) => `--a:${TONES[r.tone % TONES.length][0]};--b:${TONES[r.tone % TONES.length][1]}`;
   const recImg = (r) => (r.image ? `<img src="${esc(r.image)}" alt="${esc(r.title)}">` : '');
 
@@ -1727,18 +2165,35 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   }
 
   function viewLibrary() {
-    const n = S.my.length + KA.RECIPES.length;
+    const n = S.my.length + builtins().length;
     return `<div class="ph"><div><h1>Meine Rezepte</h1><p>${n} Rezepte · ${S.my.length} eigene</p></div>
         <input id="bk-q" class="search" value="${esc(ui.query)}" aria-label="Rezept oder Zutat suchen" placeholder="Rezept oder Zutat suchen …" autocomplete="off"></div>
       <div class="fchips">${['Alle'].concat(BOOK_CATS, ['Eigene']).map((f) => `<button class="${ui.filter === f ? 'on' : ''}" data-act="bookfilter" data-v="${f}">${f}</button>`).join('')}</div>
       <div class="bgrid" id="bk-cards">${bookCards()}</div>`;
   }
 
+  // Nährwerte einer Portion, zusammengerechnet aus den Zutaten (Werte je 100 g aus den Stammdaten)
+  function nutritionCard(r, base) {
+    if (!base) return '<div class="card ingcard"><h2>Nährwerte</h2><p class="muted">Für dieses Rezept lassen sich keine Nährwerte berechnen: Keine Zutat wurde als bekanntes Lebensmittel mit Menge erkannt.</p></div>';
+    const n = KA.recipeNutr(base);
+    const T = KA.targets(S.prefs);
+    const rows = NUTRIENTS.map((nu, i) => {
+      const pct = (n[i] / T[nu.k]) * 100;
+      return `<div class="nurow"><span>${nu.label}</span><b>${KA.fmtNum(n[i], n[i] < 10 ? 1 : 0)} ${nu.unit}</b><div class="bar"><i style="width:${Math.min(100, pct)}%"></i></div><span class="muted">${r0(pct)} %</span></div>`;
+    }).join('');
+    // eigene Rezepte: offenlegen, welche Zutaten in die Rechnung eingehen
+    const open = r.builtin ? [] : r.ings.filter((i) => !(i.id && i.base > 0)).map((i) => i.name);
+    const counted = r.builtin ? '' : `<p class="${open.length ? 'warn' : 'muted sm'}">${r.ings.length - open.length} von ${r.ings.length} Zutaten berücksichtigt${
+      open.length ? ` – nicht eingerechnet: ${esc(open.join(', '))}. Die tatsächlichen Werte liegen höher.` : '.'}</p>`;
+    return `<div class="card ingcard"><div class="lh"><h2>Nährwerte</h2><span class="muted sm">pro Portion · % vom Tagesbedarf</span></div>${rows}${counted}
+      <p class="muted sm">Berechnet aus den Zutaten. Lebensmittelwerte: Schweizer Nährwertdatenbank (BLV), geprüft gegen USDA FoodData Central. Näherungswerte, keine Ernährungsberatung.</p></div>`;
+  }
+
   function viewDetail() {
     const r = bookRecipe(ui.selId);
     const f = ui.detailServ / r.serv;
     const inL = S.list.find((l) => l.id === r.id);
-    const base = r.builtin ? REC[r.id] : null;
+    const base = REC[r.id] || null; // fehlt bei eigenen Rezepten ohne erkannte Zutat
     const fact = (l, v) => `<div><span>${l}</span><b>${v}</b></div>`;
     return `<div class="detail">
       <button class="back" data-act="booklib">← Alle Rezepte</button>
@@ -1751,10 +2206,12 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
         <div class="servbox"><span class="muted">Portionen</span>
           <div class="step"><button data-act="dserv" data-d="-1" aria-label="Weniger">−</button><span>${persons(ui.detailServ)}</span><button data-act="dserv" data-d="1" aria-label="Mehr">+</button></div>
           <button class="btn dark" data-act="addlistd">${inL ? (inL.serv === ui.detailServ ? '✓ Auf der Liste' : 'Liste aktualisieren') : 'Auf Einkaufsliste'}</button></div>
+        ${r.builtin ? '' : `<p class="muted sm">${base ? 'Im Vorrats-Finder und Wochenplan nutzbar.' : 'Nicht im Vorrats-Finder und Wochenplan nutzbar: Keine Zutat wurde als bekanntes Lebensmittel mit Menge erkannt.'}</p>`}
       </div><div class="dt-img" style="${toneStyle(r)}">${recImg(r)}</div></div>
       <div class="dt-body">
-        <div class="card ingcard"><div class="lh"><h2>Zutaten</h2><span class="muted sm">für ${persons(ui.detailServ)}</span></div>
+        <div class="col"><div class="card ingcard"><div class="lh"><h2>Zutaten</h2><span class="muted sm">für ${persons(ui.detailServ)}</span></div>
           ${r.ings.map((i) => `<div class="irow"><span class="${f !== 1 ? 'chg' : ''}">${esc(ingQty(i, f))}</span><span>${esc(i.name)}</span></div>`).join('')}</div>
+        ${nutritionCard(r, base)}</div>
         <div><h2>Zubereitung</h2>
           ${r.steps.length ? r.steps.map((s, k) => `<div class="srow"><span>${k + 1}</span><p>${esc(s)}</p></div>`).join('') : '<p class="muted">Keine Schritte hinterlegt.</p>'}
           ${r.builtin ? '' : '<div class="btnrow"><button class="btn ghost" data-act="delrec">Rezept löschen</button></div>'}</div>
@@ -1776,10 +2233,14 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     ['link', '03', 'Linkimport (Demo)', 'Demo mit einem Beispielrezept; kein echter Webimport.']];
   let demoTimer;
 
+  const linkHint = (l) => (!l.id ? '· kein bekanntes Lebensmittel – ohne Nährwerte'
+    : l.base > 0 ? `✓ Nährwerte: ${esc(ING[l.id].name)} (≈ ${esc(KA.fmtAmount(l.id, l.base))})`
+      : `· ${esc(ING[l.id].name)} erkannt, aber ${l.qty == null ? 'ohne Menge' : 'Einheit nicht umrechenbar'} – ohne Nährwerte`);
   const previewHTML = (text) => {
     if (!text.trim()) return '';
     const p = parseLine(text);
-    return `<span>Erkannt:</span><b>${esc(p.qty != null ? fmtQ(p.qty, '') : '–')}</b><b>${esc(p.unit || '–')}</b><b>${esc(p.name)}</b>`;
+    return `<span>Erkannt:</span><b>${esc(p.qty != null ? fmtQ(p.qty, '') : '–')}</b><b>${esc(p.unit || '–')}</b><b>${esc(p.name)}</b>
+      <span>${linkHint(linkIng(p))}</span>`;
   };
   const stepList = (steps, removable) => steps.map((s, k) => `<div class="lrow st"><span class="no">${k + 1}</span><span>${esc(s)}</span>${removable ? `<button class="x" data-act="delstep" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
   const ingList = (ings, removable) => ings.map((i, k) => `<div class="lrow"><b>${esc(ingQty(i, 1))}</b><span>${esc(i.name)}</span>${removable ? `<button class="x" data-act="deling" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
@@ -1793,6 +2254,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
           <div class="fgroup"><div class="flabel">Portionen</div><div class="step"><button data-act="dstep" data-d="-1" aria-label="Weniger">−</button><span>${d.serv}</span><button data-act="dstep" data-d="1" aria-label="Mehr">+</button></div></div>
           <label>Zeit (Min)<input id="d-time" class="narrow" inputmode="numeric" value="${esc(d.time)}" placeholder="30"></label>
           <div class="fgroup"><div class="flabel">Kategorie</div><div class="fchips">${BOOK_CATS.map((c) => `<button class="${d.cat === c ? 'on' : ''}" data-act="dcat" data-v="${c}">${c}</button>`).join('')}</div></div>
+          <div class="fgroup"><div class="flabel">Schwierigkeit</div><div class="seg">${[1, 2, 3].map((v) => `<button class="${d.diff === v ? 'on' : ''}" data-act="ddiff" data-v="${v}">${DIFF[v]}</button>`).join('')}</div></div>
         </div></div>
         <label class="drop">Titelbild wählen<input id="d-img" type="file" accept="image/jpeg,image/png,image/webp">${d.image ? `<img src="${esc(d.image)}" alt="Titelbild-Vorschau">` : ''}<span>JPG, PNG oder WebP – wird verkleinert gespeichert</span></label>
       </div>
@@ -1902,9 +2364,10 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       const f = l.serv / r.serv;
       r.ings.forEach((i) => {
         if (i.id && S.prefs.assumeStaples && ING[i.id].staple) return;
-        const key = i.id ? 'i|' + i.id : 'x|' + KA.norm(i.name) + '|' + (i.unit || '');
-        const a = agg[key] || (agg[key] = { key, id: i.id || null, name: i.name, unit: i.unit || '', cat: i.id ? ING[i.id].cat : 'SO', qty: 0, from: [] });
-        if (i.qty != null) a.qty += i.qty * f;
+        const std = i.id && i.base > 0; // in Stammdaten-Einheit summierbar
+        const key = std ? 'i|' + i.id : 'x|' + KA.norm(i.name) + '|' + (i.unit || '');
+        const a = agg[key] || (agg[key] = { key, id: std ? i.id : null, name: std ? ING[i.id].name : i.name, unit: std ? ING[i.id].unit : i.unit || '', cat: i.id ? ING[i.id].cat : 'SO', qty: 0, from: [] });
+        if (std) a.qty += i.base * f; else if (i.qty != null) a.qty += i.qty * f;
         if (!a.from.includes(r.title)) a.from.push(r.title);
       });
     });
@@ -1936,7 +2399,8 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
           <div><span class="n">${esc(a.name)}</span><span class="f">${esc(a.from.join(', '))}</span></div><span class="q">${esc(aggQty(a))}</span>
           ${a.extra ? `<button class="x" data-act="extradel" data-n="${esc(a.name)}" title="Entfernen">×</button>` : ''}</div>`).join('')}</div>`).join('')}</div>
       <div class="dr-foot"><button class="btn ghost" data-act="listreset">Häkchen zurücksetzen</button><button class="btn ghost" data-act="listdl">Herunterladen</button>
-        <button class="btn dark" data-act="listtoshop" ${items.length ? '' : 'disabled'}>Drucken & bestellen →</button></div>
+        <button class="btn ghost" data-act="listtoshop" ${items.length ? '' : 'disabled'}>Drucken & mehr →</button>
+        <button class="btn dark" data-act="listtorewe" ${items.length ? '' : 'disabled'}>Bei REWE bestellen →</button></div>
     </aside>`;
   }
 
@@ -1956,9 +2420,9 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     $('#mtop').innerHTML = '<b>Kochapp</b><button data-act="bookadd" aria-label="Neues Rezept">+</button>';
     $('#tabbar').innerHTML = TABS.map(([k, , l]) => `<button class="${S.tab === k && !ui.listOpen ? 'on' : ''}" data-act="tab" data-v="${k}">${l}</button>`).join('') +
       `<button class="${ui.listOpen ? 'on' : ''}" data-act="openlist">Liste<i>${open || ''}</i></button>`;
-    $('#fab').innerHTML = ui.listOpen ? '' : `<button class="fab" data-act="openlist">Einkaufsliste<span>${open}</span></button>`;
   }
   function render() {
+    syncRecipes();
     const y = window.scrollY;
     const old = $('.drawer');
     const dy = old ? old.scrollTop : 0;
@@ -2018,7 +2482,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     const n = KA.norm(q);
     if (!n) return null;
     const all = Object.values(ING);
-    return all.find((i) => KA.norm(i.name) === n || i.id === n) ||
+    return all.find((i) => KA.norm(i.name) === n || i.id === n) || findFood(q) ||
       all.find((i) => KA.norm(i.name).startsWith(n)) ||
       all.find((i) => KA.norm(i.name).includes(n));
   }
@@ -2062,6 +2526,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     addmode: (el) => { ui.addMode = el.dataset.v; render(); },
     dstep: (el) => { ui.draft.serv = Math.max(1, Math.min(30, ui.draft.serv + Number(el.dataset.d))); render(); },
     dcat: (el) => { ui.draft.cat = el.dataset.v; render(); },
+    ddiff: (el) => { ui.draft.diff = Number(el.dataset.v); render(); },
     deling: (el) => { ui.draft.ings.splice(Number(el.dataset.i), 1); render(); },
     delstep: (el) => { ui.draft.steps.splice(Number(el.dataset.i), 1); render(); },
     savedraft: () => {
@@ -2074,7 +2539,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       if (st) st.value = '';
       if (!d.title.trim()) { ui.focus = 'd-title'; render(); toast('Bitte einen Titel eingeben.'); return; }
       ui.draft = emptyDraft();
-      saveRecipe({ title: d.title.trim(), cat: d.cat, time: Number(d.time) || 30, serv: d.serv, source: 'Eigenes', ings: d.ings, steps: d.steps, image: d.image });
+      saveRecipe({ title: d.title.trim(), cat: d.cat, diff: d.diff, time: Number(d.time) || 30, serv: d.serv, source: 'Eigenes', ings: d.ings, steps: d.steps, image: d.image });
     },
     scanstart: () => {
       clearTimeout(demoTimer);
@@ -2164,13 +2629,13 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       update(); toast('Vorrat aktualisiert');
     },
     tofinderlist: () => {
-      S.shop = { source: 'Rezepte (Reste zum Vorrat)', items: KA.shoppingForRecipes(S.sel.filter((id) => REC[id]), S.pantry, S.prefs), created: Date.now() };
+      S.shop = { source: 'Rezepte (Reste zum Vorrat)', items: finderList(S.sel.filter((id) => REC[id])), created: Date.now() };
       ui.orderResult = null; S.tab = 'shop'; update(); window.scrollTo(0, 0);
     },
     setMacro: (el) => { const v = MACRO_PRESETS[el.dataset.v]; Object.assign(S.prefs.macro, { enabled: true, p: v[1], c: v[2], f: v[3] }); update(); },
     genplan: () => { genPlan(); update(); },
     toplanlist: () => {
-      S.shop = { source: 'Wochenplan', items: KA.planShopping(S.plan, S.prefs, S.pantry, S.subPantry), created: Date.now() };
+      S.shop = { source: 'Wochenplan', items: planList(), created: Date.now() };
       ui.orderResult = null; S.tab = 'shop'; update(); window.scrollTo(0, 0);
     },
     nutday: (el) => { ui.nutDay = Number(el.dataset.v); render(); },
@@ -2203,17 +2668,59 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     },
     print: () => window.print(),
     preview: () => { ui.preview = !ui.preview; render(); },
-    order: async () => {
+    order: () => {
       const o = S.order;
       const prov = KA.Providers[o.provider];
       const items = S.shop.items.filter((i) => i.checked !== false);
       if (!items.length) { toast('Keine Artikel ausgewählt.'); return; }
+      if (ui.ordering) return;
+      if (prov.needsZip) { // REWE: erst die Postleitzahl abfragen
+        openDlg(zipDialog(items.length));
+        setTimeout(() => { const z = $('#zip-in'); if (z) { z.focus(); z.select(); } }, 50);
+        return;
+      }
       if (o.provider !== 'mock' && !confirm(`${items.length} Artikel jetzt über „${prov.label}“ bestellen?`)) return;
-      ui.ordering = true; ui.orderResult = null; render();
-      try { ui.orderResult = await prov.submit(items, o.cfg[o.provider] || {}, o.customer); } catch (e) { ui.orderResult = { ok: false, message: e.message }; }
-      ui.ordering = false; save(); render();
+      runOrder();
+    },
+    rewego: () => {
+      const zip = $('#zip-in').value.trim(), service = $('#zip-svc').value;
+      if (!/^\d{5}$/.test(zip)) { $('#zip-err').textContent = 'Bitte eine fünfstellige Postleitzahl eingeben.'; $('#zip-in').focus(); return; }
+      Object.assign((S.order.cfg.rewe = S.order.cfg.rewe || {}), { zip, service });
+      save(); closeDlg();
+      runOrder({ zip, service });
+    },
+    // Einkaufsliste des Rezeptbuchs direkt an REWE übergeben
+    listtorewe: () => {
+      A.listtoshop();
+      if (S.tab !== 'shop' || !S.shop) return;
+      S.order.provider = 'rewe'; ui.preview = false;
+      update();
+      A.order();
     },
   };
+
+  function zipDialog(count) {
+    const cfg = S.order.cfg.rewe || {};
+    return `<h2>Bei REWE in den Warenkorb</h2>
+      <p>Die Kochapp legt ${count} Artikel in deinen Warenkorb auf rewe.de und öffnet ihn danach im REWE-Fenster. <b>Es wird nichts bestellt</b> – die Bestellung schließt du dort selbst ab.</p>
+      <div class="grid2">
+        <label>Deine Postleitzahl<input id="zip-in" inputmode="numeric" maxlength="5" value="${esc(cfg.zip || S.order.customer.zip || '')}" placeholder="z. B. 10115" autocomplete="postal-code"></label>
+        <label>Service<select id="zip-svc"><option value="DELIVERY" ${cfg.service !== 'PICKUP' ? 'selected' : ''}>Lieferservice</option><option value="PICKUP" ${cfg.service === 'PICKUP' ? 'selected' : ''}>Abholservice im Markt</option></select></label>
+      </div>
+      <p class="zip-err" id="zip-err" role="alert"></p>
+      <p class="muted sm">Die Postleitzahl geht an rewe.de, um deinen Markt zu wählen. Für jeden Artikel wird das erste lieferbare Suchergebnis genommen – bitte den Warenkorb vor dem Bestellen prüfen. Liegt ein Artikel schon im REWE-Warenkorb, wird seine Menge ersetzt, nicht addiert.</p>
+      <div class="btnrow"><button class="btn ghost" data-act="closedlg">Abbrechen</button><button class="btn" data-act="rewego">Warenkorb füllen</button></div>`;
+  }
+
+  // Übergibt die ausgewählten Artikel an den gewählten Anbieter; ctx nur bei REWE ({ zip, service })
+  async function runOrder(ctx) {
+    const o = S.order, prov = KA.Providers[o.provider];
+    const items = S.shop.items.filter((i) => i.checked !== false);
+    ui.ordering = true; ui.orderResult = null; ui.orderProgress = ''; render();
+    if (ctx) ctx.onProgress = (t) => { ui.orderProgress = t; const el = $('#order-progress'); if (el) el.textContent = t; };
+    try { ui.orderResult = await prov.submit(items, o.cfg[o.provider] || {}, o.customer, ctx); } catch (e) { ui.orderResult = { ok: false, message: e.message }; }
+    ui.ordering = false; ui.orderProgress = ''; save(); render();
+  }
 
   document.addEventListener('click', (e) => {
     const el = e.target.closest('[data-act]');
@@ -2273,6 +2780,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     if (t.id === 'd-ing' && t.value.trim()) { ui.draft.ings.push(parseLine(t.value)); t.value = ''; ui.focus = 'd-ing'; render(); return; }
     if (t.id === 'd-step' && t.value.trim()) { ui.draft.steps.push(t.value.trim()); t.value = ''; ui.focus = 'd-step'; render(); return; }
     if (t.id === 'extra-in') { A.addextra(); return; }
+    if (t.id === 'zip-in') { A.rewego(); return; }
     if (t.id === 'l-url') { A.linkfetch(); return; }
     if (['p-name', 'p-amt'].includes(e.target.id)) A.addp();
     if (e.target.id === 'dis-in') A.adddis();
@@ -2286,6 +2794,9 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 
   if (!['book', 'finder', 'plan', 'shop'].includes(S.tab)) S.tab = 'book';
   S.list = S.list.filter((l) => bookRecipe(l.id));
+  // einmalig: REWE als Anbieter voreinstellen, auch wenn aus einer älteren Version noch der Demo-Shop gespeichert ist
+  if (!S.order.reweDefault) { S.order.provider = 'rewe'; S.order.reweDefault = true; }
+  if (!KA.Providers[S.order.provider]) S.order.provider = 'rewe';
   render();
 })();
 

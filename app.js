@@ -16,7 +16,7 @@
       body: { enabled: false, sex: 'm', age: 30, height: 175, weight: 70, activity: 1.6, goal: 'keep' },
     },
     pantry: {}, sel: [], comboN: 3, plan: null, shop: null, subPantry: true,
-    order: { provider: 'mock', cfg: { rest: { method: 'POST', authHeader: 'Authorization' }, mailto: {}, mock: {} }, customer: { name: '', street: '', zip: '', city: '' } },
+    order: { provider: 'rewe', cfg: { rewe: { service: 'DELIVERY' }, rest: { method: 'POST', authHeader: 'Authorization' }, mailto: {}, mock: {} }, customer: { name: '', street: '', zip: '', city: '' } },
   });
   const merge = (a, b) => {
     if (b && typeof b === 'object' && !Array.isArray(b) && a && typeof a === 'object' && !Array.isArray(a)) {
@@ -360,7 +360,20 @@
       `<label>${l}<input value="${esc(c[k])}" data-bind="order.customer.${k}"></label>`).join('');
     const items = S.shop.items;
     const prev = ui.preview ? `<pre class="json">${esc(JSON.stringify(prov.preview(items, cfg, c), null, 2))}</pre>` : '';
-    const res = ui.orderResult ? `<div class="card ${ui.orderResult.ok ? 'okbox' : 'err'}">${esc(ui.orderResult.message)}</div>` : '';
+    const r = ui.orderResult;
+    const res = r ? `<div class="card ${r.ok ? 'okbox' : 'err'}">${esc(r.message)}${r.lines && r.lines.length
+      ? `<ul class="olines">${r.lines.map((l) => `<li class="${l.ok ? '' : 'bad'}">${l.ok ? '✓' : '✗'} ${esc(l.text)}</li>`).join('')}</ul>` : ''}</div>` : '';
+    if (prov.needsZip) {
+      // REWE: füllt nur den Warenkorb; Postleitzahl wird nach dem Klick abgefragt, bestellt wird auf rewe.de
+      return `<section class="card"><h2>Bestellen</h2>
+        <label>Anbieter / Schnittstelle<select data-bind="order.provider">${Object.entries(KA.Providers).map(([k, v]) => `<option value="${k}" ${o.provider === k ? 'selected' : ''}>${esc(v.label)}</option>`).join('')}</select></label>
+        <p class="muted sm">${esc(prov.help)}</p>
+        <div class="grid2">${f}</div>
+        <div class="btnrow"><button class="btn ghost" data-act="preview">${ui.preview ? 'Anfrage ausblenden' : 'Anfrage ansehen'}</button>
+        <button class="btn" data-act="order" ${ui.ordering ? 'disabled' : ''}>${ui.ordering ? 'Warenkorb wird gefüllt …' : 'Bei REWE in den Warenkorb …'}</button></div>
+        ${ui.ordering ? `<p class="muted" id="order-progress">${esc(ui.orderProgress || 'Verbindung zur REWE-Bridge …')}</p>` : ''}
+        ${prev}${res}</section>`;
+    }
     return `<section class="card"><h2>Bestellen</h2>
       <label>Anbieter / Schnittstelle<select data-bind="order.provider">${Object.entries(KA.Providers).map(([k, v]) => `<option value="${k}" ${o.provider === k ? 'selected' : ''}>${esc(v.label)}</option>`).join('')}</select></label>
       <p class="muted sm">${esc(prov.help)}</p>
@@ -769,7 +782,8 @@
           <div><span class="n">${esc(a.name)}</span><span class="f">${esc(a.from.join(', '))}</span></div><span class="q">${esc(aggQty(a))}</span>
           ${a.extra ? `<button class="x" data-act="extradel" data-n="${esc(a.name)}" title="Entfernen">×</button>` : ''}</div>`).join('')}</div>`).join('')}</div>
       <div class="dr-foot"><button class="btn ghost" data-act="listreset">Häkchen zurücksetzen</button><button class="btn ghost" data-act="listdl">Herunterladen</button>
-        <button class="btn dark" data-act="listtoshop" ${items.length ? '' : 'disabled'}>Drucken & bestellen →</button></div>
+        <button class="btn ghost" data-act="listtoshop" ${items.length ? '' : 'disabled'}>Drucken & mehr →</button>
+        <button class="btn dark" data-act="listtorewe" ${items.length ? '' : 'disabled'}>Bei REWE bestellen →</button></div>
     </aside>`;
   }
 
@@ -1037,17 +1051,59 @@
     },
     print: () => window.print(),
     preview: () => { ui.preview = !ui.preview; render(); },
-    order: async () => {
+    order: () => {
       const o = S.order;
       const prov = KA.Providers[o.provider];
       const items = S.shop.items.filter((i) => i.checked !== false);
       if (!items.length) { toast('Keine Artikel ausgewählt.'); return; }
+      if (ui.ordering) return;
+      if (prov.needsZip) { // REWE: erst die Postleitzahl abfragen
+        openDlg(zipDialog(items.length));
+        setTimeout(() => { const z = $('#zip-in'); if (z) { z.focus(); z.select(); } }, 50);
+        return;
+      }
       if (o.provider !== 'mock' && !confirm(`${items.length} Artikel jetzt über „${prov.label}“ bestellen?`)) return;
-      ui.ordering = true; ui.orderResult = null; render();
-      try { ui.orderResult = await prov.submit(items, o.cfg[o.provider] || {}, o.customer); } catch (e) { ui.orderResult = { ok: false, message: e.message }; }
-      ui.ordering = false; save(); render();
+      runOrder();
+    },
+    rewego: () => {
+      const zip = $('#zip-in').value.trim(), service = $('#zip-svc').value;
+      if (!/^\d{5}$/.test(zip)) { $('#zip-err').textContent = 'Bitte eine fünfstellige Postleitzahl eingeben.'; $('#zip-in').focus(); return; }
+      Object.assign((S.order.cfg.rewe = S.order.cfg.rewe || {}), { zip, service });
+      save(); closeDlg();
+      runOrder({ zip, service });
+    },
+    // Einkaufsliste des Rezeptbuchs direkt an REWE übergeben
+    listtorewe: () => {
+      A.listtoshop();
+      if (S.tab !== 'shop' || !S.shop) return;
+      S.order.provider = 'rewe'; ui.preview = false;
+      update();
+      A.order();
     },
   };
+
+  function zipDialog(count) {
+    const cfg = S.order.cfg.rewe || {};
+    return `<h2>Bei REWE in den Warenkorb</h2>
+      <p>Die Kochapp legt ${count} Artikel in deinen Warenkorb auf rewe.de und öffnet ihn danach im REWE-Fenster. <b>Es wird nichts bestellt</b> – die Bestellung schließt du dort selbst ab.</p>
+      <div class="grid2">
+        <label>Deine Postleitzahl<input id="zip-in" inputmode="numeric" maxlength="5" value="${esc(cfg.zip || S.order.customer.zip || '')}" placeholder="z. B. 10115" autocomplete="postal-code"></label>
+        <label>Service<select id="zip-svc"><option value="DELIVERY" ${cfg.service !== 'PICKUP' ? 'selected' : ''}>Lieferservice</option><option value="PICKUP" ${cfg.service === 'PICKUP' ? 'selected' : ''}>Abholservice im Markt</option></select></label>
+      </div>
+      <p class="zip-err" id="zip-err" role="alert"></p>
+      <p class="muted sm">Die Postleitzahl geht an rewe.de, um deinen Markt zu wählen. Für jeden Artikel wird das erste lieferbare Suchergebnis genommen – bitte den Warenkorb vor dem Bestellen prüfen. Liegt ein Artikel schon im REWE-Warenkorb, wird seine Menge ersetzt, nicht addiert.</p>
+      <div class="btnrow"><button class="btn ghost" data-act="closedlg">Abbrechen</button><button class="btn" data-act="rewego">Warenkorb füllen</button></div>`;
+  }
+
+  // Übergibt die ausgewählten Artikel an den gewählten Anbieter; ctx nur bei REWE ({ zip, service })
+  async function runOrder(ctx) {
+    const o = S.order, prov = KA.Providers[o.provider];
+    const items = S.shop.items.filter((i) => i.checked !== false);
+    ui.ordering = true; ui.orderResult = null; ui.orderProgress = ''; render();
+    if (ctx) ctx.onProgress = (t) => { ui.orderProgress = t; const el = $('#order-progress'); if (el) el.textContent = t; };
+    try { ui.orderResult = await prov.submit(items, o.cfg[o.provider] || {}, o.customer, ctx); } catch (e) { ui.orderResult = { ok: false, message: e.message }; }
+    ui.ordering = false; ui.orderProgress = ''; save(); render();
+  }
 
   document.addEventListener('click', (e) => {
     const el = e.target.closest('[data-act]');
@@ -1107,6 +1163,7 @@
     if (t.id === 'd-ing' && t.value.trim()) { ui.draft.ings.push(parseLine(t.value)); t.value = ''; ui.focus = 'd-ing'; render(); return; }
     if (t.id === 'd-step' && t.value.trim()) { ui.draft.steps.push(t.value.trim()); t.value = ''; ui.focus = 'd-step'; render(); return; }
     if (t.id === 'extra-in') { A.addextra(); return; }
+    if (t.id === 'zip-in') { A.rewego(); return; }
     if (t.id === 'l-url') { A.linkfetch(); return; }
     if (['p-name', 'p-amt'].includes(e.target.id)) A.addp();
     if (e.target.id === 'dis-in') A.adddis();
@@ -1120,5 +1177,8 @@
 
   if (!['book', 'finder', 'plan', 'shop'].includes(S.tab)) S.tab = 'book';
   S.list = S.list.filter((l) => bookRecipe(l.id));
+  // einmalig: REWE als Anbieter voreinstellen, auch wenn aus einer älteren Version noch der Demo-Shop gespeichert ist
+  if (!S.order.reweDefault) { S.order.provider = 'rewe'; S.order.reweDefault = true; }
+  if (!KA.Providers[S.order.provider]) S.order.provider = 'rewe';
   render();
 })();

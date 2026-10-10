@@ -173,6 +173,8 @@ details summary .muted{font-weight:400;margin-left:.5rem;font-size:.88rem}
 .chk input:focus-visible + span{outline:2.5px solid var(--acc);outline-offset:2px}
 .total{margin-top:1rem;font-size:16px}
 .lh{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.4rem}
+.olines{list-style:none;padding:0;margin:.7rem 0 0;font-size:14px} .olines li{padding:5px 0;border-top:1px solid var(--line2)} .olines li.bad{color:var(--low)}
+.zip-err{color:var(--low);font-weight:600;margin:0;min-height:1.2em}
 pre.json{background:#10171a;color:#cfe8d8;border-radius:10px;padding:.9rem;overflow:auto;max-height:340px;font-size:12px;margin-top:.8rem}
 
 /* ---------- Wochenplan ---------- */

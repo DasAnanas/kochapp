@@ -35,7 +35,7 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
 
 ## Desktop-App
 - **Download: [Kochapp-Windows.zip (aktuelle Version)](https://github.com/DasAnanas/kochapp/releases/latest/download/Kochapp-Windows.zip)** – ZIP entpacken (Rechtsklick > „Alle extrahieren“) und `Kochapp.exe` aus dem entpackten Ordner starten. Alle Versionen unter [Releases](https://github.com/DasAnanas/kochapp/releases).
-- Der Ordner enthält `Kochapp.exe` und drei WebView2-Bibliotheken von Microsoft (`*.dll`), die daneben liegen bleiben müssen. Zum Weitergeben den ganzen Ordner bzw. die ZIP-Datei verwenden.
+- Der Ordner enthält `Kochapp.exe`, drei WebView2-Bibliotheken von Microsoft (`*.dll`) und den Ordner `rewe-bridge`; alles muss zusammen liegen bleiben. Zum Weitergeben den ganzen Ordner bzw. die ZIP-Datei verwenden.
 - Die Oberfläche (`index.html`, `style.css`, `*.js`) ist in die EXE eingebettet. Die Bibliotheken sind es bewusst nicht: Eine EXE, die Programmbibliotheken aus sich selbst entpackt, meldet Windows Defender als Trojaner (Fehlalarm, so geschehen bei Version 1.0.0).
 - Dieses Repository enthält nur den Quelltext; die fertige App liegt als Release-Download vor (so kollidieren parallele Änderungen nicht an einer Binärdatei).
 - **Neue Version veröffentlichen:** `powershell -ExecutionPolicy Bypass -File desktop\release.ps1` baut die App aus dem aktuellen `main` und lädt sie als neues GitHub-Release hoch (benötigt Git und die angemeldete GitHub-CLI `gh`).
@@ -46,6 +46,13 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
 - Externe Links und `mailto:` öffnen im Standardprogramm.
 - Schriftarten (Bricolage Grotesque, Manrope) werden von Google Fonts geladen; ohne Internet nutzt die App Systemschriften.
 - Zum Entwickeln lässt sich `index.html` weiterhin direkt im Browser öffnen (`start.bat`/`server.js` optional mit Node.js).
+
+## Bei REWE bestellen
+- In der Einkaufsliste (Schublade) **„Bei REWE bestellen“** oder unter „Vorrat & Einkauf“ **„Bei REWE in den Warenkorb …“** klicken. Die App fragt nach der **Postleitzahl** (und Liefer- oder Abholservice), wählt den passenden REWE-Markt, legt die Artikel der Liste in den Warenkorb auf rewe.de und holt das REWE-Fenster mit dem Warenkorb nach vorn.
+- **Es wird nie automatisch bestellt.** Warenkorb prüfen, Liefertermin wählen und die Bestellung abschließen macht der Mensch selbst auf rewe.de.
+- Technik: Der Ordner `rewe-bridge` (liegt neben `Kochapp.exe`) enthält eine kleine lokale Schnittstelle, die ein eigenes Chrome- bzw. Edge-Fenster steuert. Die Windows-App startet sie bei Bedarf selbst (es erscheinen ein Konsolenfenster und das REWE-Fenster) und setzt den API-Schlüssel automatisch. Wer sich in diesem REWE-Fenster einmal anmeldet, bleibt dort angemeldet. Details: `rewe-bridge/README.md`.
+- Für jeden Artikel wird das erste lieferbare Suchergebnis genommen und die Menge auf ganze Packungen aufgerundet; nach dem Füllen zeigt die App je Artikel, welches Produkt gewählt wurde und was nicht gefunden wurde. Feste Produkte lassen sich in `rewe-bridge/mappings.json` hinterlegen.
+- rewe.de hat keine öffentliche Schnittstelle; die Bridge nutzt dieselben Aufrufe wie der Shop im Browser. Ändert REWE diese, funktioniert das Füllen nicht mehr, bis `rewe-bridge/rewe-page.js` angepasst ist. In der Browser-Version (`Kochapp.html`) muss die Bridge von Hand gestartet und ihr API-Schlüssel eingetragen werden; auf dem Mac gibt es sie nicht (PowerShell-Skript).
 
 ## Rezeptbuch (aus dem Projekt „Küchenbuch“ übernommen)
 - **Bibliothek** aller Rezepte mit Suche nach Titel oder Zutat, Kategorien und Sammlungen in der Seitenleiste.
