@@ -69,7 +69,7 @@
         'Legt die Artikel der Liste in deinen Warenkorb auf rewe.de und öffnet ihn im REWE-Fenster. Es wird nichts bestellt: ' +
         'Prüfen, Liefertermin wählen und „Bestellen“ machst du selbst auf rewe.de. Nach dem Klick wird deine Postleitzahl abgefragt. ' +
         (root.KA_DESKTOP
-          ? 'Die REWE-Bridge (eigenes Chrome-Fenster) startet bei Bedarf automatisch.'
+          ? 'Das läuft im Hintergrund: Das REWE-Fenster erscheint erst, wenn der Warenkorb fertig ist (benötigt Chrome oder Edge).'
           : 'Im Browser musst du vorher rewe-bridge\\start-rewe-bridge.cmd starten und den dort angezeigten API-Schlüssel hier eintragen.'),
       fields: root.KA_DESKTOP ? [] : [
         { k: 'url', label: 'Adresse der REWE-Bridge', placeholder: 'http://localhost:8765', type: 'url' },
@@ -89,11 +89,11 @@
         // 1. Bridge erreichbar? In der Desktop-App bei Bedarf starten.
         if (!(await reweAlive(cfg))) {
           if (!root.KA_DESKTOP) throw new Error('Die REWE-Bridge läuft nicht. Bitte rewe-bridge\\start-rewe-bridge.cmd starten und erneut versuchen.');
-          say('REWE-Bridge wird gestartet …');
+          say('REWE wird im Hintergrund vorbereitet …');
           await reweCall(cfg, '/start', {});
           let up = false;
           for (let i = 0; i < 60 && !up; i++) { await wait(1000); up = await reweAlive(cfg); }
-          if (!up) throw new Error('Die REWE-Bridge ist nicht gestartet. Bitte das Konsolenfenster prüfen (Chrome oder Edge wird benötigt).');
+          if (!up) throw new Error('Die Verbindung zu REWE ließ sich nicht starten. Wird Chrome oder Edge gefunden? Einzelheiten stehen in rewe-bridge\\.data\\bridge.log.');
         }
 
         // 2. Markt zur Postleitzahl wählen und warten, bis die Bridge ihn übernommen hat
@@ -105,6 +105,8 @@
           const st = await reweCall(cfg, '/status');
           if (!st.busy && !st.queued) { shop = st.shop; break; } // Marktwahl ist abgearbeitet
         }
+        // Braucht rewe.de den Menschen (Sicherheitsprüfung, Markt nicht wählbar), das sonst verborgene REWE-Fenster nach vorn holen
+        if (!shop || shop.challenge || shop.zipCode !== zip || !shop.marketCode) { try { await reweCall(cfg, '/basket/open', {}); } catch (e) { /* Fenster bleibt verborgen */ } }
         if (shop && shop.challenge) throw new Error('rewe.de zeigt eine Sicherheitsprüfung. Bitte im REWE-Fenster bestätigen und erneut versuchen.');
         if (!shop || shop.zipCode !== zip || !shop.marketCode) {
           throw new Error(`Für die Postleitzahl ${zip} konnte kein REWE-${service === 'PICKUP' ? 'Abholmarkt' : 'Lieferservice'} gewählt werden. Bitte im REWE-Fenster prüfen oder die andere Variante wählen.`);

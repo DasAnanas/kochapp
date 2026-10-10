@@ -1245,9 +1245,20 @@
         : '/api/import-recipe';
       l.phase = 'busy'; render();
       try {
-        const response = await fetch(importURL, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: l.url }) });
-        const data = await response.json();
-        if (!response.ok || !data.recipe) throw new Error(data.error || 'Das Rezept konnte nicht importiert werden.');
+        let data;
+        if (window.KA_DESKTOP) {
+          // Windows-App: Die App-Hülle ruft die Seite ab (/api/fetch-page); ausgewertet wird sie mit demselben
+          // Code wie auf dem Server (import-recipe.mjs).
+          const response = await fetch('/api/fetch-page', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: l.url }) });
+          if (!response.ok) { let err = {}; try { err = await response.json(); } catch (e) { /* keine JSON-Antwort */ } throw new Error(err.error || 'Das Rezept konnte nicht importiert werden.'); }
+          const html = await response.text();
+          const importer = await import('./import-recipe.mjs');
+          data = { recipe: importer.parseRecipe(html, response.headers.get('X-Final-Url') || l.url) };
+        } else {
+          const response = await fetch(importURL, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: l.url }) });
+          data = await response.json();
+          if (!response.ok || !data.recipe) throw new Error(data.error || 'Das Rezept konnte nicht importiert werden.');
+        }
         if (ui.link !== l) return;
         l.recipe = data.recipe; l.phase = 'done';
       } catch (error) {

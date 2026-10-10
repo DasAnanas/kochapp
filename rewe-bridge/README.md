@@ -10,8 +10,11 @@ Keine Installation nötig: Windows PowerShell + Chrome (oder Edge).
 
 **Aus der Kochapp (Windows-App):** Im Bereich „Einkaufsliste“ auf
 „Bei REWE in den Warenkorb …“ klicken und die Postleitzahl eingeben. Die App startet die Bridge bei Bedarf
-selbst (Konsolenfenster + eigenes Chrome-Fenster), wählt den Markt zur Postleitzahl, füllt den Warenkorb und
-holt das REWE-Fenster mit dem Warenkorb nach vorn. Der API-Schlüssel wird von der App automatisch gesetzt.
+selbst und im Hintergrund: ohne Konsolenfenster, das Chrome-Fenster bleibt minimiert und verborgen. Sie wählt den
+Markt zur Postleitzahl, füllt den Warenkorb und holt erst dann das REWE-Fenster mit dem Warenkorb nach vorn.
+Der API-Schlüssel wird von der App automatisch gesetzt; die Bridge beendet sich, wenn die Kochapp geschlossen wird
+(`-ParentPid`). Protokoll: `.data\bridge.log`. Zur Fehlersuche lässt sich alles sichtbar starten: Umgebungsvariable
+`KOCHAPP_REWE_VISIBLE=1` für die App bzw. `start-rewe-bridge.cmd -Visible` von Hand.
 
 **Aus der Browser-Version:** `start-rewe-bridge.cmd` doppelklicken und den im Konsolenfenster angezeigten
 **API key** in der App unter „Bestellen“ → Anbieter „REWE“ eintragen.

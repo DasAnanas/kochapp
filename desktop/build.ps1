@@ -12,7 +12,7 @@ $lib = Join-Path $PSScriptRoot 'lib'
 $dist = Join-Path $app 'dist'
 $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 
-$web = 'index.html', 'style.css', 'data.js', 'rezepte.js', 'bilder.js', 'logic.js', 'order.js', 'app.js'
+$web = 'index.html', 'style.css', 'data.js', 'rezepte.js', 'bilder.js', 'logic.js', 'order.js', 'app.js', 'import-recipe.mjs'
 $dlls = 'Microsoft.Web.WebView2.Core.dll', 'Microsoft.Web.WebView2.WinForms.dll', 'WebView2Loader.dll'
 
 $res = @()

@@ -7,7 +7,8 @@ param(
   [int]$Port = 8765,
   [int]$DebugPort = 9333,
   [string]$ChromePath,
-  [switch]$Visible            # keep the browser window visible while filling
+  [switch]$Visible,           # keep the browser window visible the whole time (default: hidden until the basket is ready)
+  [int]$ParentPid             # exit when this process is gone (set by the Kochapp desktop app)
 )
 
 $ErrorActionPreference = 'Stop'
@@ -16,6 +17,7 @@ $BasketUrl = 'https://www.rewe.de/shop/checkout/basket'
 $DataDir = Join-Path $PSScriptRoot '.data'
 $ProfileDir = Join-Path $DataDir 'chrome-profile'
 $TokenFile = Join-Path $DataDir 'token.txt'
+$LogFile = Join-Path $DataDir 'bridge.log'
 $MapFile = Join-Path $PSScriptRoot 'mappings.json'
 $PageScript = Get-Content (Join-Path $PSScriptRoot 'rewe-page.js') -Raw -Encoding UTF8
 $None = [Threading.CancellationToken]::None
@@ -30,11 +32,17 @@ $script:Queue = New-Object Collections.Queue
 $script:Busy = $false
 $script:Shop = $null
 
-function Log($msg) { Write-Host ('[{0:HH:mm:ss}] {1}' -f (Get-Date), $msg) }
+# Console output plus a log file - the desktop app runs the bridge without a console window.
+function Log($msg, [switch]$ConsoleOnly) {
+  $line = '[{0:HH:mm:ss}] {1}' -f (Get-Date), $msg
+  Write-Host $line
+  if (-not $ConsoleOnly) { try { Add-Content -Path $LogFile -Value $line -Encoding UTF8 } catch { } }
+}
 
 # ---------- token ----------
 
 New-Item -ItemType Directory -Force $ProfileDir | Out-Null
+if ((Test-Path $LogFile) -and (Get-Item $LogFile).Length -gt 1MB) { Clear-Content $LogFile }
 if (-not (Test-Path $TokenFile)) {
   $bytes = New-Object byte[] 24
   [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
@@ -121,8 +129,13 @@ function Connect-Browser {
   if ($null -eq $targets) {
     Log 'Starting browser ...'
     $chromeArgs = @("--remote-debugging-port=$DebugPort", "--user-data-dir=`"$ProfileDir`"", '--no-first-run', '--no-default-browser-check',
-      '--disable-background-timer-throttling', '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding', $ShopUrl)
-    Start-Process (Find-Chrome) -ArgumentList $chromeArgs
+      '--hide-crash-restore-bubble', '--disable-background-timer-throttling', '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding')
+    if ($Visible) { Start-Process (Find-Chrome) -ArgumentList ($chromeArgs + $ShopUrl) }
+    else {
+      # Hidden until the basket is ready: start minimized and off-screen, Show-Window brings it back.
+      Start-Process (Find-Chrome) -ArgumentList ($chromeArgs + '--window-position=-32000,-32000' + $ShopUrl) -WindowStyle Minimized
+      $script:HideOnConnect = $true
+    }
     for ($i = 0; $i -lt 60 -and $null -eq $targets; $i++) { Wait-Pump 500; $targets = Get-Targets }
     if ($null -eq $targets) { throw "Browser did not open DevTools port $DebugPort." }
   }
@@ -132,6 +145,7 @@ function Connect-Browser {
   if (-not $page) { $page = Invoke-RestMethod "http://127.0.0.1:$DebugPort/json/new?about:blank" -Method Put -TimeoutSec 5 }
   $script:Ws = New-Object Net.WebSockets.ClientWebSocket
   [void]$script:Ws.ConnectAsync([Uri]$page.webSocketDebuggerUrl, $None).GetAwaiter().GetResult()
+  if ($script:HideOnConnect) { $script:HideOnConnect = $false; Set-Window 'minimized' }
 }
 
 function Open-Url([string]$url) {
@@ -149,7 +163,11 @@ function Set-Window([string]$state) {
   try {
     $w = Invoke-Cdp 'Browser.getWindowForTarget' @{} 5000
     [void](Invoke-Cdp 'Browser.setWindowBounds' @{ windowId = $w.windowId; bounds = @{ windowState = $state } } 5000)
-    if ($state -eq 'normal') { [void](Invoke-Cdp 'Page.bringToFront' @{} 5000) }
+    if ($state -eq 'normal') {
+      # The window may have been started off-screen: move it onto the screen before showing it.
+      [void](Invoke-Cdp 'Browser.setWindowBounds' @{ windowId = $w.windowId; bounds = @{ left = 60; top = 40; width = 1280; height = 900 } } 5000)
+      [void](Invoke-Cdp 'Page.bringToFront' @{} 5000)
+    }
   } catch { Log "Window state '$state' failed: $($_.Exception.Message)" }
 }
 
@@ -315,19 +333,21 @@ $script:Listener.Prefixes.Add("http://localhost:$Port/")
 $script:Listener.Start()
 
 Log "REWE bridge listening on http://localhost:$Port"
-Log "API key: $Token"
+Log "API key: $Token" -ConsoleOnly
 try {
   try {
     $shop = Open-Shop
-    if ($shop.marketCode) {
-      Log ("Ready - market {0} (PLZ {1}), logged in: {2}" -f $shop.marketCode, $shop.zipCode, $shop.loggedIn)
-      if (-not $Visible) { Set-Window 'minimized' }
-    } else {
-      Log 'SETUP: choose your PLZ and delivery/pickup market in the browser window and log in to REWE. The profile is remembered.'
-    }
+    if ($shop.marketCode) { Log ("Ready - market {0} (PLZ {1}), logged in: {2}" -f $shop.marketCode, $shop.zipCode, $shop.loggedIn) }
+    else { Log 'No market chosen yet - it is set from the PLZ sent by the app (POST /market).' }
+    if (-not $Visible) { Set-Window 'minimized' }
   } catch { Log "Browser not ready yet: $($_.Exception.Message)"; Reset-Cdp }
 
+  $nextParentCheck = Get-Date
   while ($true) {
+    if ($ParentPid -and (Get-Date) -gt $nextParentCheck) {
+      if (-not (Get-Process -Id $ParentPid -ErrorAction SilentlyContinue)) { Log 'Kochapp was closed - stopping the bridge (the browser window stays open).'; break }
+      $nextParentCheck = (Get-Date).AddSeconds(2)
+    }
     Pump-Http
     if ($script:Queue.Count) {
       $cmd = $script:Queue.Dequeue()
