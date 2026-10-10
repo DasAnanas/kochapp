@@ -1,12 +1,14 @@
 Link zum Rezeptbuch: [https://kochapp-rezeptbuch.readyberry.chatgpt.site](https://kochapp-rezeptbuch.readyberry.chatgpt.site)
 
+**Aktuelle HTML-Version (eine Datei, läuft in jedem Browser): [Kochapp.html herunterladen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/Kochapp.html)** – herunterladen und doppelklicken. Sie wird bei jeder Änderung aus dem aktuellen Stand von `main` neu erzeugt (`desktop/build-html.py` bzw. unter Windows `desktop\build-html.ps1`) und enthält damit auch die eine Einkaufsliste und „Bei REWE in den Warenkorb“.
+
 # Kochapp – Essen organisieren
 
 **Für den Mac: `Kochapp-macOS.zip` (native App) oder `Kochapp.html` (Browser). Für Windows: `Kochapp.exe`.** Beide Dateien enthalten die Oberfläche und können einzeln weitergegeben werden.
 
 ## Native Mac-App
 
-**[Kochapp für macOS herunterladen](https://github.com/DasAnanas/kochapp/raw/refs/heads/codex/rezept-bearbeiten/Kochapp-macOS.zip)**
+**[Kochapp für macOS herunterladen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/Kochapp-macOS.zip)**
 
 1. ZIP herunterladen und im Finder doppelklicken, um sie zu entpacken.
 2. `Kochapp.app` in den Ordner „Programme“ ziehen und öffnen.
@@ -21,7 +23,7 @@ Eigene REST-Endpunkte müssen WebKit-Zugriffe erlauben (CORS); der lokale Bestel
 
 ## Auf dem Mac im Browser öffnen
 
-**[Kochapp herunterladen und öffnen](https://github.com/DasAnanas/kochapp/raw/refs/heads/codex/rezept-bearbeiten/Kochapp.html)**
+**[Kochapp herunterladen und öffnen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/Kochapp.html)**
 
 Über den Link die Datei `Kochapp.html` herunterladen und anschließend im Finder doppelklicken. Sie öffnet sich in deinem Standardbrowser. Dies ist die lokal nutzbare Version. Die Browser-Version ohne Download ist über den Link ganz oben erreichbar.
 
@@ -29,7 +31,7 @@ Eigene REST-Endpunkte müssen WebKit-Zugriffe erlauben (CORS); der lokale Bestel
 - Die App läuft im Browser, ohne Installation, Node.js oder lokalen Server. HTML, CSS und JavaScript sind in dieser einen Datei enthalten. Die Schriftarten benötigen Internet; offline werden Systemschriften verwendet.
 - Eigene Rezepte, Vorrat und Wochenplan werden im lokalen Speicher des verwendeten Browsers gespeichert. Verwende denselben Browser und Dateipfad, keinen privaten Modus. Daten aus der Windows-App werden nicht automatisch übernommen.
 - Demo-Bestellungen und E-Mail funktionieren direkt. Eigene REST-Endpunkte müssen Browserzugriffe erlauben (CORS). Die Option „Über lokalen Proxy“ benötigt weiterhin `node server.js` und das Öffnen von `http://localhost:8080`; sie funktioniert nicht beim direkten Öffnen der HTML-Datei.
-- Nach Änderungen an der Oberfläche mit `python3 desktop/build-html.py` neu bauen und die aktualisierte `Kochapp.html` mit ins Repository aufnehmen. Python wird nur zum Bauen benötigt.
+- Nach Änderungen an der Oberfläche mit `python3 desktop/build-html.py` (Windows: `powershell -ExecutionPolicy Bypass -File desktop\build-html.ps1`) neu bauen und die aktualisierte `Kochapp.html` mit ins Repository aufnehmen. Python wird nur zum Bauen benötigt.
 
 Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 10/11 mit WebView2-Laufzeit (in Windows 11 enthalten).
 
