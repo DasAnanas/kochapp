@@ -15,7 +15,7 @@
       macro: { enabled: false, p: 20, c: 50, f: 30 },
       body: { enabled: false, sex: 'm', age: 30, height: 175, weight: 70, activity: 1.6, goal: 'keep' },
     },
-    pantry: {}, sel: [], comboN: 3, plan: null, shop: null, subPantry: true,
+    pantry: {}, pantryMode: 'simple', sel: [], comboN: 3, plan: null, shop: null, subPantry: true,
     order: { provider: 'mock', cfg: { rest: { method: 'POST', authHeader: 'Authorization' }, mailto: {}, mock: {} }, customer: { name: '', street: '', zip: '', city: '' } },
   });
   const merge = (a, b) => {
@@ -199,81 +199,171 @@
     </section>`;
   }
 
-  /* ---------- Tab: Vorrat & Rezepte ---------- */
-  function pantryCard() {
-    const ids = Object.keys(S.pantry).sort((a, b) => ING[a].name.localeCompare(ING[b].name, 'de'));
-    const rows = ids.map((id) => {
-      const i = ING[id];
-      return `<tr><td>${esc(i.name)}</td>
-        <td><input class="pamt" type="number" min="0" step="any" value="${Math.round(S.pantry[id] * 100) / 100}" data-id="${id}"> <span class="muted">${i.unit}</span></td>
-        <td><button class="x" data-act="delp" data-id="${id}" title="Entfernen">✕</button></td></tr>`;
-    }).join('');
-    const opts = Object.values(ING).sort((a, b) => a.name.localeCompare(b.name, 'de')).map((i) => `<option value="${esc(i.name)}"></option>`).join('');
-    return `<section class="card"><h2>Mein Vorrat</h2>
-      <div class="addrow">
-        <input id="p-name" list="ing-list" placeholder="Lebensmittel (z. B. Reis, Eier …)" autocomplete="off">
-        <input id="p-amt" type="number" min="0" step="any" placeholder="Menge">
-        <select id="p-unit"><option>g</option><option>kg</option></select>
-        <button class="btn" data-act="addp">Hinzufügen</button>
-      </div>
-      <datalist id="ing-list">${opts}</datalist>
-      ${ids.length ? `<table class="ptable"><tbody>${rows}</tbody></table>` : '<p class="muted">Noch nichts eingetragen – füge Lebensmittel mit Menge hinzu oder lade einen Beispiel-Vorrat.</p>'}
-      <div class="btnrow"><button class="btn ghost" data-act="demop">Beispiel-Vorrat laden</button>${ids.length ? '<button class="btn ghost" data-act="clearp">Leeren</button>' : ''}</div>
-    </section>`;
+  /* ---------- Vorrat: drei Modi (ohne · abhaken · mit Mengen) ---------- */
+  // null als Menge = „vorhanden, Menge offen“. Für die Berechnungen zählt das (wie im Abhak-Modus) als genug da.
+  const BIG = 1e6;
+  const PMODES = [
+    ['off', '01', 'Ohne Vorrat', 'Nichts pflegen: Rezepte und Einkaufslisten enthalten immer alle Zutaten.'],
+    ['simple', '02', 'Nur abhaken', 'Antippen, was da ist – ohne Mengen. Vorhandenes kommt nicht auf die Einkaufsliste.'],
+    ['exact', '03', 'Mit Mengen', 'Genau mitzählen: Gekochtes wird abgezogen, fehlende Mengen werden eingekauft.']];
+  const pMode = () => (PMODES.some((m) => m[0] === S.pantryMode) ? S.pantryMode : 'simple');
+  const pIds = () => Object.keys(S.pantry).filter((id) => ING[id]);
+  function pantryEff() {
+    const mode = pMode(), o = {};
+    if (mode === 'off') return o;
+    pIds().forEach((id) => { const v = S.pantry[id]; o[id] = mode === 'simple' || v == null ? BIG : v; });
+    return o;
   }
+  const pStep = (id, v) => (ING[id].unit === 'Stk' ? 1 : v != null && v < 200 ? 50 : 100);
+  const pDefault = (id) => (ING[id].unit === 'Stk' ? 1 : KA.PACK[id] || (ING[id].unit === 'ml' ? 1000 : 500));
+  const pAmt = (id) => (S.pantry[id] == null ? 'Menge offen' : KA.fmtAmount(id, S.pantry[id]));
+  const pantryIngs = () => Object.values(ING).filter((i) => !(S.prefs.assumeStaples && i.staple));
+
+  function pantryModes() {
+    return `<div class="addtabs">${PMODES.map(([k, num, label, desc]) => `<button class="${pMode() === k ? 'on' : ''}" data-act="pmode" data-v="${k}"><i>${num}</i><b>${label}</b><span>${desc}</span></button>`).join('')}</div>`;
+  }
+  // Kompakte Umschaltung über den Rezepten
+  function pantryBar() {
+    const mode = pMode(), n = pIds().length;
+    const info = mode === 'off' ? 'Ohne Vorrat – es werden alle Zutaten eingeplant.' : n ? `${n} Lebensmittel ${mode === 'simple' ? 'abgehakt' : 'eingetragen'}` : 'Noch nichts eingetragen';
+    return `<section class="card pbar"><div><b>Vorrat</b> <span class="muted">${esc(info)}</span></div>
+      <div class="pbar-r"><div class="seg">${PMODES.map(([k, , l]) => `<button class="${mode === k ? 'on' : ''}" data-act="pmode" data-v="${k}">${l}</button>`).join('')}</div>
+      ${mode === 'off' ? '' : '<button class="btn ghost sm" data-act="tab" data-v="shop">Vorrat bearbeiten →</button>'}</div></section>`;
+  }
+
+  function quickAdd() {
+    return `<div class="fgroup"><div class="flabel">Was hast du da? <small>(mehrere mit Komma trennen)</small></div>
+      <div class="addrow"><input id="p-quick" placeholder="z. B. 3 Bananen, 500 g Haferflocken, Milch" autocomplete="off" aria-describedby="p-prev"><button class="btn" data-act="pquick">Hinzufügen</button></div>
+      <div class="prev" id="p-prev" aria-live="polite"></div>
+      <p class="muted sm">${pMode() === 'simple' ? 'Mengen kannst du einfach weglassen.' : 'Ohne Menge wird „Menge offen“ eingetragen – das zählt als vorhanden.'} Verstanden wird auch „2 Dosen Kichererbsen“, „1 Packung Eier“ oder „drei Karotten“.</p></div>`;
+  }
+  function quickPreview(text) {
+    const parts = KA.parsePantry(text);
+    if (!parts.length) return '';
+    const simple = pMode() === 'simple';
+    return '<span>Erkannt:</span>' + parts.map((p) => (p.ing
+      ? `<b>${esc((!simple && p.amount != null ? KA.fmtAmount(p.ing.id, p.amount) + ' ' : '') + p.ing.name)}</b>`
+      : `<b class="bad" title="Nicht gefunden – bitte anders schreiben oder unten antippen">? ${esc(p.text)}</b>`)).join('');
+  }
+  // Alle Lebensmittel als Chips zum Antippen, nach Kategorien
+  function chipGrid() {
+    const all = pantryIngs();
+    return Object.keys(CATS).map((c) => {
+      const list = all.filter((i) => i.cat === c).sort((a, b) => a.name.localeCompare(b.name, 'de'));
+      if (!list.length) return '';
+      const n = list.filter((i) => i.id in S.pantry).length;
+      return `<div class="pcat"><span class="slabel">${esc(CATS[c])}${n ? ` <em>${n}</em>` : ''}</span><div class="chips">${list.map((i) =>
+        `<label class="chip"><input type="checkbox" data-pchip="${i.id}" ${i.id in S.pantry ? 'checked' : ''}><span>${esc(i.name)}</span></label>`).join('')}</div></div>`;
+    }).join('');
+  }
+  // Mengen-Liste mit −/+ je Lebensmittel
+  function amountList() {
+    const ids = pIds();
+    if (!ids.length) return '<p class="muted">Noch nichts eingetragen. Tippe oben z. B. „3 Bananen“ ein oder wähle unten aus der Liste.</p>';
+    return Object.keys(CATS).map((c) => {
+      const list = ids.filter((id) => ING[id].cat === c).sort((a, b) => ING[a].name.localeCompare(ING[b].name, 'de'));
+      if (!list.length) return '';
+      return `<div class="pcat"><span class="slabel">${esc(CATS[c])}</span>${list.map((id) => {
+        const v = S.pantry[id];
+        return `<div class="prow ${v == null ? 'open' : ''}"><span class="nm">${esc(ING[id].name)}</span>
+          <div class="step sm pstep"><button data-act="pstep" data-id="${id}" data-d="-1" aria-label="Weniger ${esc(ING[id].name)}">−</button>
+            <input class="pamt" inputmode="decimal" value="${v == null ? '' : Math.round(v * 100) / 100}" placeholder="?" data-id="${id}" aria-label="Menge ${esc(ING[id].name)} in ${ING[id].unit}"><span class="u">${ING[id].unit}</span>
+            <button data-act="pstep" data-id="${id}" data-d="1" aria-label="Mehr ${esc(ING[id].name)}">+</button></div>
+          ${v == null ? '<span class="st part">Menge offen</span>' : '<span></span>'}
+          <button class="x" data-act="delp" data-id="${id}" title="Entfernen">✕</button></div>`;
+      }).join('')}</div>`;
+    }).join('');
+  }
+
+  function pantryCard() {
+    const mode = pMode(), n = pIds().length;
+    let body;
+    if (mode === 'off') {
+      body = `<section class="card center"><h2>Ohne Vorrat unterwegs</h2>
+        <p class="muted">Rezeptvorschläge, Wochenplan und Einkaufslisten funktionieren ganz normal – es wird nur nichts abgezogen, alle Zutaten landen auf der Liste.</p>
+        ${n ? `<p class="muted sm">Deine ${n} eingetragenen Lebensmittel bleiben gespeichert und sind wieder da, sobald du den Vorrat einschaltest.</p>` : ''}
+        <div class="btnrow" style="justify-content:center"><button class="btn ghost" data-act="pmode" data-v="simple">Vorrat doch nutzen</button></div></section>`;
+    } else if (mode === 'simple') {
+      body = `<section class="card"><div class="lh"><h2>Mein Vorrat</h2><span class="muted sm">${n} Lebensmittel abgehakt</span></div>
+        ${quickAdd()}<h4 class="cat">Oder antippen, was da ist</h4><div class="pgrid">${chipGrid()}</div>
+        ${pantryButtons(n)}</section>`;
+    } else {
+      body = `<section class="card"><div class="lh"><h2>Mein Vorrat</h2><span class="muted sm">${n} Lebensmittel</span></div>
+        ${quickAdd()}<div class="plist2">${amountList()}</div>
+        <details class="pick2" data-key="ppick" ${ui.open.has('ppick') ? 'open' : ''}><summary>Aus der Liste antippen <span class="muted">ohne Menge, später ergänzen</span></summary><div class="pgrid">${chipGrid()}</div></details>
+        ${pantryButtons(n)}</section>`;
+    }
+    return `<h2 class="sec">Wie möchtest du deinen Vorrat nutzen?</h2>` + pantryModes() + body;
+  }
+  const pantryButtons = (n) => `<div class="btnrow"><button class="btn ghost" data-act="demop">Beispiel-Vorrat laden</button>${n ? '<button class="btn ghost" data-act="clearp">Leeren</button>' : ''}</div>`;
 
   function recipeCard(e, selected) {
     const r = e.r;
+    const mode = pMode();
     const key = 'rc-' + r.id;
     return `<article class="rc ${selected ? 'sel' : ''}">
       <div class="rc-top"><h3>${esc(r.name)}</h3>
         <label class="pick" title="Für die Einkaufsliste auswählen"><input type="checkbox" data-act="togglesel" data-id="${r.id}" ${selected ? 'checked' : ''}><span>Auswählen</span></label></div>
       <div class="meta">${recipeFacts(r)}</div>
       <div class="tags">${recipeTags(r)}</div>
-      <div class="meters">
+      ${mode === 'off' ? '' : `<div class="meters">
         <div><div class="mlabel">Zutaten vorhanden <b>${r0(e.cover * 100)} %</b></div><div class="bar"><i style="width:${r0(e.cover * 100)}%"></i></div></div>
         <div><div class="mlabel">Verbraucht <b>${e.touched} von ${e.pantryCount}</b> Vorratsartikeln</div><div class="bar alt"><i style="width:${r0((e.touched / Math.max(1, e.pantryCount)) * 100)}%"></i></div></div>
-      </div>
+      </div>`}
       <details data-key="${key}" ${ui.open.has(key) ? 'open' : ''}><summary>Zutaten & Zubereitung (${e.servings} Portion${e.servings > 1 ? 'en' : ''})</summary>
-        ${ingTable(r, e.servings, e)}<ol class="steps">${r.st.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
-        <button class="btn ghost sm" data-act="cook" data-id="${r.id}">✔ Gekocht – Vorrat abziehen</button></details>
+        ${ingTable(r, e.servings, mode === 'off' ? null : e)}<ol class="steps">${r.st.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
+        ${mode === 'exact' ? `<button class="btn ghost sm" data-act="cook" data-id="${r.id}">✔ Gekocht – Vorrat abziehen</button>` : ''}</details>
     </article>`;
+  }
+
+  function selectionCard(sel, pantry, title, empty) {
+    const list = sel.length ? finderList(sel, pantry) : [];
+    return `<section class="card"><h2>${title}</h2>${
+      sel.length
+        ? `<p class="muted">Für ${sel.length} ausgewählte${sel.length > 1 ? '' : 's'} Gericht${sel.length > 1 ? 'e' : ''}: ${sel.map((id) => esc(REC[id].name)).join(' · ')}</p>${listHTML(list)}
+           <div class="total">Geschätzt: <b>${KA.fmtEUR(listTotal(list))}</b></div>
+           <div class="btnrow"><button class="btn" data-act="tofinderlist">Zur Einkaufsliste & Bestellung →</button><button class="btn ghost" data-act="clearsel">Auswahl leeren</button></div>`
+        : `<p class="muted">${empty}</p>`}</section>`;
   }
 
   function viewFinder() {
     const p = S.prefs;
-    const hasPantry = Object.keys(S.pantry).length > 0;
+    const mode = pMode();
+    const P = pantryEff();
+    const sel = S.sel.filter((id) => REC[id]);
     let out = '';
-    if (hasPantry) {
-      const results = KA.findRecipes(S.pantry, p);
-      const combo = KA.bestCombo(S.pantry, p, S.comboN);
-      const sel = S.sel.filter((id) => REC[id]);
+    if (mode === 'off') {
+      const results = KA.RECIPES.filter((r) => KA.recipeMatches(r, p)).sort((a, b) => a.time - b.time || a.name.localeCompare(b.name, 'de'))
+        .map((r) => KA.evalRecipe(r, {}, p.persons || 2, p));
+      if (!results.length) return pageHead('Rezepte finden', 'Passende Gerichte zu deinen Präferenzen.') + pantryBar() + prefsCard() +
+        '<section class="card"><h2>Rezepte</h2><p class="muted">Mit deinen Filtern passt aktuell kein Rezept. Lockere die Präferenzen.</p></section>';
+      out += selectionCard(sel, {}, 'Einkaufsliste für deine Auswahl', 'Wähle unten Rezepte aus – hier erscheint dann alles, was du dafür einkaufen musst.');
+      out += `<h2 class="sec">Passende Rezepte <span class="opt">${results.length}</span></h2><div class="rgrid">${results.slice(0, 24).map((e) => recipeCard(e, sel.includes(e.r.id))).join('')}</div>`;
+      return pageHead('Rezepte finden', 'Passende Gerichte zu deinen Präferenzen – alles Nötige kommt auf die Einkaufsliste.') + pantryBar() + prefsCard() + out;
+    }
+    if (Object.keys(P).length) {
+      const results = KA.findRecipes(P, p);
+      const combo = KA.bestCombo(P, p, S.comboN);
       if (!results.length) {
         out = '<section class="card"><h2>Rezepte</h2><p class="muted">Mit deinen Filtern und deinem Vorrat passt aktuell kein Rezept. Lockere die Präferenzen oder füge Lebensmittel hinzu.</p></section>';
       } else {
-        const usage = KA.pantryUsage(combo, S.pantry, p);
+        const usage = KA.pantryUsage(combo, P, p);
         const same = combo.length === sel.length && combo.every((x) => sel.includes(x));
+        const exact = mode === 'exact' && !pIds().some((id) => S.pantry[id] == null);
         out += `<section class="card combo"><h2>Beste Kombination <span class="opt">verbraucht möglichst viel vom Vorrat</span></h2>
           <div class="frow"><label>Anzahl Gerichte <input class="narrow" type="number" min="1" max="6" value="${S.comboN}" data-bind="comboN" data-num="1"></label>
           <span class="muted">für ${p.persons} Person${p.persons > 1 ? 'en' : ''}</span></div>
           <ol class="combolist">${combo.map((id) => `<li><b>${esc(REC[id].name)}</b> <span class="muted">⏱ ${REC[id].time} Min. · ${dots(REC[id].diff)}</span></li>`).join('')}</ol>
-          <p>Damit werden <b>${usage.touched} von ${usage.count}</b> Vorratsartikeln verwendet (ca. ${r0(usage.massFrac * 100)} % der Mengen).</p>
+          <p>Damit werden <b>${usage.touched} von ${usage.count}</b> Vorratsartikeln verwendet${exact ? ` (ca. ${r0(usage.massFrac * 100)} % der Mengen)` : ''}.</p>
           <button class="btn" data-act="takecombo" ${same ? 'disabled' : ''}>${same ? '✔ Übernommen' : 'Kombination übernehmen'}</button></section>`;
-
-        const list = sel.length ? finderList(sel) : [];
-        out += `<section class="card"><h2>Einkaufsliste für die Reste</h2>${
-          sel.length
-            ? `<p class="muted">Für ${sel.length} ausgewählte${sel.length > 1 ? '' : 's'} Gericht${sel.length > 1 ? 'e' : ''}: ${sel.map((id) => esc(REC[id].name)).join(' · ')}</p>${listHTML(list)}
-               <div class="total">Geschätzt: <b>${KA.fmtEUR(listTotal(list))}</b></div>
-               <div class="btnrow"><button class="btn" data-act="tofinderlist">Zur Einkaufsliste & Bestellung →</button><button class="btn ghost" data-act="clearsel">Auswahl leeren</button></div>`
-            : '<p class="muted">Wähle unten Rezepte aus (oder übernimm die beste Kombination), dann erscheint hier, was zusätzlich besorgt werden muss.</p>'}</section>`;
-
+        out += selectionCard(sel, P, 'Einkaufsliste für die Reste', 'Wähle unten Rezepte aus (oder übernimm die beste Kombination), dann erscheint hier, was zusätzlich besorgt werden muss.');
         out += `<h2 class="sec">Alle passenden Rezepte <span class="opt">${results.length}</span></h2><div class="rgrid">${results.slice(0, 24).map((e) => recipeCard(e, sel.includes(e.r.id))).join('')}</div>`;
       }
     } else {
-      out = '<section class="card"><h2>Rezepte</h2><p class="muted">Trage zuerst deinen Vorrat ein – die App schlägt dann Rezepte vor, die möglichst viel davon verwenden, und erstellt eine Einkaufsliste für den Rest.</p><button class="btn" data-act="tab" data-v="shop">Zum Vorrat →</button></section>';
+      out = `<section class="card"><h2>Rezepte</h2><p class="muted">${mode === 'simple' ? 'Hake zuerst ab, was du da hast' : 'Trage zuerst deinen Vorrat ein'} – die App schlägt dann Rezepte vor, die möglichst viel davon verwenden, und erstellt eine Einkaufsliste für den Rest. Oder nutze die App ganz ohne Vorrat.</p>
+        <div class="btnrow"><button class="btn" data-act="tab" data-v="shop">Zum Vorrat →</button><button class="btn ghost" data-act="pmode" data-v="off">Ohne Vorrat weiter</button></div></section>`;
     }
-    return pageHead('Rezepte aus Vorrat', 'Verwerte, was du da hast – der Rest kommt auf die Einkaufsliste.') + prefsCard() + out;
+    return pageHead('Rezepte aus Vorrat', 'Verwerte, was du da hast – der Rest kommt auf die Einkaufsliste.') + pantryBar() + prefsCard() + out;
   }
 
   /* ---------- Tab: Wochenplan ---------- */
@@ -336,7 +426,7 @@
       }).join('')}</div>`;
       body += nutPanel(plan, T);
       body += `<section class="card"><h2>Einkaufsliste zum Plan</h2>
-        <label class="switch"><input type="checkbox" data-bind="subPantry" ${S.subPantry ? 'checked' : ''}><span>Vorhandene Lebensmittel aus „Mein Vorrat“ abziehen (${Object.keys(S.pantry).length} Artikel)</span></label>
+        ${pMode() === 'off' ? '<p class="muted sm">Ohne Vorrat: Alle Zutaten kommen auf die Liste.</p>' : `<label class="switch"><input type="checkbox" data-bind="subPantry" ${S.subPantry ? 'checked' : ''}><span>${pMode() === 'simple' ? 'Abgehakte Lebensmittel aus „Mein Vorrat“ weglassen' : 'Vorhandene Mengen aus „Mein Vorrat“ abziehen'} (${pIds().length} Artikel)</span></label>`}
         <p class="muted sm">Mengen für ${p.persons} Person${p.persons > 1 ? 'en' : ''} (siehe Profil).</p>
         <button class="btn" data-act="toplanlist">Einkaufsliste erstellen →</button></section>`;
       void slots;
@@ -376,13 +466,13 @@
 
   function viewShop() {
     const hasPlan = !!S.plan;
-    const hasSel = S.sel.length > 0 && Object.keys(S.pantry).length > 0;
+    const hasSel = S.sel.length > 0 && (pMode() === 'off' || Object.keys(pantryEff()).length > 0);
     const sh = S.shop;
     let out = pageHead('Vorrat & Einkauf', 'Vorrat pflegen, Einkaufsliste drucken oder bestellen.') + pantryCard() + `<section class="card"><h2>Einkaufsliste erzeugen aus …</h2><div class="btnrow">
-      <button class="btn ghost" data-act="tofinderlist" ${hasSel ? '' : 'disabled'}>Rezept-Auswahl (Reste)</button>
+      <button class="btn ghost" data-act="tofinderlist" ${hasSel ? '' : 'disabled'}>Rezept-Auswahl${pMode() === 'off' ? '' : ' (Reste)'}</button>
       <button class="btn ghost" data-act="toplanlist" ${hasPlan ? '' : 'disabled'}>Wochenplan</button>
       <button class="btn ghost" data-act="listtoshop" ${S.list.length || S.extras.length ? '' : 'disabled'}>Rezeptbuch-Liste</button></div></section>`;
-    if (!sh) return out + '<section class="card"><p class="muted">Noch keine Einkaufsliste. Erstelle sie im Tab „Rezepte aus Vorrat“ oder „Wochenplan“.</p></section>' + resetCard();
+    if (!sh) return out + `<section class="card"><p class="muted">Noch keine Einkaufsliste. Erstelle sie im Tab „${pMode() === 'off' ? 'Rezepte finden' : 'Rezepte aus Vorrat'}“ oder „Wochenplan“.</p></section>` + resetCard();
     const total = listTotal(sh.items);
     out += `<section class="card printable"><div class="lh"><h2>Einkaufsliste <span class="opt">${esc(sh.source)}</span></h2><span class="muted sm">${new Date(sh.created).toLocaleString('de-DE')}</span></div>
       <div class="plist">${listHTML(sh.items, { editable: true })}</div>
@@ -507,9 +597,9 @@
     return Object.values(agg).sort((a, b) => a.name.localeCompare(b.name, 'de')).map((a) =>
       ({ id: null, name: a.name, cat: 'SO', amount: a.qty ? Math.round(a.qty * 100) / 100 : null, unit: a.unit, label: a.qty ? fmtQ(a.qty, a.unit) : '', price: 0, checked: true }));
   }
-  const finderList = (sel) => KA.shoppingForRecipes(sel, S.pantry, S.prefs)
+  const finderList = (sel, pantry) => KA.shoppingForRecipes(sel, pantry, S.prefs)
     .concat(freeItems(sel.map((rid) => ({ rid, k: (S.prefs.persons || 2) / REC[rid].s }))));
-  const planList = () => KA.planShopping(S.plan, S.prefs, S.pantry, S.subPantry)
+  const planList = () => KA.planShopping(S.plan, S.prefs, pantryEff(), S.subPantry && pMode() !== 'off')
     .concat(freeItems(S.plan.days.reduce((all, day) => all.concat(day.map((m) => ({ rid: m.rid, k: (m.f * (S.prefs.persons || 1)) / REC[m.rid].s }))), [])));
   const srcLabel = (r) => (r.source === 'Web' ? 'Web · ' + r.domain : r.source);
   // mitgelieferte Rezepte in Stammdaten-Einheiten, eigene so, wie sie eingetippt wurden
@@ -780,6 +870,8 @@
     const book = allBook();
     const count = { book: book.length, shop: S.shop ? S.shop.items.length : '' };
     const inLib = S.tab === 'book' && ui.book === 'library';
+    TABS[1][1] = pMode() === 'off' ? 'Rezepte finden' : 'Rezepte aus Vorrat';
+    TABS[1][2] = pMode() === 'off' ? 'Finden' : 'Vorrat';
     $('#side').innerHTML = `<div class="brand"><b>Kochapp</b><span>Rezepte · Vorrat · Wochenplan</span></div>
       <button class="newbtn" data-act="bookadd"><span>+</span>Neues Rezept</button>
       <nav class="snav">${TABS.map(([k, l]) => `<button class="${S.tab === k ? 'on' : ''}" data-act="tab" data-v="${k}"><span>${l}</span><i>${count[k] == null ? '' : count[k]}</i></button>`).join('')}
@@ -796,13 +888,14 @@
     const old = $('.drawer');
     const dy = old ? old.scrollTop : 0;
     // angefangene Eingaben über den Neuaufbau retten
-    const keep = ['d-ing', 'd-step', 'extra-in'].map((id) => [id, $('#' + id) ? $('#' + id).value : '']);
+    const keep = ['d-ing', 'd-step', 'extra-in', 'p-quick'].map((id) => [id, $('#' + id) ? $('#' + id).value : '']);
     $('#view').innerHTML = { book: viewBook, finder: viewFinder, plan: viewPlan, shop: viewShop }[S.tab]();
     chrome();
     $('#overlay').innerHTML = drawer();
     if ($('.drawer')) $('.drawer').scrollTop = dy;
     keep.forEach(([id, v]) => { if (v && $('#' + id)) $('#' + id).value = v; });
     if ($('#d-ing')) $('#d-prev').innerHTML = previewHTML($('#d-ing').value);
+    if ($('#p-quick')) $('#p-prev').innerHTML = quickPreview($('#p-quick').value);
     window.scrollTo(0, y);
     if (ui.focus) { const el = $('#' + ui.focus); if (el) el.focus(); ui.focus = null; }
   }
@@ -846,15 +939,6 @@
       ta.remove(); return ok;
     }
   };
-
-  function findIngredient(q) {
-    const n = KA.norm(q);
-    if (!n) return null;
-    const all = Object.values(ING);
-    return all.find((i) => KA.norm(i.name) === n || i.id === n) || findFood(q) ||
-      all.find((i) => KA.norm(i.name).startsWith(n)) ||
-      all.find((i) => KA.norm(i.name).includes(n));
-  }
 
   function genPlan() {
     const m = S.prefs.macro;
@@ -974,31 +1058,55 @@
     },
     deldis: (el) => { S.prefs.dislikes.splice(Number(el.dataset.i), 1); update(); },
     reset: () => { if (confirm('Wirklich alle gespeicherten Daten löschen?')) { S = DEF(); update(); toast('Zurückgesetzt'); } },
-    addp: () => {
-      const ing = findIngredient($('#p-name').value);
-      const amt = parseFloat(String($('#p-amt').value).replace(',', '.'));
-      if (!ing) { toast('Lebensmittel nicht gefunden – bitte aus der Vorschlagsliste wählen.'); return; }
-      if (!(amt > 0)) { toast('Bitte eine Menge eingeben.'); return; }
-      S.pantry[ing.id] = (S.pantry[ing.id] || 0) + KA.toBase(amt, $('#p-unit').value);
-      ui.focus = 'p-name'; update();
+    pmode: (el) => {
+      const prev = pMode();
+      S.pantryMode = el.dataset.v;
+      if (prev !== S.pantryMode) toast({ off: 'Ohne Vorrat – alle Zutaten werden eingeplant', simple: 'Vorrat: nur abhaken', exact: 'Vorrat: mit Mengen' }[S.pantryMode]);
+      update();
+    },
+    pquick: () => {
+      const inp = $('#p-quick');
+      const parts = KA.parsePantry(inp.value);
+      const ok = parts.filter((x) => x.ing), bad = parts.filter((x) => !x.ing);
+      if (!parts.length) { ui.focus = 'p-quick'; toast('Tippe z. B. „3 Bananen“ ein.'); render(); return; }
+      ok.forEach(({ ing, amount }) => {
+        const cur = S.pantry[ing.id];
+        if (amount == null) { if (!(ing.id in S.pantry)) S.pantry[ing.id] = null; }
+        else S.pantry[ing.id] = (cur == null ? 0 : cur) + amount;
+      });
+      inp.value = bad.map((x) => x.text).join(', ');
+      ui.focus = 'p-quick'; update();
+      if (bad.length) toast(`Nicht gefunden: ${bad.map((x) => x.text).join(', ')} – bitte anders schreiben oder antippen.`);
+      else toast(ok.length === 1 ? `${ok[0].ing.name} hinzugefügt` : `${ok.length} Lebensmittel hinzugefügt`);
+    },
+    pstep: (el) => {
+      const id = el.dataset.id, d = Number(el.dataset.d), v = S.pantry[id];
+      if (v == null) { if (d > 0) S.pantry[id] = pDefault(id); update(); return; }
+      const next = Math.round((v + d * pStep(id, d < 0 ? v - 1 : v)) * 100) / 100;
+      if (next <= 0) { delete S.pantry[id]; toast(`${ING[id].name} aufgebraucht`); } else S.pantry[id] = next;
+      update();
     },
     delp: (el) => { delete S.pantry[el.dataset.id]; update(); },
     demop: () => { S.pantry = Object.assign({}, KA.DEMO_PANTRY); S.sel = []; update(); },
-    clearp: () => { S.pantry = {}; S.sel = []; update(); },
+    clearp: () => { if (confirm('Vorrat wirklich leeren?')) { S.pantry = {}; S.sel = []; update(); } },
     togglesel: (el) => {
       const id = el.dataset.id;
       S.sel = S.sel.includes(id) ? S.sel.filter((x) => x !== id) : S.sel.concat(id);
       update();
     },
-    takecombo: () => { S.sel = KA.bestCombo(S.pantry, S.prefs, S.comboN); update(); },
+    takecombo: () => { S.sel = KA.bestCombo(pantryEff(), S.prefs, S.comboN); update(); },
     clearsel: () => { S.sel = []; update(); },
     cook: (el) => {
-      S.pantry = KA.cookRecipe(el.dataset.id, S.pantry, S.prefs);
+      const next = KA.cookRecipe(el.dataset.id, pantryEff(), S.prefs);
+      pIds().forEach((id) => {
+        if (S.pantry[id] == null) return; // „Menge offen“ bleibt vorhanden
+        if (next[id] == null) delete S.pantry[id]; else S.pantry[id] = Math.round(next[id] * 100) / 100;
+      });
       S.sel = S.sel.filter((x) => x !== el.dataset.id);
       update(); toast('Vorrat aktualisiert');
     },
     tofinderlist: () => {
-      S.shop = { source: 'Rezepte (Reste zum Vorrat)', items: finderList(S.sel.filter((id) => REC[id])), created: Date.now() };
+      S.shop = { source: pMode() === 'off' ? 'Rezept-Auswahl' : 'Rezepte (Reste zum Vorrat)', items: finderList(S.sel.filter((id) => REC[id]), pantryEff()), created: Date.now() };
       ui.orderResult = null; S.tab = 'shop'; update(); window.scrollTo(0, 0);
     },
     setMacro: (el) => { const v = MACRO_PRESETS[el.dataset.v]; Object.assign(S.prefs.macro, { enabled: true, p: v[1], c: v[2], f: v[3] }); update(); },
@@ -1065,10 +1173,18 @@
       S.prefs.diets = Object.keys(DIETS).filter((k) => s.has(k));
       update(); return;
     }
+    if (t.dataset.pchip) {
+      const id = t.dataset.pchip;
+      if (t.checked) { if (!(id in S.pantry)) S.pantry[id] = null; } else delete S.pantry[id];
+      update(); return;
+    }
     if (t.dataset.meal) { S.prefs.meals[t.dataset.meal] = t.checked ? 1 : 0; update(); return; }
     if (t.classList.contains('pamt')) {
-      const v = parseFloat(t.value);
-      if (v > 0) S.pantry[t.dataset.id] = v; else delete S.pantry[t.dataset.id];
+      const raw = String(t.value).trim().replace(',', '.');
+      const v = parseFloat(raw);
+      if (raw === '') S.pantry[t.dataset.id] = null; // Menge offen, bleibt aber vorhanden
+      else if (v > 0) S.pantry[t.dataset.id] = v;
+      else delete S.pantry[t.dataset.id];
       update(); return;
     }
     if (t.dataset.bind) {
@@ -1093,11 +1209,7 @@
     if (t.id === 's-title') { ui.scan.title = t.value; return; }
     if (t.dataset.si) { ui.scan.ings[Number(t.dataset.si)].text = t.value; return; }
     if (t.id === 'l-url') { ui.link.url = t.value; return; }
-    if (e.target.id === 'p-name') {
-      const ing = findIngredient(e.target.value);
-      const u = $('#p-unit');
-      if (ing && u) u.innerHTML = (ing.unit === 'g' ? ['g', 'kg'] : ing.unit === 'ml' ? ['ml', 'l'] : ['Stk']).map((x) => `<option>${x}</option>`).join('');
-    }
+    if (t.id === 'p-quick') { $('#p-prev').innerHTML = quickPreview(t.value); }
   });
   document.addEventListener('keydown', (e) => {
     const t = e.target;
@@ -1108,7 +1220,8 @@
     if (t.id === 'd-step' && t.value.trim()) { ui.draft.steps.push(t.value.trim()); t.value = ''; ui.focus = 'd-step'; render(); return; }
     if (t.id === 'extra-in') { A.addextra(); return; }
     if (t.id === 'l-url') { A.linkfetch(); return; }
-    if (['p-name', 'p-amt'].includes(e.target.id)) A.addp();
+    if (t.id === 'p-quick') { A.pquick(); return; }
+    if (t.classList.contains('pamt')) { t.blur(); return; }
     if (e.target.id === 'dis-in') A.adddis();
   });
   document.addEventListener('toggle', (e) => {

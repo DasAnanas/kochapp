@@ -465,6 +465,74 @@
     return KA.buildList(need, prefs);
   };
 
+  /* ---------- Vorrat: Freitext-Eingabe („3 Bananen, 500 g Reis, Milch“) ---------- */
+  // Typische Packungsgrößen (Basiseinheit) für „1 Packung/Dose …“ oder eine bloße Zahl bei g/ml-Lebensmitteln
+  KA.PACK = {
+    milch: 1000, hafermilch: 1000, joghurt: 500, skyr: 450, quark: 500, feta: 200, mozzarella: 125, parmesan: 100,
+    kaese: 250, butter: 250, kokosmilch: 400, kichererbsen: 400, kidneybohnen: 400, dosentomaten: 400, mais: 300,
+    thunfisch: 150, tomatenmark: 200, tofu: 200, haehnchen: 400, rinderhack: 500, schinken: 125, lachs: 250,
+    garnelen: 250, spinat: 450, erbsen: 450, beeren: 300, champignons: 250, rucola: 125, tomaten: 500, vollkornbrot: 500,
+    eier: 10, tortilla: 8, mandeln: 200, walnuesse: 200, chia: 200, leinsamen: 250, kuerbiskerne: 200, tahin: 250, erdnussmus: 250,
+  };
+  // Durchschnittsgewicht pro Stück bei Lebensmitteln, die in Gramm geführt werden
+  KA.PIECE = { karotten: 80, kartoffeln: 150, tomaten: 100, suesskartoffel: 300, brokkoli: 400, blumenkohl: 700, kuerbis: 1000, lauch: 250, ingwer: 30 };
+  const ALIAS = {
+    kartoffel: 'kartoffeln', mohre: 'karotten', mohren: 'karotten', karotte: 'karotten', moehre: 'karotten', moehren: 'karotten',
+    nudel: 'nudeln', pasta: 'nudeln', spaghetti: 'nudeln', hack: 'rinderhack', hackfleisch: 'rinderhack', ei: 'eier',
+    tomate: 'tomaten', kase: 'kaese', gouda: 'kaese', brot: 'vollkornbrot', wraps: 'tortilla', wrap: 'tortilla', tortillas: 'tortilla',
+    ol: 'olivenoel', oel: 'olivenoel', bohnen: 'kidneybohnen', nusse: 'walnuesse', nuesse: 'walnuesse', hahnchen: 'haehnchen',
+    huhn: 'haehnchen', apfel: 'aepfel', aepfel: 'aepfel', zwiebeln: 'zwiebel', paprikas: 'paprika', zitronen: 'zitrone',
+    knoblauchzehen: 'knoblauch', zehe: 'knoblauch', zehen: 'knoblauch', hafer: 'haferflocken', sahne: null,
+  };
+  const baseName = (s) => KA.norm(s).replace(/\s*\(.*\)\s*/g, '').trim();
+  KA.findIng = (q) => {
+    const n = KA.norm(q).replace(/\s+/g, ' ');
+    if (!n) return null;
+    if (ALIAS[n] !== undefined) return ALIAS[n] ? ING[ALIAS[n]] : null;
+    const all = Object.values(ING);
+    const variants = [n, n.replace(/en$/, ''), n.replace(/n$/, ''), n.replace(/e$/, ''), n.replace(/s$/, ''), n + 'n', n + 'e', n + 'en'];
+    for (const v of variants) {
+      const hit = all.find((i) => i.id === v || KA.norm(i.name) === v || baseName(i.name) === v);
+      if (hit) return hit;
+    }
+    if (n.length < 3) return null;
+    return all.find((i) => baseName(i.name).startsWith(n)) || all.find((i) => KA.norm(i.name).includes(n)) || null;
+  };
+
+  const NUMW = { ein: 1, eine: 1, einen: 1, einer: 1, zwei: 2, drei: 3, vier: 4, funf: 5, fuenf: 5, sechs: 6, sieben: 7, acht: 8, neun: 9, zehn: 10, elf: 11, zwolf: 12, halbe: 0.5, halber: 0.5, halbes: 0.5 };
+  const UNITS = [
+    [/^(g|gr|gramm)$/, 'g'], [/^(kg|kilo|kilogramm)$/, 'kg'], [/^(ml|milliliter)$/, 'ml'], [/^(l|liter)$/, 'l'],
+    [/^(stk|stuck|stueck|x)$/, 'stk'],
+    [/^(pck|pckg|pkg|packung|packungen|packchen|dose|dosen|becher|glas|glaser|glaeser|flasche|flaschen|beutel|tute|tuten|tuete|tueten|netz|schale|schalen|bund)$/, 'pack'],
+  ];
+  // Text -> [{ text, ing, amount (Basiseinheit oder null = Menge offen) }]
+  KA.parsePantry = (text) => String(text || '').split(/[,;\n]+|\s+und\s+/i).map((s) => s.trim()).filter(Boolean).map((raw) => {
+    const words = raw.replace(/(\d)([a-zA-Zäöü])/g, '$1 $2').split(/\s+/);
+    let qty = null, unit = null;
+    const w0 = KA.norm(words[0]).replace(',', '.');
+    if (/^\d+(\.\d+)?$|^\d+\/\d+$|^[½¼¾]$/.test(w0)) {
+      qty = w0.includes('/') ? +w0.split('/')[0] / +w0.split('/')[1] : { '½': 0.5, '¼': 0.25, '¾': 0.75 }[w0] || parseFloat(w0);
+      words.shift();
+    } else if (NUMW[w0] != null && words.length > 1) { qty = NUMW[w0]; words.shift(); }
+    if (words.length > 1) {
+      const u = UNITS.find(([re]) => re.test(KA.norm(words[0]).replace(/\.$/, '')));
+      if (u) { unit = u[1]; words.shift(); }
+    }
+    const ing = KA.findIng(words.join(' '));
+    if (!ing || qty == null) return { text: raw, ing, amount: null };
+    const id = ing.id, pack = KA.PACK[id];
+    let amount;
+    if (ing.unit === 'Stk') {
+      if (unit === 'g' || unit === 'kg' || unit === 'ml' || unit === 'l') amount = KA.toBase(qty, unit) / ing.gpu;
+      else if (unit === 'pack') amount = qty * (pack || 1);
+      else amount = qty;
+    } else if (unit === 'g' || unit === 'kg' || unit === 'ml' || unit === 'l') amount = KA.toBase(qty, unit);
+    else if (unit === 'pack') amount = qty * (pack || (ing.unit === 'ml' ? 1000 : 500));
+    else if (KA.PIECE[id]) amount = qty * KA.PIECE[id];
+    else amount = qty >= 10 ? qty : qty * (pack || (ing.unit === 'ml' ? 1000 : 500));
+    return { text: raw, ing, amount: Math.round(amount * 100) / 100 };
+  });
+
   KA.DEMO_PANTRY = {
     reis: 500, kichererbsen: 400, spinat: 200, zwiebel: 3, eier: 6, paprika: 2, dosentomaten: 800,
     kokosmilch: 400, haehnchen: 300, joghurt: 250, haferflocken: 300, kartoffeln: 1000, knoblauch: 4,
