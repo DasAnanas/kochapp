@@ -30,4 +30,8 @@ New-Item -ItemType Directory -Force $dist | Out-Null
   $res "$PSScriptRoot\Program.cs"
 if ($LASTEXITCODE -ne 0) { throw 'Kompilieren fehlgeschlagen' }
 foreach ($f in $dlls) { Copy-Item (Join-Path $lib $f) $dist -Force }
-Write-Output "Fertig: $dist\Kochapp.exe ($([math]::Round((Get-Item "$dist\Kochapp.exe").Length / 1KB)) KB) plus 3 DLLs"
+# REWE-Bridge (Skripte, die den Warenkorb auf rewe.de füllen) neben die EXE legen; deren Daten (.data) bleiben unberührt
+$bridge = 'rewe-bridge.ps1', 'rewe-page.js', 'start-rewe-bridge.cmd', 'mappings.json', 'README.md'
+New-Item -ItemType Directory -Force "$dist\rewe-bridge" | Out-Null
+foreach ($f in $bridge) { Copy-Item (Join-Path $app "rewe-bridge\$f") "$dist\rewe-bridge" -Force }
+Write-Output "Fertig: $dist\Kochapp.exe ($([math]::Round((Get-Item "$dist\Kochapp.exe").Length / 1KB)) KB) plus 3 DLLs und rewe-bridge"

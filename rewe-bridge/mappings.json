@@ -1,0 +1,11 @@
+{
+  "_hinweis": "Feste Zuordnung pro Lebensmittel (Schlüssel = id aus data.js oder Name aus der App): search = Suchbegriff auf rewe.de, productId = festes Produkt (Nummer am Ende der REWE-Produkt-URL), packages = feste Packungszahl.",
+  "eier": { "search": "Eier Freilandhaltung" },
+  "knoblauch": { "search": "Knoblauch" },
+  "kaese": { "search": "Gouda" },
+  "bruehe": { "search": "Gemüsebrühe" },
+  "kraeuter": { "search": "Italienische Kräuter" },
+  "haehnchen": { "search": "Hähnchenbrustfilet" },
+  "beeren": { "search": "Beerenmischung tiefgekühlt" },
+  "erbsen": { "search": "Erbsen tiefgekühlt" }
+}

@@ -9,6 +9,9 @@ desktop.ini
 Kochapp.exe
 dist/
 
+# REWE-Bridge: Browserprofil und API-Schlüssel eines lokalen Laufs
+rewe-bridge/.data/
+
 # Build-Zwischenstände
 *.pdb
 *.tmp

@@ -29,7 +29,13 @@ if ($LASTEXITCODE -ne 0) { throw 'Build fehlgeschlagen' }
 # .../releases/latest/download/Kochapp-Windows.zip immer die neueste Version liefert
 $zip = Join-Path $app 'dist\Kochapp-Windows.zip'
 if (Test-Path $zip) { [IO.File]::Delete($zip) }
-Compress-Archive -Path "$app\dist\Kochapp.exe", "$app\dist\*.dll" -DestinationPath $zip
+# nur die ausgelieferten Dateien packen – nicht rewe-bridge\.data (Browserprofil und API-Schlüssel eines lokalen Testlaufs)
+$stage = Join-Path ([IO.Path]::GetTempPath()) ('kochapp-release-' + [Guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Force "$stage\rewe-bridge" | Out-Null
+Copy-Item "$app\dist\Kochapp.exe", "$app\dist\*.dll" $stage
+Get-ChildItem "$app\dist\rewe-bridge" -File | Copy-Item -Destination "$stage\rewe-bridge"
+Compress-Archive -Path "$stage\*" -DestinationPath $zip
+[IO.Directory]::Delete($stage, $true)
 
 $commit = git rev-parse HEAD
 if (-not $Notes) { $Notes = "Kochapp für Windows 10/11, keine Installation nötig.`n`n1. Kochapp-Windows.zip herunterladen`n2. Rechtsklick > Alle extrahieren`n3. Im entpackten Ordner Kochapp.exe starten (die drei DLL-Dateien müssen daneben liegen bleiben)`n`nGebaut aus Commit $commit." }

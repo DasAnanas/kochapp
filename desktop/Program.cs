@@ -114,7 +114,9 @@ namespace Kochapp
                 catch (NotSupportedException) { ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12; }
 
                 // Einstellungen, Vorrat und Wochenplan (localStorage) liegen im Benutzerprofil
-                string data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Kochapp");
+                // (KOCHAPP_DATA legt einen anderen Ordner fest, z. B. für Tests neben einer laufenden App)
+                string data = Environment.GetEnvironmentVariable("KOCHAPP_DATA");
+                if (string.IsNullOrEmpty(data)) data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Kochapp");
                 CoreWebView2Environment env = await CoreWebView2Environment.CreateAsync(null, data, null);
                 await view.EnsureCoreWebView2Async(env);
 
@@ -174,16 +176,54 @@ namespace Kochapp
         async void OnResource(object sender, CoreWebView2WebResourceRequestedEventArgs e)
         {
             Uri uri = new Uri(e.Request.Uri);
-            if (uri.AbsolutePath != "/api/order") { e.Response = ServeFile(uri); return; }
+            bool rewe = uri.AbsolutePath.StartsWith(RewePrefix + "/", StringComparison.Ordinal);
+            if (uri.AbsolutePath != "/api/order" && !rewe) { e.Response = ServeFile(uri); return; }
 
-            if (e.Request.Method != "POST") { e.Response = Error(405, "Methode nicht erlaubt"); return; }
+            string method = e.Request.Method;
+            if (method != "POST" && !(rewe && method == "GET")) { e.Response = Error(405, "Methode nicht erlaubt"); return; }
             string body = ReadAll(e.Request.Content);
             CoreWebView2Deferral deferral = e.GetDeferral();
             CoreWebView2WebResourceResponse response;
-            try { response = await ForwardOrder(body); }
-            catch (Exception ex) { response = Error(502, "Ziel nicht erreichbar: " + Innermost(ex).Message); }
+            try { response = rewe ? await ForwardRewe(uri, method, body) : await ForwardOrder(body); }
+            catch (Exception ex) { response = Error(502, (rewe ? "REWE-Bridge nicht erreichbar: " : "Ziel nicht erreichbar: ") + Innermost(ex).Message); }
             e.Response = response;
             deferral.Complete();
+        }
+
+        // ---------- REWE-Bridge (rewe-bridge\ neben der EXE): lokale API, die den Warenkorb auf rewe.de füllt ----------
+
+        const string RewePrefix = "/api/rewe";
+        // Standardadresse der Bridge; REWE_BRIDGE_URL überschreibt sie (z. B. wenn die Bridge mit -Port gestartet wird)
+        static readonly string ReweBridge = (Environment.GetEnvironmentVariable("REWE_BRIDGE_URL") ?? "http://localhost:8765").TrimEnd('/');
+
+        string ReweDir { get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "rewe-bridge"); } }
+
+        /// <summary>
+        /// Reicht /api/rewe/… an die Bridge weiter und setzt deren API-Schlüssel (aus rewe-bridge\.data\token.txt) –
+        /// so muss ihn niemand abtippen. POST /api/rewe/start öffnet die Bridge wie ein Doppelklick auf
+        /// start-rewe-bridge.cmd, sichtbar in einem eigenen Konsolenfenster.
+        /// </summary>
+        async Task<CoreWebView2WebResourceResponse> ForwardRewe(Uri uri, string method, string body)
+        {
+            string path = uri.AbsolutePath.Substring(RewePrefix.Length);
+            if (path == "/start")
+            {
+                string cmd = Path.Combine(ReweDir, "start-rewe-bridge.cmd");
+                if (!File.Exists(cmd)) return Error(404, "Der Ordner rewe-bridge fehlt neben Kochapp.exe.");
+                Process.Start(new ProcessStartInfo(cmd) { UseShellExecute = true, WorkingDirectory = ReweDir });
+                return Plain(202, "Accepted", "{\"started\":true}", "application/json");
+            }
+            using (HttpRequestMessage req = new HttpRequestMessage(method == "GET" ? HttpMethod.Get : HttpMethod.Post, ReweBridge + path + uri.Query))
+            {
+                string token = Path.Combine(ReweDir, ".data", "token.txt");
+                if (File.Exists(token)) req.Headers.TryAddWithoutValidation("Authorization", "Bearer " + File.ReadAllText(token).Trim());
+                if (method == "POST") req.Content = new StringContent(body, Encoding.UTF8, "application/json");
+                using (HttpResponseMessage res = await http.SendAsync(req))
+                {
+                    byte[] bytes = await res.Content.ReadAsByteArrayAsync();
+                    return Respond((int)res.StatusCode, string.IsNullOrEmpty(res.ReasonPhrase) ? "OK" : res.ReasonPhrase, bytes, "application/json; charset=utf-8");
+                }
+            }
         }
 
         CoreWebView2WebResourceResponse ServeFile(Uri uri)

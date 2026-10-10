@@ -1,12 +1,14 @@
 Link zum Rezeptbuch: [https://kochapp-rezeptbuch.readyberry.chatgpt.site](https://kochapp-rezeptbuch.readyberry.chatgpt.site)
 
+**Aktuelle HTML-Version (eine Datei, läuft in jedem Browser): [Kochapp.html herunterladen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/Kochapp.html)** – herunterladen und doppelklicken. Sie wird bei jeder Änderung aus dem aktuellen Stand von `main` neu erzeugt (`desktop/build-html.py` bzw. unter Windows `desktop\build-html.ps1`) und enthält damit auch die eine Einkaufsliste und „Bei REWE in den Warenkorb“.
+
 # Kochapp – Essen organisieren
 
 **Für den Mac: `Kochapp-macOS.zip` (native App) oder `Kochapp.html` (Browser). Für Windows: `Kochapp.exe`.** Beide Dateien enthalten die Oberfläche und können einzeln weitergegeben werden.
 
 ## Native Mac-App
 
-**[Kochapp für macOS herunterladen](https://github.com/DasAnanas/kochapp/raw/refs/heads/codex/rezept-bearbeiten/Kochapp-macOS.zip)**
+**[Kochapp für macOS herunterladen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/Kochapp-macOS.zip)**
 
 1. ZIP herunterladen und im Finder doppelklicken, um sie zu entpacken.
 2. `Kochapp.app` in den Ordner „Programme“ ziehen und öffnen.
@@ -21,7 +23,7 @@ Eigene REST-Endpunkte müssen WebKit-Zugriffe erlauben (CORS); der lokale Bestel
 
 ## Auf dem Mac im Browser öffnen
 
-**[Kochapp herunterladen und öffnen](https://github.com/DasAnanas/kochapp/raw/refs/heads/codex/rezept-bearbeiten/Kochapp.html)**
+**[Kochapp herunterladen und öffnen](https://github.com/DasAnanas/kochapp/raw/refs/heads/main/Kochapp.html)**
 
 Über den Link die Datei `Kochapp.html` herunterladen und anschließend im Finder doppelklicken. Sie öffnet sich in deinem Standardbrowser. Dies ist die lokal nutzbare Version. Die Browser-Version ohne Download ist über den Link ganz oben erreichbar.
 
@@ -29,13 +31,13 @@ Eigene REST-Endpunkte müssen WebKit-Zugriffe erlauben (CORS); der lokale Bestel
 - Die App läuft im Browser, ohne Installation, Node.js oder lokalen Server. HTML, CSS und JavaScript sind in dieser einen Datei enthalten. Die Schriftarten benötigen Internet; offline werden Systemschriften verwendet.
 - Eigene Rezepte, Vorrat und Wochenplan werden im lokalen Speicher des verwendeten Browsers gespeichert. Verwende denselben Browser und Dateipfad, keinen privaten Modus. Daten aus der Windows-App werden nicht automatisch übernommen.
 - Demo-Bestellungen und E-Mail funktionieren direkt. Eigene REST-Endpunkte müssen Browserzugriffe erlauben (CORS). Die Option „Über lokalen Proxy“ benötigt weiterhin `node server.js` und das Öffnen von `http://localhost:8080`; sie funktioniert nicht beim direkten Öffnen der HTML-Datei.
-- Nach Änderungen an der Oberfläche mit `python3 desktop/build-html.py` neu bauen und die aktualisierte `Kochapp.html` mit ins Repository aufnehmen. Python wird nur zum Bauen benötigt.
+- Nach Änderungen an der Oberfläche mit `python3 desktop/build-html.py` (Windows: `powershell -ExecutionPolicy Bypass -File desktop\build-html.ps1`) neu bauen und die aktualisierte `Kochapp.html` mit ins Repository aufnehmen. Python wird nur zum Bauen benötigt.
 
 Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 10/11 mit WebView2-Laufzeit (in Windows 11 enthalten).
 
 ## Desktop-App
 - **Download: [Kochapp-Windows.zip (aktuelle Version)](https://github.com/DasAnanas/kochapp/releases/latest/download/Kochapp-Windows.zip)** – ZIP entpacken (Rechtsklick > „Alle extrahieren“) und `Kochapp.exe` aus dem entpackten Ordner starten. Alle Versionen unter [Releases](https://github.com/DasAnanas/kochapp/releases).
-- Der Ordner enthält `Kochapp.exe` und drei WebView2-Bibliotheken von Microsoft (`*.dll`), die daneben liegen bleiben müssen. Zum Weitergeben den ganzen Ordner bzw. die ZIP-Datei verwenden.
+- Der Ordner enthält `Kochapp.exe`, drei WebView2-Bibliotheken von Microsoft (`*.dll`) und den Ordner `rewe-bridge`; alles muss zusammen liegen bleiben. Zum Weitergeben den ganzen Ordner bzw. die ZIP-Datei verwenden.
 - Die Oberfläche (`index.html`, `style.css`, `*.js`) ist in die EXE eingebettet. Die Bibliotheken sind es bewusst nicht: Eine EXE, die Programmbibliotheken aus sich selbst entpackt, meldet Windows Defender als Trojaner (Fehlalarm, so geschehen bei Version 1.0.0).
 - Dieses Repository enthält nur den Quelltext; die fertige App liegt als Release-Download vor (so kollidieren parallele Änderungen nicht an einer Binärdatei).
 - **Neue Version veröffentlichen:** `powershell -ExecutionPolicy Bypass -File desktop\release.ps1` baut die App aus dem aktuellen `main` und lädt sie als neues GitHub-Release hoch (benötigt Git und die angemeldete GitHub-CLI `gh`).
@@ -47,6 +49,13 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
 - Schriftarten (Bricolage Grotesque, Manrope) werden von Google Fonts geladen; ohne Internet nutzt die App Systemschriften.
 - Zum Entwickeln lässt sich `index.html` weiterhin direkt im Browser öffnen (`start.bat`/`server.js` optional mit Node.js).
 
+## Bei REWE bestellen
+- Im Bereich „Einkaufsliste“ auf **„Bei REWE in den Warenkorb …“** klicken. Übergeben werden alle Artikel, die noch nicht abgehakt sind. Die App fragt nach der **Postleitzahl** (und Liefer- oder Abholservice), wählt den passenden REWE-Markt, legt die Artikel der Liste in den Warenkorb auf rewe.de und holt das REWE-Fenster mit dem Warenkorb nach vorn.
+- **Es wird nie automatisch bestellt.** Warenkorb prüfen, Liefertermin wählen und die Bestellung abschließen macht der Mensch selbst auf rewe.de.
+- Technik: Der Ordner `rewe-bridge` (liegt neben `Kochapp.exe`) enthält eine kleine lokale Schnittstelle, die ein eigenes Chrome- bzw. Edge-Fenster steuert. Die Windows-App startet sie bei Bedarf selbst (es erscheinen ein Konsolenfenster und das REWE-Fenster) und setzt den API-Schlüssel automatisch. Wer sich in diesem REWE-Fenster einmal anmeldet, bleibt dort angemeldet. Details: `rewe-bridge/README.md`.
+- Für jeden Artikel wird das erste lieferbare Suchergebnis genommen und die Menge auf ganze Packungen aufgerundet; nach dem Füllen zeigt die App je Artikel, welches Produkt gewählt wurde und was nicht gefunden wurde. Feste Produkte lassen sich in `rewe-bridge/mappings.json` hinterlegen.
+- rewe.de hat keine öffentliche Schnittstelle; die Bridge nutzt dieselben Aufrufe wie der Shop im Browser. Ändert REWE diese, funktioniert das Füllen nicht mehr, bis `rewe-bridge/rewe-page.js` angepasst ist. In der Browser-Version (`Kochapp.html`) muss die Bridge von Hand gestartet und ihr API-Schlüssel eingetragen werden; auf dem Mac gibt es sie nicht (PowerShell-Skript).
+
 ## Rezeptbuch (aus dem Projekt „Küchenbuch“ übernommen)
 - **Bibliothek** mit rund 250 Rezepten, Suche nach Titel, Zutat oder Küche, Kategorien und Sammlungen in der Seitenleiste.
 - **Kategorien:** Frühstück, Hauptgericht, Snack, Backen, Nachtisch, Getränke (je ca. 30 Rezepte, Hauptgerichte knapp 100) sowie „Eigene“.
@@ -56,18 +65,18 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
 - **Rezeptseite** mit Portionsrechner: Zutatenmengen passen sich an.
 - **Eigene Rezepte** anlegen: Zutaten wie „200 g Mehl“ eintippen, Menge/Einheit werden erkannt; Titelbild optional, bei Hauptgerichten optional die Küche. Zutaten, deren Name in der Lebensmittelliste steht (wie bei „Mein Vorrat“) und die eine Menge in g, ml oder Stk haben, werden mit Nährwerten verknüpft; die Eingabe zeigt das sofort an.
 - **Eigene Rezepte in Finder und Wochenplan:** Rezepte mit mindestens einer verknüpften Zutat stehen auch im Vorrats-Finder und im Wochenplan zur Verfügung. Mit dem Schalter **„Nur meine eigenen Rezepte verwenden“** (Präferenzen) arbeiten beide ausschließlich mit ihnen. Nicht verknüpfte Zutaten zählen nicht für Nährwerte und Vorrat, landen aber auf der Einkaufsliste; solche Rezepte werden bei aktiver Ernährungsform (vegan, glutenfrei …) vorsichtshalber ausgelassen.
-- **Einkaufsliste** (Schublade rechts, über „Einkaufsliste“ in der Seitenleiste): Rezepte mit Personenzahl sammeln, Zutaten werden zusammengefasst, eigene Artikel ergänzen, abhaken, als Text herunterladen oder mit „Drucken & bestellen“ an „Vorrat & Einkauf“ übergeben.
+- **Eine Einkaufsliste** (eigener Bereich in der Seitenleiste): Sie sammelt alles an einer Stelle – Rezepte aus dem Rezeptbuch („+ Liste“, Personenzahl änderbar), die übernommene Rezept-Auswahl, den übernommenen Wochenplan und eigene Artikel. Gleiche Lebensmittel werden zusammengefasst; jede Zeile zeigt, woher sie kommt. Abhaken, kopieren, als CSV speichern, drucken oder bei REWE in den Warenkorb legen.
 - **Foto-Scan und Linkimport sind Demos** mit festem Beispielrezept – es findet keine Texterkennung und kein Webabruf statt.
 
 ## Funktionen
 1. **Profil** – Ernährungsformen als frei kombinierbare Toggles (vegan, vegetarisch, pescetarisch, glutenfrei, laktosefrei, nussfrei, eifrei, sojafrei, sesamfrei, halal, low carb, high protein), Ausschlüsse (Freitext), max. Zubereitungszeit, max. Schwierigkeit, Personenzahl, Mahlzeiten pro Tag, optionale Körperdaten.
-2. **Vorrat & Rezepte** – drei Modi, jederzeit umschaltbar (im Tab „Vorrat & Einkauf“ und über den Rezepten):
+2. **Vorrat & Rezepte** – drei Modi, jederzeit umschaltbar (im Bereich „Vorrat“ und über den Rezepten):
    - **Ohne Vorrat** – nichts pflegen; Rezepte, Wochenplan und Einkaufslisten enthalten alle Zutaten. Der Tab heißt dann „Rezepte finden“.
    - **Nur abhaken** – antippen, was da ist (ohne Mengen). Abgehaktes gilt als vorhanden und kommt nicht auf die Einkaufsliste.
    - **Mit Mengen** – genau mitzählen mit −/+; „Gekocht“ zieht den Verbrauch ab. Einträge ohne Menge („Menge offen“) zählen als vorhanden.
    Schnell-Eingabe in natürlicher Sprache: „3 Bananen, 500 g Haferflocken, Milch“, „2 Dosen Kichererbsen“, „1 Packung Eier“, „drei Karotten“ (Packungsgrößen und Stückgewichte in `logic.js`, `KA.PACK`/`KA.PIECE`). Mit Vorrat rankt die App Rezepte nach Vorrat-Nutzung, schlägt die *beste Kombination* vor und erstellt die **Einkaufsliste für die Reste**.
 3. **Wochenplan** – 7 Tage, optimiert auf Energie, Makros und 10 Mikronährstoffe (Wochendurchschnitt). Pro Mahlzeit: 🎲 Reroll, ⇄ Swap (Alternativen mit Bewertung), 🔒 Sperren. Ohne Körperdaten wird mit 2.000 kcal-Referenz geplant. Einkaufsliste optional abzüglich Vorrat.
-4. **Einkauf & Bestellung** – Liste abhaken/bearbeiten, kopieren, CSV, drucken, bestellen.
+4. **Einkaufsliste** – die eine Liste der App: abhaken, eigene Artikel ergänzen, kopieren, CSV, drucken, bestellen.
 
 ## Bestell-Schnittstelle (`order.js`)
 Adapter-Modell (`KA.Providers`):
