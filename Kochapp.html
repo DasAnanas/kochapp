@@ -120,7 +120,8 @@ input.narrow{width:6rem}
 .seg.wrap{flex-wrap:wrap;margin-bottom:.5rem}
 .seg button{border:0;background:none;color:var(--ink);padding:7px 12px;border-radius:8px;font:500 13px var(--body);cursor:pointer}
 .seg button:hover{background:var(--hover)}
-.seg button.on{background:var(--card);font-weight:600;box-shadow:0 1px 2px rgba(20,35,28,.12)}
+/* gewählte Option wie bei den Ernährungs-Chips: in beiden Modi klar erkennbar */
+.seg button.on,.seg button.on:hover{background:var(--ink);color:var(--bg);font-weight:600}
 .step{display:inline-flex;align-items:center;gap:4px;background:var(--side);border-radius:10px;padding:4px}
 .step button{width:36px;height:36px;border:0;border-radius:8px;background:var(--card);cursor:pointer;font:500 18px var(--body);color:var(--ink)}
 .step span{min-width:44px;padding:0 8px;text-align:center;font:600 15px var(--body)}
