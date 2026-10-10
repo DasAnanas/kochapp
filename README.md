@@ -1,10 +1,9 @@
 # Kochapp – Essen organisieren
 
-**➜ [Kochapp.exe herunterladen](https://github.com/DasAnanas/kochapp/releases/latest/download/Kochapp.exe)** (aktuelle Version, Windows 10/11)
-
-Die App ist eine einzige Datei: Doppelklick auf `Kochapp.exe` öffnet sie in einem eigenen Fenster – kein Browser, kein Server, keine Installation. Die EXE läuft für sich allein und kann einzeln kopiert oder weitergegeben werden (benötigt die WebView2-Laufzeit, in Windows 11 enthalten). Alle Versionen stehen unter [Releases](https://github.com/DasAnanas/kochapp/releases).
+**Das Ergebnis ist eine einzige Datei: `Kochapp.exe`.** Doppelklick öffnet die App in einem eigenen Fenster – kein Browser, kein Server, keine Installation. Die EXE läuft für sich allein und kann einzeln kopiert oder weitergegeben werden (Windows 10/11 mit WebView2-Laufzeit, in Windows 11 enthalten).
 
 ## Desktop-App
+- **Download: [Kochapp.exe (aktuelle Version)](https://github.com/DasAnanas/kochapp/releases/latest/download/Kochapp.exe)** – alle Versionen unter [Releases](https://github.com/DasAnanas/kochapp/releases).
 - Oberfläche (`index.html`, `style.css`, `*.js`) und die WebView2-Bibliotheken sind in die EXE eingebettet. Dieses Repository enthält nur den Quelltext; die fertige EXE liegt nicht im Repository, sondern als Release-Download vor (so kollidieren parallele Änderungen nicht an einer Binärdatei).
 - **Neue Version veröffentlichen:** `powershell -ExecutionPolicy Bypass -File desktop\release.ps1` baut die EXE aus dem aktuellen `main` und lädt sie als neues GitHub-Release hoch (benötigt Git und die angemeldete GitHub-CLI `gh`).
 - Das Fenster- und Programmsymbol (Kochtopf) liegt als `desktop\kochapp.ico` vor; `desktop\make-icon.ps1` zeichnet es neu.
