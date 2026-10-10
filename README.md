@@ -64,7 +64,11 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
 
 ## Funktionen
 1. **Profil** – Ernährungsformen als frei kombinierbare Toggles (vegan, vegetarisch, pescetarisch, glutenfrei, laktosefrei, nussfrei, eifrei, sojafrei, sesamfrei, halal, low carb, high protein), Ausschlüsse (Freitext), max. Zubereitungszeit, max. Schwierigkeit, Personenzahl, Mahlzeiten pro Tag, optionale Körperdaten.
-2. **Vorrat & Rezepte** – Lebensmittel mit Menge eintragen. Die App rankt Rezepte nach Vorrat-Nutzung, schlägt die *beste Kombination* mehrerer Gerichte vor und erstellt die **Einkaufsliste für die Reste**. „Gekocht“ zieht den Verbrauch vom Vorrat ab.
+2. **Vorrat & Rezepte** – drei Modi, jederzeit umschaltbar (im Tab „Vorrat & Einkauf“ und über den Rezepten):
+   - **Ohne Vorrat** – nichts pflegen; Rezepte, Wochenplan und Einkaufslisten enthalten alle Zutaten. Der Tab heißt dann „Rezepte finden“.
+   - **Nur abhaken** – antippen, was da ist (ohne Mengen). Abgehaktes gilt als vorhanden und kommt nicht auf die Einkaufsliste.
+   - **Mit Mengen** – genau mitzählen mit −/+; „Gekocht“ zieht den Verbrauch ab. Einträge ohne Menge („Menge offen“) zählen als vorhanden.
+   Schnell-Eingabe in natürlicher Sprache: „3 Bananen, 500 g Haferflocken, Milch“, „2 Dosen Kichererbsen“, „1 Packung Eier“, „drei Karotten“ (Packungsgrößen und Stückgewichte in `logic.js`, `KA.PACK`/`KA.PIECE`). Mit Vorrat rankt die App Rezepte nach Vorrat-Nutzung, schlägt die *beste Kombination* vor und erstellt die **Einkaufsliste für die Reste**.
 3. **Wochenplan** – 7 Tage, optimiert auf Energie, Makros und 10 Mikronährstoffe (Wochendurchschnitt). Pro Mahlzeit: 🎲 Reroll, ⇄ Swap (Alternativen mit Bewertung), 🔒 Sperren. Ohne Körperdaten wird mit 2.000 kcal-Referenz geplant. Einkaufsliste optional abzüglich Vorrat.
 4. **Einkauf & Bestellung** – Liste abhaken/bearbeiten, kopieren, CSV, drucken, bestellen.
 

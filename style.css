@@ -140,6 +140,24 @@ details summary .muted{font-weight:400;margin-left:.5rem;font-size:.88rem}
 .st.miss{background:color-mix(in srgb,var(--low) 14%,transparent);color:var(--low)}
 .st.basic{background:var(--side);color:var(--muted)}
 
+/* ---------- Vorrat ---------- */
+.pbar{display:flex;justify-content:space-between;align-items:center;gap:12px 20px;flex-wrap:wrap;padding:14px 18px}
+.pbar .muted{margin-left:.4rem}
+.pbar-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap} .pbar-r .btn.sm{margin:0}
+.prev b.bad{background:var(--warm-soft);color:var(--warm-ink)}
+.pgrid{display:flex;flex-direction:column;gap:16px}
+.pcat{display:flex;flex-direction:column;gap:8px}
+.pcat .slabel em{font-style:normal;background:var(--acc-soft);color:var(--acc-deep);border-radius:99px;padding:1px 8px;margin-left:4px;letter-spacing:0}
+.plist2{display:flex;flex-direction:column;gap:18px;margin:.4rem 0 1rem}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) auto 6.5rem 28px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line2)}
+.prow .nm{font-weight:500}
+.prow.open .nm{color:var(--ink2)}
+.prow .pstep{background:var(--side);padding:3px;gap:2px} .prow .pstep button{background:var(--card)} .prow .pstep button:hover{background:var(--hover)} .pstep input{width:4.2rem;padding:4px 6px;text-align:right;font-weight:600;border:0;background:var(--card);border-radius:6px}
+.pstep .u{min-width:28px;font:500 13px var(--body);color:var(--muted);text-align:left;padding:0 4px}
+.prow .st{justify-self:start}
+details.pick2{border-top:1px solid var(--line2);padding-top:14px} details.pick2[open] summary{margin-bottom:14px}
+@media (max-width:640px){.prow{grid-template-columns:minmax(0,1fr) auto 28px}.prow>.st,.prow>span:empty{display:none}}
+
 /* ---------- Rezepte aus Vorrat ---------- */
 .combo{border-color:var(--acc)}
 .combolist{margin:.6rem 0;padding-left:1.3rem} .combolist li{margin:.25rem 0}
