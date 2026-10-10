@@ -1,8 +1,23 @@
 # Kochapp – Essen organisieren
 
-**Für den Mac: `Kochapp.html`. Für Windows: `Kochapp.exe`.** Beide Dateien enthalten die Oberfläche und können einzeln weitergegeben werden.
+**Für den Mac: `Kochapp-macOS.zip` (native App) oder `Kochapp.html` (Browser). Für Windows: `Kochapp.exe`.** Beide Dateien enthalten die Oberfläche und können einzeln weitergegeben werden.
 
-## Auf dem Mac öffnen
+## Native Mac-App
+
+**[Kochapp für macOS herunterladen](https://github.com/DasAnanas/kochapp/raw/refs/heads/codex/rezept-bearbeiten/Kochapp-macOS.zip)**
+
+1. ZIP herunterladen und im Finder doppelklicken, um sie zu entpacken.
+2. `Kochapp.app` in den Ordner „Programme“ ziehen und öffnen.
+
+Die App öffnet ein eigenes Fenster und benötigt keinen Browser, Node.js oder Server. Sie läuft ab macOS 11.3 auf Apple Silicon und Intel. Eigene Rezepte und Einstellungen werden im persistenten WebKit-Speicher der App abgelegt; Daten aus der HTML- oder Windows-Version werden nicht automatisch übernommen.
+
+Der Download ist lokal signiert (Ad-hoc), jedoch nicht mit einem Apple-Entwicklerzertifikat signiert oder von Apple notarisiert. macOS kann den Start deshalb blockieren. Für eine regulär freigegebene Verteilung sind ein Apple Developer Account, Signierung und Notarisierung erforderlich. Die HTML-Version bleibt als Alternative verfügbar.
+
+Nach Änderungen mit `bash desktop/build-macos.sh` auf einem Mac neu bauen (Xcode Command Line Tools erforderlich). Das Skript erstellt beide Prozessorvarianten und verpackt die Universal-App in `Kochapp-macOS.zip`.
+
+Eigene REST-Endpunkte müssen WebKit-Zugriffe erlauben (CORS); der lokale Bestellproxy ist in der Mac-App nicht eingebaut. Demo-Bestellungen, E-Mail, Bildauswahl, TXT-/CSV-Downloads und Drucken werden von der App unterstützt.
+
+## Auf dem Mac im Browser öffnen
 
 **[Kochapp herunterladen und öffnen](https://github.com/DasAnanas/kochapp/raw/refs/heads/codex/rezept-bearbeiten/Kochapp.html)**
 
