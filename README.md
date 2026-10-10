@@ -34,8 +34,13 @@ Eigene REST-Endpunkte müssen WebKit-Zugriffe erlauben (CORS); der lokale Bestel
 Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 10/11 mit WebView2-Laufzeit (in Windows 11 enthalten).
 
 ## Desktop-App
-- Oberfläche (`index.html`, `style.css`, `*.js`) und die WebView2-Bibliotheken sind in die EXE eingebettet. Die übrigen Dateien in diesem Ordner sind der Quelltext.
-- **Nach Änderungen am Quelltext neu bauen:** `powershell -ExecutionPolicy Bypass -File desktop\build.ps1` (nutzt den in Windows enthaltenen C#-Compiler; die DLLs zum Einbetten liegen in `desktop\lib`).
+- **Download: [Kochapp-Windows.zip (aktuelle Version)](https://github.com/DasAnanas/kochapp/releases/latest/download/Kochapp-Windows.zip)** – ZIP entpacken (Rechtsklick > „Alle extrahieren“) und `Kochapp.exe` aus dem entpackten Ordner starten. Alle Versionen unter [Releases](https://github.com/DasAnanas/kochapp/releases).
+- Der Ordner enthält `Kochapp.exe` und drei WebView2-Bibliotheken von Microsoft (`*.dll`), die daneben liegen bleiben müssen. Zum Weitergeben den ganzen Ordner bzw. die ZIP-Datei verwenden.
+- Die Oberfläche (`index.html`, `style.css`, `*.js`) ist in die EXE eingebettet. Die Bibliotheken sind es bewusst nicht: Eine EXE, die Programmbibliotheken aus sich selbst entpackt, meldet Windows Defender als Trojaner (Fehlalarm, so geschehen bei Version 1.0.0).
+- Dieses Repository enthält nur den Quelltext; die fertige App liegt als Release-Download vor (so kollidieren parallele Änderungen nicht an einer Binärdatei).
+- **Neue Version veröffentlichen:** `powershell -ExecutionPolicy Bypass -File desktop\release.ps1` baut die App aus dem aktuellen `main` und lädt sie als neues GitHub-Release hoch (benötigt Git und die angemeldete GitHub-CLI `gh`).
+- Das Fenster- und Programmsymbol (Kochtopf) liegt als `desktop\kochapp.ico` vor; `desktop\make-icon.ps1` zeichnet es neu.
+- **Lokal bauen (zum Ausprobieren):** `powershell -ExecutionPolicy Bypass -File desktop\build.ps1` erzeugt den Ordner `dist` mit `Kochapp.exe` und den DLLs (nutzt den in Windows enthaltenen C#-Compiler; die DLLs liegen in `desktop\lib`).
 - Eigene Rezepte, Einkaufsliste, Vorrat und Wochenplan liegen unter `%LOCALAPPDATA%\Kochapp`.
 - Bestellungen an einen eigenen REST-Endpunkt sendet die App-Hülle selbst (kein CORS). `ORDER_API_URL`, `ORDER_API_KEY` und `ORDER_API_KEY_HEADER` legen Ziel und Key per Umgebungsvariable fest.
 - Externe Links und `mailto:` öffnen im Standardprogramm.
@@ -45,8 +50,9 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
 ## Rezeptbuch (aus dem Projekt „Küchenbuch“ übernommen)
 - **Bibliothek** aller Rezepte mit Suche nach Titel oder Zutat, Kategorien und Sammlungen in der Seitenleiste.
 - **Rezeptseite** mit Portionsrechner: Zutatenmengen passen sich an.
-- **Eigene Rezepte** anlegen: Zutaten wie „200 g Mehl“ eintippen, Menge/Einheit werden erkannt; Titelbild optional. Eigene Rezepte erscheinen im Rezeptbuch und auf der Einkaufsliste, aber nicht im Vorrats-Finder oder Wochenplan (dafür fehlen Nährwerte).
-- **Einkaufsliste** (Schublade rechts): Rezepte mit Personenzahl sammeln, Zutaten werden zusammengefasst, eigene Artikel ergänzen, abhaken, als Text herunterladen oder mit „Drucken & bestellen“ an „Vorrat & Einkauf“ übergeben.
+- **Eigene Rezepte** anlegen: Zutaten wie „200 g Mehl“ eintippen, Menge/Einheit werden erkannt; Titelbild optional. Zutaten, deren Name in der Lebensmittelliste steht (wie bei „Mein Vorrat“) und die eine Menge in g, ml oder Stk haben, werden mit Nährwerten verknüpft; die Eingabe zeigt das sofort an.
+- **Eigene Rezepte in Finder und Wochenplan:** Rezepte mit mindestens einer verknüpften Zutat stehen auch im Vorrats-Finder und im Wochenplan zur Verfügung. Mit dem Schalter **„Nur meine eigenen Rezepte verwenden“** (Präferenzen) arbeiten beide ausschließlich mit ihnen. Nicht verknüpfte Zutaten zählen nicht für Nährwerte und Vorrat, landen aber auf der Einkaufsliste; solche Rezepte werden bei aktiver Ernährungsform (vegan, glutenfrei …) vorsichtshalber ausgelassen.
+- **Einkaufsliste** (Schublade rechts, über „Einkaufsliste“ in der Seitenleiste): Rezepte mit Personenzahl sammeln, Zutaten werden zusammengefasst, eigene Artikel ergänzen, abhaken, als Text herunterladen oder mit „Drucken & bestellen“ an „Vorrat & Einkauf“ übergeben.
 - **Foto-Scan und Linkimport sind Demos** mit festem Beispielrezept – es findet keine Texterkennung und kein Webabruf statt.
 
 ## Funktionen
@@ -64,7 +70,14 @@ Adapter-Modell (`KA.Providers`):
 Einen konkreten Händler anbinden: in `KA.Providers` einen Eintrag mit `fields`, `preview()` und `submit()` ergänzen und dort das Payload auf das API-Format des Händlers abbilden. Hinweis: Die meisten Supermärkte bieten keine offene Bestell-API; ein eigener Zwischen-Endpunkt oder ein Partnerzugang ist meist nötig.
 
 ## Dateien
-`index.html` · `style.css` · `data.js` (50 Rezepte, 76 Lebensmittel, Nährwerte) · `logic.js` (Filter, Finder, Planer) · `app.js` (UI) · `order.js` · `server.js` · `start.bat` · `Kochapp.exe` · `desktop\Program.cs` · `desktop\build.ps1` · `desktop\lib` (WebView2-DLLs zum Einbetten)
+`index.html` · `style.css` · `data.js` (50 Rezepte, 76 Lebensmittel, Nährwerte) · `logic.js` (Filter, Finder, Planer) · `app.js` (UI) · `order.js` · `server.js` · `start.bat` · `desktop\Program.cs` · `desktop\build.ps1` · `desktop\release.ps1` · `desktop\lib` (WebView2-DLLs, werden mit ausgeliefert)
+
+## Nährwerte aus den Zutaten
+- Die Rezeptseite zeigt die **Nährwerte pro Portion** (Energie, 4 Makro- und 10 Mikronährstoffe, jeweils mit Anteil am Tagesbedarf). Sie werden aus den Zutaten zusammengerechnet – bei mitgelieferten und bei eigenen Rezepten.
+- Eigene Zutaten werden beim Eintippen einem Lebensmittel zugeordnet, auch mit anderen Namen („Möhren“, „rote Zwiebel“, „Weißweinessig“) und Haushaltsmaßen (EL, TL, Prise, Bund, Dose, Becher, Stück). Die Vorschau zeigt, welches Lebensmittel und welche Menge erkannt wurde. Haushaltsmaße sind Näherungen.
+- Nicht erkannte Zutaten gehen nicht in die Rechnung ein; die Rezeptseite nennt sie ausdrücklich.
+- **Datenquellen:** Schweizer Nährwertdatenbank V 7.1 (Bundesamt für Lebensmittelsicherheit und Veterinärwesen BLV, https://naehrwertdaten.ch) und USDA FoodData Central, SR Legacy (https://fdc.nal.usda.gov). Jeder Wert der 154 Lebensmittel wurde in beiden Datenbanken nachgeschlagen und verglichen; das Ergebnis steht in `tools/naehrwerte/PRUEFBERICHT.md`.
+- Neu erzeugen: `tools\naehrwerte\fetch.ps1 -Out <Ordner>` lädt beide Datenbanken, `tools\naehrwerte\verify.ps1 -Data <Ordner> -Apply` vergleicht und trägt die Werte in `data.js` ein. Die Zuordnung der Lebensmittel steht in `tools\naehrwerte\foods.tsv`.
 
 ## Hinweise
 Nährwerte und Preise sind gerundete Näherungswerte, keine Ernährungsberatung. Vitamin D (und bei veganer Kost B12) werden im Plan ehrlich als Lücke angezeigt.

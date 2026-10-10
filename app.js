@@ -10,7 +10,7 @@
     tab: 'book',
     my: [], list: [], extras: [], done: {}, // Rezeptbuch: eigene Rezepte, Rezepte auf der Einkaufsliste, freie Artikel, Häkchen
     prefs: {
-      diets: [], dislikes: [], maxTime: 60, maxDiff: 3, persons: 2, assumeStaples: true,
+      diets: [], dislikes: [], maxTime: 60, maxDiff: 3, persons: 2, assumeStaples: true, onlyMine: false,
       meals: { f: 1, m: 1, a: 1, s: 0 },
       macro: { enabled: false, p: 20, c: 50, f: 30 },
       body: { enabled: false, sex: 'm', age: 30, height: 175, weight: 70, activity: 1.6, goal: 'keep' },
@@ -28,7 +28,7 @@
   let S = DEF();
   try { S = merge(DEF(), JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) { /* ignore */ }
   const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { toast('Speichern fehlgeschlagen – der lokale Speicher ist voll.'); } };
-  const emptyDraft = () => ({ title: '', serv: 4, time: '', cat: 'Hauptgericht', ings: [], steps: [], image: '' });
+  const emptyDraft = () => ({ title: '', serv: 4, time: '', cat: 'Hauptgericht', diff: 2, ings: [], steps: [], image: '' });
   const ui = {
     open: new Set(), nutDay: -1, preview: false, orderResult: null, ordering: false, planError: '', focus: null,
     book: 'library', selId: null, detailServ: 2, filter: 'Alle', query: '', addMode: 'manual', draft: emptyDraft(),
@@ -85,7 +85,9 @@
   const tag = (txt, cls) => `<span class="tag ${cls || ''}">${esc(txt)}</span>`;
   function recipeTags(r) {
     const f = KA.recipeFlags(r);
-    const t = [];
+    const t = r.user ? ['eigenes'] : [];
+    // Bei Zutaten ohne Stammdaten lässt sich keine Ernährungsform zusichern
+    if (f.has('unbekannt')) return t.concat('Nährwerte unvollständig').map((x) => tag(x)).join('');
     if (!f.has('fleisch') && !f.has('fisch') && !f.has('schalentier')) t.push(!f.has('milch') && !f.has('ei') && !f.has('honig') ? 'vegan' : 'vegetarisch');
     else if (!f.has('fleisch')) t.push('pescetarisch');
     if (!f.has('gluten')) t.push('glutenfrei');
@@ -109,7 +111,9 @@
       }
       return `<tr><td>${esc(ING[id].name)}</td><td class="num">${KA.fmtAmount(id, need)}</td><td>${st}</td></tr>`;
     }).join('');
-    return `<table class="ings"><tbody>${rows}</tbody></table>`;
+    // eigene Rezepte: Zutaten ohne Stammdaten werden nur aufgeführt, nicht mit dem Vorrat verrechnet
+    const free = (r.free || []).map((i) => `<tr><td>${esc(i.name)}</td><td class="num">${esc(ingQty(i, k))}</td><td>${ev ? '<span class="st basic">nicht verrechnet</span>' : ''}</td></tr>`).join('');
+    return `<table class="ings"><tbody>${rows}${free}</tbody></table>`;
   }
 
   function recipeFacts(r) {
@@ -150,7 +154,10 @@
         <div class="fgroup"><div class="flabel">Personen (Portionen)</div>
           <input class="narrow" type="number" min="1" max="12" step="1" value="${p.persons}" data-bind="prefs.persons" data-num="1"></div>
         <label class="switch"><input type="checkbox" data-bind="prefs.assumeStaples" ${p.assumeStaples ? 'checked' : ''}><span>Salz, Pfeffer, Öl, Brühe & Gewürze sind immer da</span></label>
-      </div></section>`;
+        <label class="switch"><input type="checkbox" data-bind="prefs.onlyMine" ${p.onlyMine ? 'checked' : ''}><span>Nur meine eigenen Rezepte verwenden <span class="muted">(${usableMine} von ${S.my.length} nutzbar)</span></span></label>
+      </div>
+      ${p.onlyMine && !usableMine ? `<p class="warn">${S.my.length ? 'Keines deiner Rezepte ist hier nutzbar: Dafür braucht mindestens eine Zutat einen Namen aus der Lebensmittelliste (wie bei „Mein Vorrat“) und eine Menge in g, ml oder Stk.' : 'Du hast noch keine eigenen Rezepte angelegt.'} <button class="btn sm" data-act="bookadd">Rezept anlegen</button></p>` : ''}
+      </section>`;
   }
 
   const MACRO_PRESETS = { balanced: ['Ausgewogen', 20, 50, 30], highprotein: ['Eiweißreich', 30, 40, 30], lowcarb: ['Low Carb', 30, 25, 45], lowfat: ['Fettarm', 25, 55, 20] };
@@ -253,7 +260,7 @@
           <p>Damit werden <b>${usage.touched} von ${usage.count}</b> Vorratsartikeln verwendet (ca. ${r0(usage.massFrac * 100)} % der Mengen).</p>
           <button class="btn" data-act="takecombo" ${same ? 'disabled' : ''}>${same ? '✔ Übernommen' : 'Kombination übernehmen'}</button></section>`;
 
-        const list = sel.length ? KA.shoppingForRecipes(sel, S.pantry, p) : [];
+        const list = sel.length ? finderList(sel) : [];
         out += `<section class="card"><h2>Einkaufsliste für die Reste</h2>${
           sel.length
             ? `<p class="muted">Für ${sel.length} ausgewählte${sel.length > 1 ? '' : 's'} Gericht${sel.length > 1 ? 'e' : ''}: ${sel.map((id) => esc(REC[id].name)).join(' · ')}</p>${listHTML(list)}
@@ -409,7 +416,7 @@
   // „200 g Mehl“ -> { qty, unit, name }
   function parseLine(t) {
     t = t.trim();
-    const m = t.match(/^([\d.,½¼¾\/]+)?\s*(kg|g|ml|l|EL|TL|Stk|Zehen?|Prise|Bund|Dose|Becher|Pck)?\.?\s+(.+)$/i);
+    const m = t.match(/^([\d.,½¼¾\/]+)?\s*(kg|g|ml|l|EL|TL|Stk|Stück|Zehen?|Prisen?|Bund|Dosen?|Becher|Pck|Packung)?\.?\s+(.+)$/i);
     if (!m || (!m[1] && !m[2])) return { qty: null, unit: '', name: t };
     let q = null;
     if (m[1]) {
@@ -421,15 +428,46 @@
 
   // Verknüpft eine freie Zutat mit den Stammdaten, wenn Name und Einheit eindeutig passen
   // (dann greifen Kategorien, Preise und das Zusammenfassen auf der Einkaufsliste).
+  // Ergebnis: die Zutat wie eingetippt (qty, unit, name) plus id des Lebensmittels und base = Menge in dessen
+  // Grundeinheit (g, ml oder Stk). base ist null, wenn sich die Einheit nicht umrechnen lässt.
+  let nameIndex = null;
+  function findFood(name) {
+    if (!nameIndex) {
+      nameIndex = {};
+      const put = (n, i) => { const k = KA.norm(n); if (k && !nameIndex[k]) nameIndex[k] = i; };
+      Object.values(ING).forEach((i) => put(i.name, i));
+      Object.values(ING).forEach((i) => (i.meta.a || []).forEach((n) => put(n, i)));
+    }
+    const n = KA.norm(name);
+    const head = n.split(/[,(]/)[0].trim(); // „Paprikapulver, edelsüß“ -> „paprikapulver“
+    const words = head.split(/\s+/);
+    const tries = [n, head, head.replace(/^bio[- ]?/, ''), words.length > 1 ? words[words.length - 1] : '']; // „rote Zwiebel“ -> „zwiebel“
+    for (const t of tries) if (t && nameIndex[t]) return nameIndex[t];
+    return null;
+  }
+  const UNIT_KEY = { g: 'g', kg: 'kg', ml: 'ml', l: 'l', el: 'el', tl: 'tl', prise: 'prise', prisen: 'prise', bund: 'bund', dose: 'dose', dosen: 'dose',
+    becher: 'becher', pck: 'pck', packung: 'pck', stk: 'stk', 'stück': 'stk', zehe: 'stk', zehen: 'stk' };
+  // Haushaltsmaße sind Näherungen (Gewichte je Lebensmittel in data.js, KA.ING_META)
+  function toBaseAmount(ing, qty, unit) {
+    const u = UNIT_KEY[(unit || 'stk').toLowerCase()];
+    const m = ing.meta;
+    if (ing.unit === 'Stk') return u === 'stk' ? qty : u === 'g' ? qty / ing.gpu : u === 'kg' ? (qty * 1000) / ing.gpu : null;
+    if (u === 'g' || u === 'ml') return qty; // bei Flüssigkeiten 1 g ≈ 1 ml
+    if (u === 'kg' || u === 'l') return qty * 1000;
+    const tl = ing.unit === 'ml' ? 5 : m.tl;
+    if (u === 'tl' && tl) return qty * tl;
+    if (u === 'el' && tl) return qty * tl * 3;
+    if (u === 'prise' && ing.unit === 'g') return qty * 0.4;
+    if (m[u]) return qty * m[u];
+    return null;
+  }
   function linkIng(p) {
-    if (p.id || p.qty == null) return p;
-    const n = KA.norm(p.name);
-    const ing = Object.values(ING).find((i) => KA.norm(i.name) === n);
-    if (!ing) return p;
-    const u = (p.unit || '').toLowerCase();
-    const ok = ing.unit === 'g' ? ['g', 'kg'] : ing.unit === 'ml' ? ['ml', 'l'] : ['stk'];
-    if (!ok.includes(u)) return p;
-    return { id: ing.id, qty: KA.toBase(p.qty, u), unit: ing.unit, name: ing.name };
+    const ing = findFood(p.name);
+    const out = { qty: p.qty, unit: p.unit, name: p.name };
+    if (!ing) return out;
+    out.id = ing.id;
+    out.base = p.qty == null ? null : toBaseAmount(ing, p.qty, p.unit);
+    return out;
   }
 
   const hash = (s) => Array.from(s).reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -437,15 +475,45 @@
   // Einheitliche Sicht auf mitgelieferte und eigene Rezepte
   function bookRecipe(id) {
     const r = REC[id];
-    if (!r) return S.my.find((x) => x.id === id) || null;
+    if (!r || r.user) return S.my.find((x) => x.id === id) || null;
     return {
       id, title: r.name, cat: builtinCat(r), time: r.time, serv: r.s, source: 'Kochapp', builtin: true, tone: hash(id) % TONES.length,
-      ings: r.i.map(([iid, a]) => ({ id: iid, qty: a, unit: ING[iid].unit, name: ING[iid].name })), steps: r.st,
+      ings: r.i.map(([iid, a]) => ({ id: iid, qty: a, base: a, unit: ING[iid].unit, name: ING[iid].name, std: true })), steps: r.st,
     };
   }
-  const allBook = () => S.my.concat(KA.RECIPES.map((r) => bookRecipe(r.id)));
+  const builtins = () => KA.RECIPES.filter((r) => !r.user);
+  const allBook = () => S.my.concat(builtins().map((r) => bookRecipe(r.id)));
+
+  // Eigene Rezepte in Finder und Wochenplan bereitstellen; Verweise auf gelöschte Rezepte aufräumen
+  let usableMine = 0;
+  function syncRecipes() {
+    // Zutaten (neu) mit den Stammdaten verknüpfen – auch für Rezepte aus älteren Versionen
+    S.my.forEach((r) => {
+      r.ings = r.ings.map((i) => (i.id && i.base === undefined ? Object.assign({}, i, { base: i.qty }) : i.id ? i : linkIng(i)));
+    });
+    usableMine = KA.setUserRecipes(S.my);
+    S.sel = S.sel.filter((id) => REC[id]);
+    if (S.plan && S.plan.days.some((day) => day.some((m) => !REC[m.rid]))) S.plan = null;
+  }
+
+  // Zutaten ohne Stammdaten aus eigenen Rezepten als freie Artikel für die Einkaufsliste; entries: [{ rid, k }]
+  function freeItems(entries) {
+    const agg = {};
+    entries.forEach(({ rid, k }) => (REC[rid].free || []).forEach((i) => {
+      const key = KA.norm(i.name) + '|' + (i.unit || '');
+      const a = agg[key] || (agg[key] = { name: i.name, unit: i.unit || '', qty: 0 });
+      if (i.qty != null) a.qty += i.qty * k;
+    }));
+    return Object.values(agg).sort((a, b) => a.name.localeCompare(b.name, 'de')).map((a) =>
+      ({ id: null, name: a.name, cat: 'SO', amount: a.qty ? Math.round(a.qty * 100) / 100 : null, unit: a.unit, label: a.qty ? fmtQ(a.qty, a.unit) : '', price: 0, checked: true }));
+  }
+  const finderList = (sel) => KA.shoppingForRecipes(sel, S.pantry, S.prefs)
+    .concat(freeItems(sel.map((rid) => ({ rid, k: (S.prefs.persons || 2) / REC[rid].s }))));
+  const planList = () => KA.planShopping(S.plan, S.prefs, S.pantry, S.subPantry)
+    .concat(freeItems(S.plan.days.reduce((all, day) => all.concat(day.map((m) => ({ rid: m.rid, k: (m.f * (S.prefs.persons || 1)) / REC[m.rid].s }))), [])));
   const srcLabel = (r) => (r.source === 'Web' ? 'Web · ' + r.domain : r.source);
-  const ingQty = (i, f) => (i.qty == null ? i.unit || '' : i.id ? KA.fmtAmount(i.id, i.qty * f) : fmtQ(i.qty * f, i.unit));
+  // mitgelieferte Rezepte in Stammdaten-Einheiten, eigene so, wie sie eingetippt wurden
+  const ingQty = (i, f) => (i.qty == null ? i.unit || '' : i.std ? KA.fmtAmount(i.id, i.base * f) : fmtQ(i.qty * f, i.unit));
   const toneStyle = (r) => `--a:${TONES[r.tone % TONES.length][0]};--b:${TONES[r.tone % TONES.length][1]}`;
   const recImg = (r) => (r.image ? `<img src="${esc(r.image)}" alt="${esc(r.title)}">` : '');
 
@@ -467,18 +535,35 @@
   }
 
   function viewLibrary() {
-    const n = S.my.length + KA.RECIPES.length;
+    const n = S.my.length + builtins().length;
     return `<div class="ph"><div><h1>Meine Rezepte</h1><p>${n} Rezepte · ${S.my.length} eigene</p></div>
         <input id="bk-q" class="search" value="${esc(ui.query)}" aria-label="Rezept oder Zutat suchen" placeholder="Rezept oder Zutat suchen …" autocomplete="off"></div>
       <div class="fchips">${['Alle'].concat(BOOK_CATS, ['Eigene']).map((f) => `<button class="${ui.filter === f ? 'on' : ''}" data-act="bookfilter" data-v="${f}">${f}</button>`).join('')}</div>
       <div class="bgrid" id="bk-cards">${bookCards()}</div>`;
   }
 
+  // Nährwerte einer Portion, zusammengerechnet aus den Zutaten (Werte je 100 g aus den Stammdaten)
+  function nutritionCard(r, base) {
+    if (!base) return '<div class="card ingcard"><h2>Nährwerte</h2><p class="muted">Für dieses Rezept lassen sich keine Nährwerte berechnen: Keine Zutat wurde als bekanntes Lebensmittel mit Menge erkannt.</p></div>';
+    const n = KA.recipeNutr(base);
+    const T = KA.targets(S.prefs);
+    const rows = NUTRIENTS.map((nu, i) => {
+      const pct = (n[i] / T[nu.k]) * 100;
+      return `<div class="nurow"><span>${nu.label}</span><b>${KA.fmtNum(n[i], n[i] < 10 ? 1 : 0)} ${nu.unit}</b><div class="bar"><i style="width:${Math.min(100, pct)}%"></i></div><span class="muted">${r0(pct)} %</span></div>`;
+    }).join('');
+    // eigene Rezepte: offenlegen, welche Zutaten in die Rechnung eingehen
+    const open = r.builtin ? [] : r.ings.filter((i) => !(i.id && i.base > 0)).map((i) => i.name);
+    const counted = r.builtin ? '' : `<p class="${open.length ? 'warn' : 'muted sm'}">${r.ings.length - open.length} von ${r.ings.length} Zutaten berücksichtigt${
+      open.length ? ` – nicht eingerechnet: ${esc(open.join(', '))}. Die tatsächlichen Werte liegen höher.` : '.'}</p>`;
+    return `<div class="card ingcard"><div class="lh"><h2>Nährwerte</h2><span class="muted sm">pro Portion · % vom Tagesbedarf</span></div>${rows}${counted}
+      <p class="muted sm">Berechnet aus den Zutaten. Lebensmittelwerte: Schweizer Nährwertdatenbank (BLV), geprüft gegen USDA FoodData Central. Näherungswerte, keine Ernährungsberatung.</p></div>`;
+  }
+
   function viewDetail() {
     const r = bookRecipe(ui.selId);
     const f = ui.detailServ / r.serv;
     const inL = S.list.find((l) => l.id === r.id);
-    const base = r.builtin ? REC[r.id] : null;
+    const base = REC[r.id] || null; // fehlt bei eigenen Rezepten ohne erkannte Zutat
     const fact = (l, v) => `<div><span>${l}</span><b>${v}</b></div>`;
     return `<div class="detail">
       <button class="back" data-act="booklib">← Alle Rezepte</button>
@@ -491,10 +576,12 @@
         <div class="servbox"><span class="muted">Portionen</span>
           <div class="step"><button data-act="dserv" data-d="-1" aria-label="Weniger">−</button><span>${persons(ui.detailServ)}</span><button data-act="dserv" data-d="1" aria-label="Mehr">+</button></div>
           <button class="btn dark" data-act="addlistd">${inL ? (inL.serv === ui.detailServ ? '✓ Auf der Liste' : 'Liste aktualisieren') : 'Auf Einkaufsliste'}</button></div>
+        ${r.builtin ? '' : `<p class="muted sm">${base ? 'Im Vorrats-Finder und Wochenplan nutzbar.' : 'Nicht im Vorrats-Finder und Wochenplan nutzbar: Keine Zutat wurde als bekanntes Lebensmittel mit Menge erkannt.'}</p>`}
       </div><div class="dt-img" style="${toneStyle(r)}">${recImg(r)}</div></div>
       <div class="dt-body">
-        <div class="card ingcard"><div class="lh"><h2>Zutaten</h2><span class="muted sm">für ${persons(ui.detailServ)}</span></div>
+        <div class="col"><div class="card ingcard"><div class="lh"><h2>Zutaten</h2><span class="muted sm">für ${persons(ui.detailServ)}</span></div>
           ${r.ings.map((i) => `<div class="irow"><span class="${f !== 1 ? 'chg' : ''}">${esc(ingQty(i, f))}</span><span>${esc(i.name)}</span></div>`).join('')}</div>
+        ${nutritionCard(r, base)}</div>
         <div><h2>Zubereitung</h2>
           ${r.steps.length ? r.steps.map((s, k) => `<div class="srow"><span>${k + 1}</span><p>${esc(s)}</p></div>`).join('') : '<p class="muted">Keine Schritte hinterlegt.</p>'}
           ${r.builtin ? '' : '<div class="btnrow"><button class="btn ghost" data-act="delrec">Rezept löschen</button></div>'}</div>
@@ -516,10 +603,14 @@
     ['link', '03', 'Linkimport (Demo)', 'Demo mit einem Beispielrezept; kein echter Webimport.']];
   let demoTimer;
 
+  const linkHint = (l) => (!l.id ? '· kein bekanntes Lebensmittel – ohne Nährwerte'
+    : l.base > 0 ? `✓ Nährwerte: ${esc(ING[l.id].name)} (≈ ${esc(KA.fmtAmount(l.id, l.base))})`
+      : `· ${esc(ING[l.id].name)} erkannt, aber ${l.qty == null ? 'ohne Menge' : 'Einheit nicht umrechenbar'} – ohne Nährwerte`);
   const previewHTML = (text) => {
     if (!text.trim()) return '';
     const p = parseLine(text);
-    return `<span>Erkannt:</span><b>${esc(p.qty != null ? fmtQ(p.qty, '') : '–')}</b><b>${esc(p.unit || '–')}</b><b>${esc(p.name)}</b>`;
+    return `<span>Erkannt:</span><b>${esc(p.qty != null ? fmtQ(p.qty, '') : '–')}</b><b>${esc(p.unit || '–')}</b><b>${esc(p.name)}</b>
+      <span>${linkHint(linkIng(p))}</span>`;
   };
   const stepList = (steps, removable) => steps.map((s, k) => `<div class="lrow st"><span class="no">${k + 1}</span><span>${esc(s)}</span>${removable ? `<button class="x" data-act="delstep" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
   const ingList = (ings, removable) => ings.map((i, k) => `<div class="lrow"><b>${esc(ingQty(i, 1))}</b><span>${esc(i.name)}</span>${removable ? `<button class="x" data-act="deling" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
@@ -533,6 +624,7 @@
           <div class="fgroup"><div class="flabel">Portionen</div><div class="step"><button data-act="dstep" data-d="-1" aria-label="Weniger">−</button><span>${d.serv}</span><button data-act="dstep" data-d="1" aria-label="Mehr">+</button></div></div>
           <label>Zeit (Min)<input id="d-time" class="narrow" inputmode="numeric" value="${esc(d.time)}" placeholder="30"></label>
           <div class="fgroup"><div class="flabel">Kategorie</div><div class="fchips">${BOOK_CATS.map((c) => `<button class="${d.cat === c ? 'on' : ''}" data-act="dcat" data-v="${c}">${c}</button>`).join('')}</div></div>
+          <div class="fgroup"><div class="flabel">Schwierigkeit</div><div class="seg">${[1, 2, 3].map((v) => `<button class="${d.diff === v ? 'on' : ''}" data-act="ddiff" data-v="${v}">${DIFF[v]}</button>`).join('')}</div></div>
         </div></div>
         <label class="drop">Titelbild wählen<input id="d-img" type="file" accept="image/jpeg,image/png,image/webp">${d.image ? `<img src="${esc(d.image)}" alt="Titelbild-Vorschau">` : ''}<span>JPG, PNG oder WebP – wird verkleinert gespeichert</span></label>
       </div>
@@ -642,9 +734,10 @@
       const f = l.serv / r.serv;
       r.ings.forEach((i) => {
         if (i.id && S.prefs.assumeStaples && ING[i.id].staple) return;
-        const key = i.id ? 'i|' + i.id : 'x|' + KA.norm(i.name) + '|' + (i.unit || '');
-        const a = agg[key] || (agg[key] = { key, id: i.id || null, name: i.name, unit: i.unit || '', cat: i.id ? ING[i.id].cat : 'SO', qty: 0, from: [] });
-        if (i.qty != null) a.qty += i.qty * f;
+        const std = i.id && i.base > 0; // in Stammdaten-Einheit summierbar
+        const key = std ? 'i|' + i.id : 'x|' + KA.norm(i.name) + '|' + (i.unit || '');
+        const a = agg[key] || (agg[key] = { key, id: std ? i.id : null, name: std ? ING[i.id].name : i.name, unit: std ? ING[i.id].unit : i.unit || '', cat: i.id ? ING[i.id].cat : 'SO', qty: 0, from: [] });
+        if (std) a.qty += i.base * f; else if (i.qty != null) a.qty += i.qty * f;
         if (!a.from.includes(r.title)) a.from.push(r.title);
       });
     });
@@ -696,9 +789,9 @@
     $('#mtop').innerHTML = '<b>Kochapp</b><button data-act="bookadd" aria-label="Neues Rezept">+</button>';
     $('#tabbar').innerHTML = TABS.map(([k, , l]) => `<button class="${S.tab === k && !ui.listOpen ? 'on' : ''}" data-act="tab" data-v="${k}">${l}</button>`).join('') +
       `<button class="${ui.listOpen ? 'on' : ''}" data-act="openlist">Liste<i>${open || ''}</i></button>`;
-    $('#fab').innerHTML = ui.listOpen ? '' : `<button class="fab" data-act="openlist">Einkaufsliste<span>${open}</span></button>`;
   }
   function render() {
+    syncRecipes();
     const y = window.scrollY;
     const old = $('.drawer');
     const dy = old ? old.scrollTop : 0;
@@ -758,7 +851,7 @@
     const n = KA.norm(q);
     if (!n) return null;
     const all = Object.values(ING);
-    return all.find((i) => KA.norm(i.name) === n || i.id === n) ||
+    return all.find((i) => KA.norm(i.name) === n || i.id === n) || findFood(q) ||
       all.find((i) => KA.norm(i.name).startsWith(n)) ||
       all.find((i) => KA.norm(i.name).includes(n));
   }
@@ -802,6 +895,7 @@
     addmode: (el) => { ui.addMode = el.dataset.v; render(); },
     dstep: (el) => { ui.draft.serv = Math.max(1, Math.min(30, ui.draft.serv + Number(el.dataset.d))); render(); },
     dcat: (el) => { ui.draft.cat = el.dataset.v; render(); },
+    ddiff: (el) => { ui.draft.diff = Number(el.dataset.v); render(); },
     deling: (el) => { ui.draft.ings.splice(Number(el.dataset.i), 1); render(); },
     delstep: (el) => { ui.draft.steps.splice(Number(el.dataset.i), 1); render(); },
     savedraft: () => {
@@ -814,7 +908,7 @@
       if (st) st.value = '';
       if (!d.title.trim()) { ui.focus = 'd-title'; render(); toast('Bitte einen Titel eingeben.'); return; }
       ui.draft = emptyDraft();
-      saveRecipe({ title: d.title.trim(), cat: d.cat, time: Number(d.time) || 30, serv: d.serv, source: 'Eigenes', ings: d.ings, steps: d.steps, image: d.image });
+      saveRecipe({ title: d.title.trim(), cat: d.cat, diff: d.diff, time: Number(d.time) || 30, serv: d.serv, source: 'Eigenes', ings: d.ings, steps: d.steps, image: d.image });
     },
     scanstart: () => {
       clearTimeout(demoTimer);
@@ -904,13 +998,13 @@
       update(); toast('Vorrat aktualisiert');
     },
     tofinderlist: () => {
-      S.shop = { source: 'Rezepte (Reste zum Vorrat)', items: KA.shoppingForRecipes(S.sel.filter((id) => REC[id]), S.pantry, S.prefs), created: Date.now() };
+      S.shop = { source: 'Rezepte (Reste zum Vorrat)', items: finderList(S.sel.filter((id) => REC[id])), created: Date.now() };
       ui.orderResult = null; S.tab = 'shop'; update(); window.scrollTo(0, 0);
     },
     setMacro: (el) => { const v = MACRO_PRESETS[el.dataset.v]; Object.assign(S.prefs.macro, { enabled: true, p: v[1], c: v[2], f: v[3] }); update(); },
     genplan: () => { genPlan(); update(); },
     toplanlist: () => {
-      S.shop = { source: 'Wochenplan', items: KA.planShopping(S.plan, S.prefs, S.pantry, S.subPantry), created: Date.now() };
+      S.shop = { source: 'Wochenplan', items: planList(), created: Date.now() };
       ui.orderResult = null; S.tab = 'shop'; update(); window.scrollTo(0, 0);
     },
     nutday: (el) => { ui.nutDay = Number(el.dataset.v); render(); },

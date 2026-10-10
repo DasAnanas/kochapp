@@ -1,8 +1,10 @@
 /* Kochapp – Desktop-Hülle (Windows)
  *
  * Zeigt die App in einem eigenen Fenster über die in Windows eingebaute WebView2-Engine.
- * Es läuft kein Browser und kein lokaler Server. Die EXE ist eigenständig: Oberfläche
- * (HTML/CSS/JS) und die WebView2-Bibliotheken sind als Ressourcen eingebettet (siehe build.ps1).
+ * Es läuft kein Browser und kein lokaler Server. Die Oberfläche (HTML/CSS/JS) ist als Ressource
+ * eingebettet; die drei WebView2-Bibliotheken von Microsoft liegen als normale Dateien neben der EXE
+ * (siehe build.ps1). Sie werden bewusst nicht eingebettet: Eine EXE, die Programmbibliotheken aus sich
+ * selbst entpackt und lädt, stuft Windows Defender als verdächtig ein.
  * Bestellungen an externe Shop-APIs sendet die Hülle selbst (ersetzt server.js, keine CORS-Probleme).
  *
  * Bauen: desktop\build.ps1
@@ -37,25 +39,30 @@ namespace Kochapp
         [STAThread]
         static void Main()
         {
-            // Eingebettete WebView2-Bibliotheken bereitstellen, bevor ein WebView2-Typ gebraucht wird
-            AppDomain.CurrentDomain.AssemblyResolve += delegate(object sender, ResolveEventArgs e)
-            {
-                byte[] dll = Resource("lib/" + new AssemblyName(e.Name).Name + ".dll");
-                return dll == null ? null : Assembly.Load(dll);
-            };
             SetProcessDPIAware();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            // Häufigster Fehler: EXE direkt aus der ZIP-Vorschau gestartet, dann fehlen die Bibliotheken daneben
+            string dir = AppDomain.CurrentDomain.BaseDirectory;
+            foreach (string dll in new[] { "Microsoft.Web.WebView2.Core.dll", "Microsoft.Web.WebView2.WinForms.dll", "WebView2Loader.dll" })
+            {
+                if (File.Exists(Path.Combine(dir, dll))) continue;
+                MessageBox.Show("Die Datei " + dll + " fehlt neben Kochapp.exe.\n\nBitte die ZIP-Datei zuerst vollständig entpacken " +
+                    "(Rechtsklick > Alle extrahieren) und Kochapp.exe aus dem entpackten Ordner starten.",
+                    "Kochapp", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
             Run();
         }
 
+        // eigene Methode, damit die WebView2-Typen erst nach der Prüfung oben geladen werden
         [MethodImpl(MethodImplOptions.NoInlining)]
         static void Run()
         {
             Application.Run(new MainForm());
         }
 
-        /// <summary>Liest eine eingebettete Datei (web/… oder lib/…); null, wenn es sie nicht gibt.</summary>
+        /// <summary>Liest eine eingebettete Datei der Oberfläche (web/…); null, wenn es sie nicht gibt.</summary>
         internal static byte[] Resource(string name)
         {
             using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream(name))
@@ -108,16 +115,6 @@ namespace Kochapp
 
                 // Einstellungen, Vorrat und Wochenplan (localStorage) liegen im Benutzerprofil
                 string data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Kochapp");
-                // Die native Lade-Bibliothek muss als Datei vorliegen: einmalig neben die Benutzerdaten entpacken
-                string bin = Path.Combine(data, "bin");
-                string loader = Path.Combine(bin, "WebView2Loader.dll");
-                byte[] native = Program.Resource("lib/WebView2Loader.dll");
-                if (!File.Exists(loader) || new FileInfo(loader).Length != native.Length)
-                {
-                    Directory.CreateDirectory(bin);
-                    File.WriteAllBytes(loader, native);
-                }
-                CoreWebView2Environment.SetLoaderDllFolderPath(bin);
                 CoreWebView2Environment env = await CoreWebView2Environment.CreateAsync(null, data, null);
                 await view.EnsureCoreWebView2Async(env);
 
