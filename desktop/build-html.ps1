@@ -10,7 +10,7 @@ $css = [regex]::Replace((Read-Text 'style.css'), '</style', '<\/style', 'IgnoreC
 $tag = '<link rel="stylesheet" href="style.css">'
 if (-not $html.Contains($tag)) { throw 'Stylesheet-Verweis in index.html nicht gefunden' }
 $html = $html.Replace($tag, "<style>`n$css`n</style>")
-foreach ($name in 'data.js', 'logic.js', 'order.js', 'app.js') {
+foreach ($name in 'data.js', 'rezepte.js', 'bilder.js', 'logic.js', 'order.js', 'app.js') {
   $script = [regex]::Replace((Read-Text $name), '</script', '<\/script', 'IgnoreCase')
   $ref = "<script src=`"$name`"></script>"
   if (-not $html.Contains($ref)) { throw "Skript-Verweis $name in index.html nicht gefunden" }

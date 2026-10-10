@@ -73,7 +73,7 @@
   };
 
   /* ---------- Eigene Rezepte des Nutzers für Finder und Wochenplan ---------- */
-  const TYPES_BY_CAT = { 'Frühstück': ['f'], 'Hauptgericht': ['m', 'a'], 'Snack': ['s'], 'Backen': ['s'] };
+  const TYPES_BY_CAT = { 'Frühstück': ['f'], 'Hauptgericht': ['m', 'a'], 'Snack': ['s'], 'Backen': ['s'], 'Nachtisch': ['s'], 'Getränke': ['s'] };
   // Übernimmt eigene Rezepte (Format des Rezeptbuchs) in den Rezeptbestand und liefert, wie viele nutzbar sind.
   // Die Nährwerte ergeben sich aus den Zutaten, die mit den Stammdaten verknüpft sind (id + base = Menge in der
   // Grundeinheit des Lebensmittels); die übrigen stehen in r.free. Rezepte ganz ohne verknüpfte Zutat bleiben außen vor.

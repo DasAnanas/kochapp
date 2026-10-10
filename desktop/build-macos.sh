@@ -6,7 +6,7 @@ BUILD="$(mktemp -d)"
 trap 'rm -rf "$BUILD"' EXIT
 APP="$BUILD/Kochapp.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/web" "$BUILD/cache"
-for file in index.html style.css data.js logic.js order.js app.js; do
+for file in index.html style.css data.js rezepte.js bilder.js logic.js order.js app.js; do
     cp "$ROOT/$file" "$APP/Contents/Resources/web/"
 done
 cat > "$APP/Contents/Info.plist" <<'PLIST'

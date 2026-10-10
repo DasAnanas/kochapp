@@ -30,10 +30,10 @@
   let S = DEF();
   try { S = merge(DEF(), JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) { /* ignore */ }
   const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { toast('Speichern fehlgeschlagen – der lokale Speicher ist voll.'); } };
-  const emptyDraft = () => ({ title: '', serv: 4, time: '', cat: 'Hauptgericht', diff: 2, ings: [], steps: [], image: '' });
+  const emptyDraft = () => ({ title: '', serv: 4, time: '', cat: 'Hauptgericht', cuisine: '', diff: 2, ings: [], steps: [], image: '' });
   const ui = {
     open: new Set(), nutDay: -1, preview: false, orderResult: null, ordering: false, planError: '', focus: null,
-    book: 'library', selId: null, detailServ: 2, filter: 'Alle', query: '', addMode: 'manual', draft: emptyDraft(),
+    book: 'library', selId: null, detailServ: 2, filter: 'Alle', cuisine: 'Alle', query: '', addMode: 'manual', draft: emptyDraft(),
     scan: null, scanPhase: 'idle', link: { url: '', phase: 'idle' },
   };
 
@@ -548,7 +548,7 @@
 
   /* ---------- Rezeptbuch: Bibliothek, Detail, eigene Rezepte ---------- */
   const pageHead = (title, sub, extra) => `<div class="ph"><div><h1>${esc(title)}</h1><p>${esc(sub)}</p></div>${extra || ''}</div>`;
-  const BOOK_CATS = ['Frühstück', 'Hauptgericht', 'Snack', 'Backen'];
+  const BOOK_CATS = KA.BOOK_CATS;
   const TONES = [['#FDE9DF', '#F9DCCD'], ['#E3F3E8', '#D4ECDC'], ['#FFF1D6', '#FBE6BE'], ['#E6EEF8', '#D8E4F3'], ['#EEF5E0', '#E2EECC'], ['#F7E6EE', '#F0D7E3']];
   const FR = { 0.25: '¼', 0.5: '½', 0.75: '¾' };
   const persons = (n) => n + (n === 1 ? ' Person' : ' Personen');
@@ -627,17 +627,34 @@
 
   const hash = (s) => Array.from(s).reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
   const builtinCat = (r) => (r.types.includes('m') || r.types.includes('a') ? 'Hauptgericht' : r.types.includes('f') ? 'Frühstück' : 'Snack');
+  // Standardbild je Kategorie (für eigene Rezepte ohne Foto)
+  const CAT_IMG = { 'Frühstück': 'pancakes:teig,honig,beere', Hauptgericht: 'teller:sosse,kartoffel,kraut', Snack: 'dip:creme,karotte,kraut',
+    Backen: 'kuchen:teig,sahne,kruste', Nachtisch: 'dessert:beere,vanille,sahne', 'Getränke': 'glas:orange,keine,zitrone' };
+  // Rezeptbuch-Rezepte aus rezepte.js (Zutaten als Text, werden einmalig zerlegt)
+  let bookMap = null;
+  function bookData() {
+    if (bookMap) return bookMap;
+    bookMap = {};
+    KA.BOOK.forEach((b) => {
+      bookMap[b.id] = { id: b.id, title: b.title, cat: b.cat, cuisine: b.cuisine, time: b.time, serv: b.serv, source: 'Kochapp', builtin: true,
+        tone: hash(b.id) % TONES.length, image: KA.dishImage(b.img, b.id), ings: b.ings.map((t) => linkIng(parseLine(t))), steps: b.steps };
+    });
+    return bookMap;
+  }
   // Einheitliche Sicht auf mitgelieferte und eigene Rezepte
   function bookRecipe(id) {
     const r = REC[id];
-    if (!r || r.user) return S.my.find((x) => x.id === id) || null;
+    if (!r || r.user) return bookData()[id] || S.my.find((x) => x.id === id) || null;
+    const meta = KA.BUILTIN_META[id] || {};
+    const cat = meta.cat || builtinCat(r);
     return {
-      id, title: r.name, cat: builtinCat(r), time: r.time, serv: r.s, source: 'Kochapp', builtin: true, tone: hash(id) % TONES.length,
+      id, title: r.name, cat, cuisine: cat === 'Hauptgericht' ? meta.k || 'International' : '', time: r.time, serv: r.s, source: 'Kochapp', builtin: true,
+      tone: hash(id) % TONES.length, image: KA.dishImage(meta.img || CAT_IMG[cat], id),
       ings: r.i.map(([iid, a]) => ({ id: iid, qty: a, base: a, unit: ING[iid].unit, name: ING[iid].name, std: true })), steps: r.st,
     };
   }
   const builtins = () => KA.RECIPES.filter((r) => !r.user);
-  const allBook = () => S.my.concat(builtins().map((r) => bookRecipe(r.id)));
+  const allBook = () => S.my.concat(builtins().map((r) => bookRecipe(r.id)), Object.values(bookData()));
 
   // Eigene Rezepte in Finder und Wochenplan bereitstellen; Verweise auf gelöschte Rezepte aufräumen
   let usableMine = 0;
@@ -670,12 +687,14 @@
   // mitgelieferte Rezepte in Stammdaten-Einheiten, eigene so, wie sie eingetippt wurden
   const ingQty = (i, f) => (i.qty == null ? i.unit || '' : i.std ? KA.fmtAmount(i.id, i.base * f) : fmtQ(i.qty * f, i.unit));
   const toneStyle = (r) => `--a:${TONES[r.tone % TONES.length][0]};--b:${TONES[r.tone % TONES.length][1]}`;
-  const recImg = (r) => (r.image ? `<img src="${esc(r.image)}" alt="${esc(r.title)}">` : '');
+  const recImg = (r) => `<img src="${esc(r.image || KA.dishImage(CAT_IMG[r.cat] || CAT_IMG.Hauptgericht, r.id))}" alt="${esc(r.title)}" loading="lazy">`;
+  const catLabel = (r) => (r.builtin ? r.cat + (r.cuisine ? ' · ' + r.cuisine : '') : srcLabel(r));
 
   function libFiltered() {
     const q = KA.norm(ui.query);
     return allBook().filter((r) => (ui.filter === 'Alle' || (ui.filter === 'Eigene' ? !r.builtin : r.cat === ui.filter)) &&
-      (!q || KA.norm(r.title).includes(q) || r.ings.some((i) => KA.norm(i.name).includes(q))));
+      (ui.filter !== 'Hauptgericht' || ui.cuisine === 'Alle' || (r.cuisine || 'International') === ui.cuisine) &&
+      (!q || KA.norm(r.title).includes(q) || KA.norm(r.cuisine || '').includes(q) || r.ings.some((i) => KA.norm(i.name).includes(q))));
   }
   function bookCards() {
     const list = libFiltered();
@@ -684,16 +703,25 @@
       const inL = S.list.some((l) => l.id === r.id);
       return `<div class="bcard" role="button" tabindex="0" data-act="openrec" data-id="${esc(r.id)}">
         <div class="thumb" style="${toneStyle(r)}">${recImg(r)}</div>
-        <div class="bc-t"><span>${esc(srcLabel(r))}</span><b>${esc(r.title)}</b><span>${r.time} Min · ${r.serv} Pers.</span></div>
+        <div class="bc-t"><span>${esc(catLabel(r))}</span><b>${esc(r.title)}</b><span>${r.time} Min · ${r.serv} Pers.</span></div>
         <button class="lbtn ${inL ? 'on' : ''}" data-act="addlist" data-id="${esc(r.id)}">${inL ? '✓ Auf Liste' : '+ Liste'}</button></div>`;
     }).join('');
   }
 
+  // Zweite Filterzeile bei Hauptgerichten: nach Küche
+  function cuisineChips() {
+    const mains = allBook().filter((r) => r.cat === 'Hauptgericht');
+    const n = (k) => mains.filter((r) => (r.cuisine || 'International') === k).length;
+    return `<div class="fchips kchips" aria-label="Küche"><span class="flabel">Küche</span>${[['Alle', mains.length]].concat(KA.KUECHEN.map((k) => [k, n(k)]).filter((x) => x[1]))
+      .map(([k, c]) => `<button class="${ui.cuisine === k ? 'on' : ''}" data-act="bookcuisine" data-v="${k}">${k === 'Alle' ? 'Alle Küchen' : k} <i>${c}</i></button>`).join('')}</div>`;
+  }
+
   function viewLibrary() {
-    const n = S.my.length + builtins().length;
+    const n = S.my.length + builtins().length + KA.BOOK.length;
     return `<div class="ph"><div><h1>Meine Rezepte</h1><p>${n} Rezepte · ${S.my.length} eigene</p></div>
         <input id="bk-q" class="search" value="${esc(ui.query)}" aria-label="Rezept oder Zutat suchen" placeholder="Rezept oder Zutat suchen …" autocomplete="off"></div>
       <div class="fchips">${['Alle'].concat(BOOK_CATS, ['Eigene']).map((f) => `<button class="${ui.filter === f ? 'on' : ''}" data-act="bookfilter" data-v="${f}">${f}</button>`).join('')}</div>
+      ${ui.filter === 'Hauptgericht' ? cuisineChips() : ''}
       <div class="bgrid" id="bk-cards">${bookCards()}</div>`;
   }
 
@@ -723,7 +751,7 @@
     return `<div class="detail">
       <button class="back" data-act="booklib">← Alle Rezepte</button>
       <div class="dt-top"><div class="dt-info">
-        <div class="pills2"><span class="acc">${esc(r.cat)}</span><span>${esc(srcLabel(r))}</span></div>
+        <div class="pills2"><span class="acc">${esc(r.cat)}</span>${r.cuisine ? `<span class="acc">${esc(r.cuisine)}</span>` : ''}<span>${esc(srcLabel(r))}</span></div>
         <h1>${esc(r.title)}</h1>
         <div class="facts">${fact('Zeit', r.time + ' Min')}${fact('Zutaten', r.ings.length)}${fact('Original', r.serv + ' Pers.')}
           ${base ? fact('Pro Portion', r0(KA.recipeNutr(base)[0]) + ' kcal') + fact('Niveau', DIFF[base.diff]) : ''}</div>
@@ -780,8 +808,10 @@
           <label>Zeit (Min)<input id="d-time" class="narrow" inputmode="numeric" value="${esc(d.time)}" placeholder="30"></label>
           <div class="fgroup"><div class="flabel">Kategorie</div><div class="fchips">${BOOK_CATS.map((c) => `<button class="${d.cat === c ? 'on' : ''}" data-act="dcat" data-v="${c}">${c}</button>`).join('')}</div></div>
           <div class="fgroup"><div class="flabel">Schwierigkeit</div><div class="seg">${[1, 2, 3].map((v) => `<button class="${d.diff === v ? 'on' : ''}" data-act="ddiff" data-v="${v}">${DIFF[v]}</button>`).join('')}</div></div>
-        </div></div>
-        <label class="drop">Titelbild wählen<input id="d-img" type="file" accept="image/jpeg,image/png,image/webp">${d.image ? `<img src="${esc(d.image)}" alt="Titelbild-Vorschau">` : ''}<span>JPG, PNG oder WebP – wird verkleinert gespeichert</span></label>
+        </div>
+        ${d.cat === 'Hauptgericht' ? `<div class="fgroup"><div class="flabel">Küche <small>(optional)</small></div><div class="fchips">${KA.KUECHEN.map((k) => `<button class="${d.cuisine === k ? 'on' : ''}" data-act="dcuisine" data-v="${k}">${k}</button>`).join('')}</div></div>` : ''}
+        </div>
+        <label class="drop">Titelbild wählen<input id="d-img" type="file" accept="image/jpeg,image/png,image/webp">${d.image ? `<img src="${esc(d.image)}" alt="Titelbild-Vorschau">` : ''}<span>JPG, PNG oder WebP – wird verkleinert gespeichert. Ohne Foto bekommt das Rezept eine passende Illustration.</span></label>
       </div>
       <div class="am-two"><div class="col">
           <div class="flabel">Zutaten</div>
@@ -881,6 +911,8 @@
 
   /* ---------- Einkaufsliste des Rezeptbuchs (Schublade) ---------- */
   // Fasst die Zutaten aller Rezepte auf der Liste zusammen; freie Artikel kommen dazu.
+  const BASICS = ['salz', 'pfeffer', 'salz, pfeffer', 'salz und pfeffer', 'wasser'].map(KA.norm);
+  const isBasic = (name) => BASICS.includes(KA.norm(name));
   function bookAgg() {
     const agg = {};
     S.list.forEach((l) => {
@@ -888,7 +920,7 @@
       if (!r) return;
       const f = l.serv / r.serv;
       r.ings.forEach((i) => {
-        if (i.id && S.prefs.assumeStaples && ING[i.id].staple) return;
+        if (S.prefs.assumeStaples && (i.id ? ING[i.id].staple : i.qty == null && isBasic(i.name))) return;
         const std = i.id && i.base > 0; // in Stammdaten-Einheit summierbar
         const key = std ? 'i|' + i.id : 'x|' + KA.norm(i.name) + '|' + (i.unit || '');
         const a = agg[key] || (agg[key] = { key, id: std ? i.id : null, name: std ? ING[i.id].name : i.name, unit: std ? ING[i.id].unit : i.unit || '', cat: i.id ? ING[i.id].cat : 'SO', qty: 0, from: [] });
@@ -986,8 +1018,9 @@
     tab: (el) => { S.tab = el.dataset.v; ui.book = 'library'; update(); window.scrollTo(0, 0); },
 
     /* Rezeptbuch */
-    booklib: () => { S.tab = 'book'; ui.book = 'library'; ui.filter = 'Alle'; update(); window.scrollTo(0, 0); },
-    bookfilter: (el) => { S.tab = 'book'; ui.book = 'library'; ui.filter = el.dataset.v; update(); },
+    booklib: () => { S.tab = 'book'; ui.book = 'library'; ui.filter = 'Alle'; ui.cuisine = 'Alle'; update(); window.scrollTo(0, 0); },
+    bookfilter: (el) => { S.tab = 'book'; ui.book = 'library'; ui.filter = el.dataset.v; ui.cuisine = 'Alle'; update(); },
+    bookcuisine: (el) => { ui.cuisine = el.dataset.v; update(); },
     bookadd: () => { S.tab = 'book'; ui.book = 'add'; update(); window.scrollTo(0, 0); },
     openrec: (el) => openRecipe(el.dataset.id),
     addlist: (el) => {
@@ -1012,6 +1045,7 @@
     addmode: (el) => { ui.addMode = el.dataset.v; render(); },
     dstep: (el) => { ui.draft.serv = Math.max(1, Math.min(30, ui.draft.serv + Number(el.dataset.d))); render(); },
     dcat: (el) => { ui.draft.cat = el.dataset.v; render(); },
+    dcuisine: (el) => { ui.draft.cuisine = ui.draft.cuisine === el.dataset.v ? '' : el.dataset.v; render(); },
     ddiff: (el) => { ui.draft.diff = Number(el.dataset.v); render(); },
     deling: (el) => { ui.draft.ings.splice(Number(el.dataset.i), 1); render(); },
     delstep: (el) => { ui.draft.steps.splice(Number(el.dataset.i), 1); render(); },
@@ -1025,7 +1059,7 @@
       if (st) st.value = '';
       if (!d.title.trim()) { ui.focus = 'd-title'; render(); toast('Bitte einen Titel eingeben.'); return; }
       ui.draft = emptyDraft();
-      saveRecipe({ title: d.title.trim(), cat: d.cat, diff: d.diff, time: Number(d.time) || 30, serv: d.serv, source: 'Eigenes', ings: d.ings, steps: d.steps, image: d.image });
+      saveRecipe({ title: d.title.trim(), cat: d.cat, cuisine: d.cat === 'Hauptgericht' ? d.cuisine : '', diff: d.diff, time: Number(d.time) || 30, serv: d.serv, source: 'Eigenes', ings: d.ings, steps: d.steps, image: d.image });
     },
     scanstart: () => {
       clearTimeout(demoTimer);

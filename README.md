@@ -55,9 +55,13 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
 - rewe.de hat keine öffentliche Schnittstelle; die Bridge nutzt dieselben Aufrufe wie der Shop im Browser. Ändert REWE diese, funktioniert das Füllen nicht mehr, bis `rewe-bridge/rewe-page.js` angepasst ist. In der Browser-Version (`Kochapp.html`) muss die Bridge von Hand gestartet und ihr API-Schlüssel eingetragen werden; auf dem Mac gibt es sie nicht (PowerShell-Skript).
 
 ## Rezeptbuch (aus dem Projekt „Küchenbuch“ übernommen)
-- **Bibliothek** aller Rezepte mit Suche nach Titel oder Zutat, Kategorien und Sammlungen in der Seitenleiste.
+- **Bibliothek** mit rund 250 Rezepten, Suche nach Titel, Zutat oder Küche, Kategorien und Sammlungen in der Seitenleiste.
+- **Kategorien:** Frühstück, Hauptgericht, Snack, Backen, Nachtisch, Getränke (je ca. 30 Rezepte, Hauptgerichte knapp 100) sowie „Eigene“.
+- **Hauptgerichte nach Küche filtern:** Italienisch, Deutsch, Mexikanisch, Indisch, Asiatisch, Griechisch, Orientalisch, Französisch, Spanisch, Amerikanisch, International.
+- **Bilder:** Jedes Rezept hat ein Bild. Die mitgelieferten Rezepte bekommen eine gezeichnete Illustration (`bilder.js`, funktioniert offline); eigene Rezepte ohne Foto erhalten eine passende Illustration ihrer Kategorie.
+- Die zusätzlichen Rezepte aus `rezepte.js` erscheinen im Rezeptbuch und auf der Einkaufsliste, aber nicht im Vorrats-Finder oder Wochenplan.
 - **Rezeptseite** mit Portionsrechner: Zutatenmengen passen sich an.
-- **Eigene Rezepte** anlegen: Zutaten wie „200 g Mehl“ eintippen, Menge/Einheit werden erkannt; Titelbild optional. Zutaten, deren Name in der Lebensmittelliste steht (wie bei „Mein Vorrat“) und die eine Menge in g, ml oder Stk haben, werden mit Nährwerten verknüpft; die Eingabe zeigt das sofort an.
+- **Eigene Rezepte** anlegen: Zutaten wie „200 g Mehl“ eintippen, Menge/Einheit werden erkannt; Titelbild optional, bei Hauptgerichten optional die Küche. Zutaten, deren Name in der Lebensmittelliste steht (wie bei „Mein Vorrat“) und die eine Menge in g, ml oder Stk haben, werden mit Nährwerten verknüpft; die Eingabe zeigt das sofort an.
 - **Eigene Rezepte in Finder und Wochenplan:** Rezepte mit mindestens einer verknüpften Zutat stehen auch im Vorrats-Finder und im Wochenplan zur Verfügung. Mit dem Schalter **„Nur meine eigenen Rezepte verwenden“** (Präferenzen) arbeiten beide ausschließlich mit ihnen. Nicht verknüpfte Zutaten zählen nicht für Nährwerte und Vorrat, landen aber auf der Einkaufsliste; solche Rezepte werden bei aktiver Ernährungsform (vegan, glutenfrei …) vorsichtshalber ausgelassen.
 - **Eine Einkaufsliste** (eigener Bereich in der Seitenleiste): Sie sammelt alles an einer Stelle – Rezepte aus dem Rezeptbuch („+ Liste“, Personenzahl änderbar), die übernommene Rezept-Auswahl, den übernommenen Wochenplan und eigene Artikel. Gleiche Lebensmittel werden zusammengefasst; jede Zeile zeigt, woher sie kommt. Abhaken, kopieren, als CSV speichern, drucken oder bei REWE in den Warenkorb legen.
 - **Foto-Scan und Linkimport sind Demos** mit festem Beispielrezept – es findet keine Texterkennung und kein Webabruf statt.
@@ -81,7 +85,7 @@ Adapter-Modell (`KA.Providers`):
 Einen konkreten Händler anbinden: in `KA.Providers` einen Eintrag mit `fields`, `preview()` und `submit()` ergänzen und dort das Payload auf das API-Format des Händlers abbilden. Hinweis: Die meisten Supermärkte bieten keine offene Bestell-API; ein eigener Zwischen-Endpunkt oder ein Partnerzugang ist meist nötig.
 
 ## Dateien
-`index.html` · `style.css` · `data.js` (50 Rezepte, 76 Lebensmittel, Nährwerte) · `logic.js` (Filter, Finder, Planer) · `app.js` (UI) · `order.js` · `server.js` · `start.bat` · `desktop\Program.cs` · `desktop\build.ps1` · `desktop\release.ps1` · `desktop\lib` (WebView2-DLLs, werden mit ausgeliefert)
+`index.html` · `style.css` · `data.js` (50 Rezepte, Lebensmittel, Nährwerte) · `rezepte.js` (weitere ~200 Rezepte fürs Rezeptbuch, Küchen, Bildangaben) · `bilder.js` (Rezept-Illustrationen als SVG) · `logic.js` (Filter, Finder, Planer) · `app.js` (UI) · `order.js` · `server.js` · `start.bat` · `desktop\Program.cs` · `desktop\build.ps1` · `desktop\release.ps1` · `desktop\lib` (WebView2-DLLs, werden mit ausgeliefert)
 
 ## Nährwerte aus den Zutaten
 - Die Rezeptseite zeigt die **Nährwerte pro Portion** (Energie, 4 Makro- und 10 Mikronährstoffe, jeweils mit Anteil am Tagesbedarf). Sie werden aus den Zutaten zusammengerechnet – bei mitgelieferten und bei eigenen Rezepten.
