@@ -10,7 +10,7 @@
     tab: 'book',
     my: [], list: [], extras: [], done: {}, // Rezeptbuch: eigene Rezepte, Rezepte auf der Einkaufsliste, freie Artikel, Häkchen
     prefs: {
-      diets: [], dislikes: [], maxTime: 60, maxDiff: 3, persons: 2, assumeStaples: true,
+      diets: [], dislikes: [], maxTime: 60, maxDiff: 3, persons: 2, assumeStaples: true, onlyMine: false,
       meals: { f: 1, m: 1, a: 1, s: 0 },
       macro: { enabled: false, p: 20, c: 50, f: 30 },
       body: { enabled: false, sex: 'm', age: 30, height: 175, weight: 70, activity: 1.6, goal: 'keep' },
@@ -28,7 +28,7 @@
   let S = DEF();
   try { S = merge(DEF(), JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) { /* ignore */ }
   const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { toast('Speichern fehlgeschlagen – der lokale Speicher ist voll.'); } };
-  const emptyDraft = () => ({ title: '', serv: 4, time: '', cat: 'Hauptgericht', ings: [], steps: [], image: '' });
+  const emptyDraft = () => ({ title: '', serv: 4, time: '', cat: 'Hauptgericht', diff: 2, ings: [], steps: [], image: '' });
   const ui = {
     open: new Set(), nutDay: -1, preview: false, orderResult: null, ordering: false, planError: '', focus: null,
     book: 'library', selId: null, detailServ: 2, filter: 'Alle', query: '', addMode: 'manual', draft: emptyDraft(),
@@ -85,7 +85,9 @@
   const tag = (txt, cls) => `<span class="tag ${cls || ''}">${esc(txt)}</span>`;
   function recipeTags(r) {
     const f = KA.recipeFlags(r);
-    const t = [];
+    const t = r.user ? ['eigenes'] : [];
+    // Bei Zutaten ohne Stammdaten lässt sich keine Ernährungsform zusichern
+    if (f.has('unbekannt')) return t.concat('Nährwerte unvollständig').map((x) => tag(x)).join('');
     if (!f.has('fleisch') && !f.has('fisch') && !f.has('schalentier')) t.push(!f.has('milch') && !f.has('ei') && !f.has('honig') ? 'vegan' : 'vegetarisch');
     else if (!f.has('fleisch')) t.push('pescetarisch');
     if (!f.has('gluten')) t.push('glutenfrei');
@@ -109,7 +111,9 @@
       }
       return `<tr><td>${esc(ING[id].name)}</td><td class="num">${KA.fmtAmount(id, need)}</td><td>${st}</td></tr>`;
     }).join('');
-    return `<table class="ings"><tbody>${rows}</tbody></table>`;
+    // eigene Rezepte: Zutaten ohne Stammdaten werden nur aufgeführt, nicht mit dem Vorrat verrechnet
+    const free = (r.free || []).map((i) => `<tr><td>${esc(i.name)}</td><td class="num">${esc(ingQty(i, k))}</td><td>${ev ? '<span class="st basic">nicht verrechnet</span>' : ''}</td></tr>`).join('');
+    return `<table class="ings"><tbody>${rows}${free}</tbody></table>`;
   }
 
   function recipeFacts(r) {
@@ -150,7 +154,10 @@
         <div class="fgroup"><div class="flabel">Personen (Portionen)</div>
           <input class="narrow" type="number" min="1" max="12" step="1" value="${p.persons}" data-bind="prefs.persons" data-num="1"></div>
         <label class="switch"><input type="checkbox" data-bind="prefs.assumeStaples" ${p.assumeStaples ? 'checked' : ''}><span>Salz, Pfeffer, Öl, Brühe & Gewürze sind immer da</span></label>
-      </div></section>`;
+        <label class="switch"><input type="checkbox" data-bind="prefs.onlyMine" ${p.onlyMine ? 'checked' : ''}><span>Nur meine eigenen Rezepte verwenden <span class="muted">(${usableMine} von ${S.my.length} nutzbar)</span></span></label>
+      </div>
+      ${p.onlyMine && !usableMine ? `<p class="warn">${S.my.length ? 'Keines deiner Rezepte ist hier nutzbar: Dafür braucht mindestens eine Zutat einen Namen aus der Lebensmittelliste (wie bei „Mein Vorrat“) und eine Menge in g, ml oder Stk.' : 'Du hast noch keine eigenen Rezepte angelegt.'} <button class="btn sm" data-act="bookadd">Rezept anlegen</button></p>` : ''}
+      </section>`;
   }
 
   const MACRO_PRESETS = { balanced: ['Ausgewogen', 20, 50, 30], highprotein: ['Eiweißreich', 30, 40, 30], lowcarb: ['Low Carb', 30, 25, 45], lowfat: ['Fettarm', 25, 55, 20] };
@@ -253,7 +260,7 @@
           <p>Damit werden <b>${usage.touched} von ${usage.count}</b> Vorratsartikeln verwendet (ca. ${r0(usage.massFrac * 100)} % der Mengen).</p>
           <button class="btn" data-act="takecombo" ${same ? 'disabled' : ''}>${same ? '✔ Übernommen' : 'Kombination übernehmen'}</button></section>`;
 
-        const list = sel.length ? KA.shoppingForRecipes(sel, S.pantry, p) : [];
+        const list = sel.length ? finderList(sel) : [];
         out += `<section class="card"><h2>Einkaufsliste für die Reste</h2>${
           sel.length
             ? `<p class="muted">Für ${sel.length} ausgewählte${sel.length > 1 ? '' : 's'} Gericht${sel.length > 1 ? 'e' : ''}: ${sel.map((id) => esc(REC[id].name)).join(' · ')}</p>${listHTML(list)}
@@ -437,13 +444,38 @@
   // Einheitliche Sicht auf mitgelieferte und eigene Rezepte
   function bookRecipe(id) {
     const r = REC[id];
-    if (!r) return S.my.find((x) => x.id === id) || null;
+    if (!r || r.user) return S.my.find((x) => x.id === id) || null;
     return {
       id, title: r.name, cat: builtinCat(r), time: r.time, serv: r.s, source: 'Kochapp', builtin: true, tone: hash(id) % TONES.length,
       ings: r.i.map(([iid, a]) => ({ id: iid, qty: a, unit: ING[iid].unit, name: ING[iid].name })), steps: r.st,
     };
   }
-  const allBook = () => S.my.concat(KA.RECIPES.map((r) => bookRecipe(r.id)));
+  const builtins = () => KA.RECIPES.filter((r) => !r.user);
+  const allBook = () => S.my.concat(builtins().map((r) => bookRecipe(r.id)));
+
+  // Eigene Rezepte in Finder und Wochenplan bereitstellen; Verweise auf gelöschte Rezepte aufräumen
+  let usableMine = 0;
+  function syncRecipes() {
+    usableMine = KA.setUserRecipes(S.my);
+    S.sel = S.sel.filter((id) => REC[id]);
+    if (S.plan && S.plan.days.some((day) => day.some((m) => !REC[m.rid]))) S.plan = null;
+  }
+
+  // Zutaten ohne Stammdaten aus eigenen Rezepten als freie Artikel für die Einkaufsliste; entries: [{ rid, k }]
+  function freeItems(entries) {
+    const agg = {};
+    entries.forEach(({ rid, k }) => (REC[rid].free || []).forEach((i) => {
+      const key = KA.norm(i.name) + '|' + (i.unit || '');
+      const a = agg[key] || (agg[key] = { name: i.name, unit: i.unit || '', qty: 0 });
+      if (i.qty != null) a.qty += i.qty * k;
+    }));
+    return Object.values(agg).sort((a, b) => a.name.localeCompare(b.name, 'de')).map((a) =>
+      ({ id: null, name: a.name, cat: 'SO', amount: a.qty ? Math.round(a.qty * 100) / 100 : null, unit: a.unit, label: a.qty ? fmtQ(a.qty, a.unit) : '', price: 0, checked: true }));
+  }
+  const finderList = (sel) => KA.shoppingForRecipes(sel, S.pantry, S.prefs)
+    .concat(freeItems(sel.map((rid) => ({ rid, k: (S.prefs.persons || 2) / REC[rid].s }))));
+  const planList = () => KA.planShopping(S.plan, S.prefs, S.pantry, S.subPantry)
+    .concat(freeItems(S.plan.days.reduce((all, day) => all.concat(day.map((m) => ({ rid: m.rid, k: (m.f * (S.prefs.persons || 1)) / REC[m.rid].s }))), [])));
   const srcLabel = (r) => (r.source === 'Web' ? 'Web · ' + r.domain : r.source);
   const ingQty = (i, f) => (i.qty == null ? i.unit || '' : i.id ? KA.fmtAmount(i.id, i.qty * f) : fmtQ(i.qty * f, i.unit));
   const toneStyle = (r) => `--a:${TONES[r.tone % TONES.length][0]};--b:${TONES[r.tone % TONES.length][1]}`;
@@ -467,7 +499,7 @@
   }
 
   function viewLibrary() {
-    const n = S.my.length + KA.RECIPES.length;
+    const n = S.my.length + builtins().length;
     return `<div class="ph"><div><h1>Meine Rezepte</h1><p>${n} Rezepte · ${S.my.length} eigene</p></div>
         <input id="bk-q" class="search" value="${esc(ui.query)}" aria-label="Rezept oder Zutat suchen" placeholder="Rezept oder Zutat suchen …" autocomplete="off"></div>
       <div class="fchips">${['Alle'].concat(BOOK_CATS, ['Eigene']).map((f) => `<button class="${ui.filter === f ? 'on' : ''}" data-act="bookfilter" data-v="${f}">${f}</button>`).join('')}</div>
@@ -491,6 +523,9 @@
         <div class="servbox"><span class="muted">Portionen</span>
           <div class="step"><button data-act="dserv" data-d="-1" aria-label="Weniger">−</button><span>${persons(ui.detailServ)}</span><button data-act="dserv" data-d="1" aria-label="Mehr">+</button></div>
           <button class="btn dark" data-act="addlistd">${inL ? (inL.serv === ui.detailServ ? '✓ Auf der Liste' : 'Liste aktualisieren') : 'Auf Einkaufsliste'}</button></div>
+        ${r.builtin ? '' : `<p class="muted sm">${REC[r.id]
+          ? `Im Vorrats-Finder und Wochenplan nutzbar – ${REC[r.id].i.length} von ${r.ings.length} Zutaten sind mit Nährwerten verknüpft.`
+          : 'Nicht im Vorrats-Finder und Wochenplan nutzbar: Keine Zutat ist mit der Lebensmittelliste verknüpft (Name wie bei „Mein Vorrat“, Menge in g, ml oder Stk).'}</p>`}
       </div><div class="dt-img" style="${toneStyle(r)}">${recImg(r)}</div></div>
       <div class="dt-body">
         <div class="card ingcard"><div class="lh"><h2>Zutaten</h2><span class="muted sm">für ${persons(ui.detailServ)}</span></div>
@@ -519,7 +554,8 @@
   const previewHTML = (text) => {
     if (!text.trim()) return '';
     const p = parseLine(text);
-    return `<span>Erkannt:</span><b>${esc(p.qty != null ? fmtQ(p.qty, '') : '–')}</b><b>${esc(p.unit || '–')}</b><b>${esc(p.name)}</b>`;
+    return `<span>Erkannt:</span><b>${esc(p.qty != null ? fmtQ(p.qty, '') : '–')}</b><b>${esc(p.unit || '–')}</b><b>${esc(p.name)}</b>
+      <span>${linkIng(p).id ? '✓ Nährwerte bekannt' : '· ohne Nährwerte (zählt nicht für Finder & Wochenplan)'}</span>`;
   };
   const stepList = (steps, removable) => steps.map((s, k) => `<div class="lrow st"><span class="no">${k + 1}</span><span>${esc(s)}</span>${removable ? `<button class="x" data-act="delstep" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
   const ingList = (ings, removable) => ings.map((i, k) => `<div class="lrow"><b>${esc(ingQty(i, 1))}</b><span>${esc(i.name)}</span>${removable ? `<button class="x" data-act="deling" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
@@ -533,6 +569,7 @@
           <div class="fgroup"><div class="flabel">Portionen</div><div class="step"><button data-act="dstep" data-d="-1" aria-label="Weniger">−</button><span>${d.serv}</span><button data-act="dstep" data-d="1" aria-label="Mehr">+</button></div></div>
           <label>Zeit (Min)<input id="d-time" class="narrow" inputmode="numeric" value="${esc(d.time)}" placeholder="30"></label>
           <div class="fgroup"><div class="flabel">Kategorie</div><div class="fchips">${BOOK_CATS.map((c) => `<button class="${d.cat === c ? 'on' : ''}" data-act="dcat" data-v="${c}">${c}</button>`).join('')}</div></div>
+          <div class="fgroup"><div class="flabel">Schwierigkeit</div><div class="seg">${[1, 2, 3].map((v) => `<button class="${d.diff === v ? 'on' : ''}" data-act="ddiff" data-v="${v}">${DIFF[v]}</button>`).join('')}</div></div>
         </div></div>
         <label class="drop">Titelbild wählen<input id="d-img" type="file" accept="image/jpeg,image/png,image/webp">${d.image ? `<img src="${esc(d.image)}" alt="Titelbild-Vorschau">` : ''}<span>JPG, PNG oder WebP – wird verkleinert gespeichert</span></label>
       </div>
@@ -698,6 +735,7 @@
       `<button class="${ui.listOpen ? 'on' : ''}" data-act="openlist">Liste<i>${open || ''}</i></button>`;
   }
   function render() {
+    syncRecipes();
     const y = window.scrollY;
     const old = $('.drawer');
     const dy = old ? old.scrollTop : 0;
@@ -801,6 +839,7 @@
     addmode: (el) => { ui.addMode = el.dataset.v; render(); },
     dstep: (el) => { ui.draft.serv = Math.max(1, Math.min(30, ui.draft.serv + Number(el.dataset.d))); render(); },
     dcat: (el) => { ui.draft.cat = el.dataset.v; render(); },
+    ddiff: (el) => { ui.draft.diff = Number(el.dataset.v); render(); },
     deling: (el) => { ui.draft.ings.splice(Number(el.dataset.i), 1); render(); },
     delstep: (el) => { ui.draft.steps.splice(Number(el.dataset.i), 1); render(); },
     savedraft: () => {
@@ -813,7 +852,7 @@
       if (st) st.value = '';
       if (!d.title.trim()) { ui.focus = 'd-title'; render(); toast('Bitte einen Titel eingeben.'); return; }
       ui.draft = emptyDraft();
-      saveRecipe({ title: d.title.trim(), cat: d.cat, time: Number(d.time) || 30, serv: d.serv, source: 'Eigenes', ings: d.ings, steps: d.steps, image: d.image });
+      saveRecipe({ title: d.title.trim(), cat: d.cat, diff: d.diff, time: Number(d.time) || 30, serv: d.serv, source: 'Eigenes', ings: d.ings, steps: d.steps, image: d.image });
     },
     scanstart: () => {
       clearTimeout(demoTimer);
@@ -903,13 +942,13 @@
       update(); toast('Vorrat aktualisiert');
     },
     tofinderlist: () => {
-      S.shop = { source: 'Rezepte (Reste zum Vorrat)', items: KA.shoppingForRecipes(S.sel.filter((id) => REC[id]), S.pantry, S.prefs), created: Date.now() };
+      S.shop = { source: 'Rezepte (Reste zum Vorrat)', items: finderList(S.sel.filter((id) => REC[id])), created: Date.now() };
       ui.orderResult = null; S.tab = 'shop'; update(); window.scrollTo(0, 0);
     },
     setMacro: (el) => { const v = MACRO_PRESETS[el.dataset.v]; Object.assign(S.prefs.macro, { enabled: true, p: v[1], c: v[2], f: v[3] }); update(); },
     genplan: () => { genPlan(); update(); },
     toplanlist: () => {
-      S.shop = { source: 'Wochenplan', items: KA.planShopping(S.plan, S.prefs, S.pantry, S.subPantry), created: Date.now() };
+      S.shop = { source: 'Wochenplan', items: planList(), created: Date.now() };
       ui.orderResult = null; S.tab = 'shop'; update(); window.scrollTo(0, 0);
     },
     nutday: (el) => { ui.nutDay = Number(el.dataset.v); render(); },

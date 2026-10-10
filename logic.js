@@ -64,14 +64,45 @@
     if (!flagCache[r.id]) {
       const s = new Set();
       r.i.forEach(([id]) => ING[id].flags.forEach((f) => s.add(f)));
+      if (r.free && r.free.length) s.add('unbekannt'); // Zutaten ohne Stammdaten: Inhaltsstoffe nicht prüfbar
       flagCache[r.id] = s;
     }
     return flagCache[r.id];
   };
 
+  /* ---------- Eigene Rezepte des Nutzers für Finder und Wochenplan ---------- */
+  const TYPES_BY_CAT = { 'Frühstück': ['f'], 'Hauptgericht': ['m', 'a'], 'Snack': ['s'], 'Backen': ['s'] };
+  // Übernimmt eigene Rezepte (Format des Rezeptbuchs) in den Rezeptbestand und liefert, wie viele nutzbar sind.
+  // Gerechnet wird nur mit Zutaten, die mit den Stammdaten verknüpft sind (id + Menge); die übrigen stehen in
+  // r.free. Rezepte ganz ohne verknüpfte Zutat bleiben außen vor.
+  KA.setUserRecipes = (list) => {
+    for (let k = RECIPES.length - 1; k >= 0; k--) {
+      if (!RECIPES[k].user) continue;
+      const id = RECIPES[k].id;
+      RECIPES.splice(k, 1);
+      delete REC[id]; delete perServCache[id]; delete flagCache[id];
+    }
+    let n = 0;
+    (list || []).forEach((u) => {
+      const linked = (x) => x.id && ING[x.id] && x.qty > 0;
+      const sum = {};
+      (u.ings || []).filter(linked).forEach((x) => (sum[x.id] = (sum[x.id] || 0) + x.qty));
+      if (!Object.keys(sum).length || REC[u.id]) return;
+      const r = {
+        id: u.id, name: u.title, types: TYPES_BY_CAT[u.cat] || ['m', 'a'], time: u.time || 30, diff: u.diff || 2, s: u.serv || 1,
+        i: Object.keys(sum).map((id) => [id, sum[id]]), st: u.steps || [], user: true, free: (u.ings || []).filter((x) => !linked(x)),
+      };
+      RECIPES.push(r);
+      REC[r.id] = r;
+      n++;
+    });
+    return n;
+  };
+
   /* ---------- Präferenzen / Filter ---------- */
   KA.recipeMatches = (r, prefs, slot) => {
     if (slot && !r.types.includes(slot)) return false;
+    if (prefs.onlyMine && !r.user) return false;
     if (prefs.maxTime && r.time > prefs.maxTime) return false;
     if (prefs.maxDiff && r.diff > prefs.maxDiff) return false;
     const flags = KA.recipeFlags(r);
@@ -80,13 +111,14 @@
     for (const d of prefs.diets || []) {
       const def = DIETS[d];
       if (!def) continue;
-      if (def.excl && def.excl.some((f) => flags.has(f))) return false;
+      // unbekannte Zutaten könnten gegen die Ernährungsform verstoßen -> vorsichtshalber ausschließen
+      if (def.excl && (flags.has('unbekannt') || def.excl.some((f) => flags.has(f)))) return false;
       if (def.macro === 'lowcarb' && (n[IDX.carb] * 4) / kcal > 0.3) return false;
       if (def.macro === 'highprotein' && (n[IDX.prot] * 4) / kcal < 0.22) return false;
     }
     const dis = (prefs.dislikes || []).map(KA.norm).filter(Boolean);
     if (dis.length) {
-      const hay = [KA.norm(r.name)].concat(r.i.map(([id]) => KA.norm(ING[id].name) + ' ' + id));
+      const hay = [KA.norm(r.name)].concat(r.i.map(([id]) => KA.norm(ING[id].name) + ' ' + id), (r.free || []).map((x) => KA.norm(x.name)));
       if (dis.some((d) => hay.some((h) => h.includes(d)))) return false;
     }
     return true;
@@ -333,7 +365,7 @@
   }
 
   KA.planSig = (prefs) =>
-    JSON.stringify([prefs.diets, prefs.dislikes, prefs.maxTime, prefs.maxDiff, prefs.meals, prefs.macro && prefs.macro.enabled ? prefs.macro : null, prefs.body && prefs.body.enabled ? prefs.body : null]);
+    JSON.stringify([prefs.diets, prefs.dislikes, prefs.maxTime, prefs.maxDiff, !!prefs.onlyMine, prefs.meals, prefs.macro && prefs.macro.enabled ? prefs.macro : null, prefs.body && prefs.body.enabled ? prefs.body : null]);
 
   KA.slotPool = (prefs, slot) => RECIPES.filter((r) => KA.recipeMatches(r, prefs, slot));
 
@@ -346,7 +378,7 @@
     for (const s of slots) {
       pools[s] = KA.slotPool(prefs, s);
       if (!pools[s].length)
-        return { error: `Für „${MEALS[s].label}“ gibt es mit den aktuellen Filtern kein passendes Rezept. Lockere Ernährungsform, Zeit oder Schwierigkeit.` };
+        return { error: `Für „${MEALS[s].label}“ gibt es mit den aktuellen Filtern kein passendes Rezept. Lockere Ernährungsform, Zeit oder Schwierigkeit${prefs.onlyMine ? ' – oder schalte „Nur meine eigenen Rezepte verwenden“ aus' : ''}.` };
     }
     const mk = (s, r) => ({ slot: s, rid: r.id, f: factorFor(r, T.kcal * share[s]), lock: false });
     const rnd = (a) => a[Math.floor(Math.random() * a.length)];
