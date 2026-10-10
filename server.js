@@ -51,6 +51,20 @@ async function handleOrder(req, res) {
 
 http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
+  if (url.pathname === '/api/import-recipe') {
+    try {
+      const { importEndpoint } = await import('./import-recipe.mjs');
+      const body = req.method === 'POST' ? await readBody(req, 4096) : undefined;
+      const request = new Request(`http://${req.headers.host || 'localhost:' + PORT}${req.url}`, {
+        method: req.method, headers: req.headers, ...(body ? { body } : {})
+      });
+      const response = await importEndpoint(request);
+      res.writeHead(response.status, Object.fromEntries(response.headers));
+      return res.end(Buffer.from(await response.arrayBuffer()));
+    } catch (error) {
+      return send(res, 400, { error: 'Ungültige Import-Anfrage.' });
+    }
+  }
   if (req.method === 'POST' && url.pathname === '/api/order') return handleOrder(req, res);
   if (req.method !== 'GET') return send(res, 405, { error: 'Methode nicht erlaubt' });
   let file = path.normalize(path.join(ROOT, url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname)));

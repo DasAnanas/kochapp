@@ -753,6 +753,7 @@
       <div class="dt-top"><div class="dt-info">
         <div class="pills2"><span class="acc">${esc(r.cat)}</span>${r.cuisine ? `<span class="acc">${esc(r.cuisine)}</span>` : ''}<span>${esc(srcLabel(r))}</span></div>
         <h1>${esc(r.title)}</h1>
+        ${r.sourceUrl && /^https?:\/\//i.test(r.sourceUrl) ? `<p class="muted sm"><a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener noreferrer">Originalrezept öffnen</a></p>` : ''}
         <div class="facts">${fact('Zeit', r.time + ' Min')}${fact('Zutaten', r.ings.length)}${fact('Original', r.serv + ' Pers.')}
           ${base ? fact('Pro Portion', r0(KA.recipeNutr(base)[0]) + ' kcal') + fact('Niveau', DIFF[base.diff]) : ''}</div>
         ${base ? `<div class="tags">${recipeTags(base)}</div>` : ''}
@@ -771,19 +772,15 @@
       </div></div>`;
   }
 
-  /* ---------- Neues Rezept: selbst schreiben, Foto-Scan (Demo), Linkimport (Demo) ---------- */
+  /* ---------- Neues Rezept: selbst schreiben, Foto-Scan (Demo), Linkimport ---------- */
   const SCAN = { title: 'Kartoffelsalat nach Tante Hilde', serv: 6, time: 45, cat: 'Hauptgericht',
     ings: [{ text: '1 kg Kartoffeln' }, { text: '1 Stk Zwiebel' }, { text: '150 ml Gemüsebrühe' }, { text: '3 EL Weißweinessig' },
       { text: '1 EL Senf', flag: true, note: 'Menge war schwer lesbar – „1 EL“ oder „4 EL“?' }, { text: '4 EL Sonnenblumenöl' }, { text: '1 Bund Schnittlauch' }],
     steps: ['Kartoffeln mit Schale gar kochen, pellen und noch warm in Scheiben schneiden.', 'Zwiebel fein würfeln und in der Brühe kurz aufkochen.',
       'Brühe mit Essig, Senf und Öl verrühren und über die warmen Kartoffeln gießen.', 'Mindestens 30 Minuten ziehen lassen, mit Schnittlauch bestreuen.'] };
-  const LINK = { title: 'Kürbis-Curry mit Kichererbsen', cat: 'Hauptgericht', time: 35, serv: 4, source: 'Web', domain: 'kochblog.de',
-    ings: ['800 g Hokkaido-Kürbis', '1 Dose Kichererbsen', '400 ml Kokosmilch', '1 Stk Zwiebel', '2 Zehen Knoblauch', '1 EL rote Currypaste', '1 Stk Limette', '0.5 Bund Koriander'].map(parseLine),
-    steps: ['Kürbis entkernen und in 2 cm Würfel schneiden, Zwiebel und Knoblauch hacken.', 'Zwiebel und Knoblauch anschwitzen, Currypaste 1 Minute mitrösten.',
-      'Kürbis, Kokosmilch und 200 ml Wasser zugeben, 15 Minuten köcheln.', 'Kichererbsen untermischen, mit Limettensaft abschmecken und mit Koriander servieren.'] };
   const ADD_MODES = [['manual', '01', 'Selbst schreiben', 'Zutaten einfach eintippen – Mengen werden automatisch erkannt.'],
     ['photo', '02', 'Foto scannen (Demo)', 'Demo mit einem Beispielrezept; keine echte Texterkennung.'],
-    ['link', '03', 'Linkimport (Demo)', 'Demo mit einem Beispielrezept; kein echter Webimport.']];
+    ['link', '03', 'Linkimport', 'Rezeptlink einfügen, Angaben prüfen und speichern.']];
   let demoTimer;
 
   const linkHint = (l) => (!l.id ? '· kein bekanntes Lebensmittel – ohne Nährwerte'
@@ -852,20 +849,24 @@
 
   function addLink() {
     const l = ui.link;
+    const r = l.recipe;
     let body = '';
-    if (l.phase === 'busy') body = '<p class="muted busy">Seite laden · Rezeptdaten finden · Zutaten & Schritte übernehmen …</p>';
-    if (l.phase === 'done') {
-      body = `<div class="linkres"><div class="lk-top"><div class="dt-img sm" style="--a:#FFF1D6;--b:#FBE6BE"></div>
-          <div class="col"><span class="muted">${esc(LINK.domain)}</span><div class="big">${esc(LINK.title)}</div>
-            <div class="pills2">${['Titel', LINK.serv + ' Portionen', LINK.time + ' Min', LINK.ings.length + ' Zutaten', LINK.steps.length + ' Schritte'].map((c) => `<span class="acc">✓ ${c}</span>`).join('')}</div>
-            <span class="muted sm">Ignoriert: Einleitungstext, Werbung, Kommentare</span></div></div>
-        <div class="am-two"><div class="col"><div class="flabel">Zutaten · ${LINK.serv} Pers.</div><div>${ingList(LINK.ings)}</div></div>
-          <div class="col"><div class="flabel">Zubereitung</div><div>${stepList(LINK.steps)}</div></div></div>
+    if (l.phase === 'busy') body = '<p class="muted busy" role="status">Rezeptseite wird geladen …</p>';
+    if (l.error) body = `<p class="warn" role="alert">${esc(l.error)}</p>`;
+    if (l.phase === 'done' && r) {
+      body = `<div class="linkres"><p>Rezept erkannt. Bitte Angaben und Mengen vor dem Speichern prüfen.</p>
+        <p class="muted sm">Quelle: <a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(r.domain)}</a>${r.yieldText ? ' · Originalangabe: ' + esc(r.yieldText) : ''}</p>
+        <label>Titel<input id="l-title" value="${esc(r.title)}" autocomplete="off"></label>
+        <div class="frow"><label>Portionen<input id="l-serv" type="number" min="1" max="1000" step="1" value="${r.serv}"></label>
+        <label>Zeit in Minuten<input id="l-time" type="number" min="0" max="10080" value="${r.time}"></label>
+        <label>Kategorie<select id="l-cat">${BOOK_CATS.map(c => `<option ${c === r.cat ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></label></div>
+        <div class="am-two"><label>Zutaten (eine pro Zeile)<textarea id="l-ingredients" rows="10">${esc(r.ingredients.join('\n'))}</textarea></label>
+        <label>Zubereitung (ein Schritt pro Zeile)<textarea id="l-steps" rows="10">${esc(r.steps.join('\n'))}</textarea></label></div>
         <div class="btnrow end"><button class="btn ghost" data-act="linkreset">Verwerfen</button><button class="btn" data-act="linksave">Ins Rezeptbuch speichern</button></div></div>`;
     }
-    return `<div class="card addcard"><div class="col"><div class="flabel">Link zum Rezept</div>
-      <div class="addrow"><input id="l-url" value="${esc(l.url)}" placeholder="https://www.kochblog.de/rezepte/kuerbis-curry" autocomplete="off"><button class="btn" data-act="linkfetch">Beispiel anzeigen</button></div>
-      <span class="muted sm">Demo: Es wird ein festes Beispiel angezeigt. Der eingegebene Link wird nicht abgerufen.</span></div>${body}</div>`;
+    return `<div class="card addcard"><div class="col"><label for="l-url">Link zum Rezept</label>
+      <div class="addrow"><input id="l-url" type="url" value="${esc(l.url)}" placeholder="https://www.chefkoch.de/rezepte/…" autocomplete="off" ${l.phase === 'busy' ? 'disabled' : ''}><button class="btn" data-act="linkfetch" ${l.phase === 'busy' ? 'disabled' : ''}>${l.phase === 'busy' ? 'Wird importiert …' : 'Rezept importieren'}</button></div>
+      <span class="muted sm">Für öffentliche Rezeptseiten mit strukturierten Rezeptdaten. Manche Websites blockieren den Abruf oder stellen keine passenden Daten bereit.</span></div>${body}</div>`;
   }
 
   function viewAdd() {
@@ -1072,13 +1073,38 @@
       ui.scanPhase = 'idle';
       saveRecipe({ title: c.title.trim() || SCAN.title, cat: c.cat, time: c.time, serv: c.serv, source: 'Foto-Scan', ings: c.ings.filter((i) => i.text.trim()).map((i) => parseLine(i.text)), steps: c.steps });
     },
-    linkfetch: () => {
-      clearTimeout(demoTimer);
-      ui.link.phase = 'busy'; render();
-      demoTimer = setTimeout(() => { ui.link.phase = 'done'; render(); }, 1500);
+    linkfetch: async () => {
+      if (ui.link.phase === 'busy') return;
+      const l = ui.link;
+      l.url = ($('#l-url') ? $('#l-url').value : l.url).trim();
+      l.error = ''; l.recipe = null;
+      try {
+        const url = new URL(l.url);
+        if (!['http:', 'https:'].includes(url.protocol)) throw new Error();
+      } catch { l.error = 'Bitte einen vollständigen http://- oder https://-Rezeptlink eingeben.'; render(); return; }
+      if (location.protocol === 'file:') { l.error = 'Der Linkimport benötigt die Online-Version oder den lokalen Server (node server.js → http://localhost:8080).'; render(); return; }
+      l.phase = 'busy'; render();
+      try {
+        const response = await fetch('/api/import-recipe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: l.url }) });
+        const data = await response.json();
+        if (!response.ok || !data.recipe) throw new Error(data.error || 'Das Rezept konnte nicht importiert werden.');
+        if (ui.link !== l) return;
+        l.recipe = data.recipe; l.phase = 'done';
+      } catch (error) {
+        if (ui.link !== l) return;
+        l.phase = 'idle'; l.error = error.message || 'Die Website konnte nicht erreicht werden.';
+      }
+      if (ui.book === 'add' && ui.addMode === 'link') render();
     },
-    linkreset: () => { clearTimeout(demoTimer); ui.link = { url: '', phase: 'idle' }; render(); },
-    linksave: () => { ui.link = { url: '', phase: 'idle' }; saveRecipe(JSON.parse(JSON.stringify(LINK))); },
+    linkreset: () => { ui.link = { url: '', phase: 'idle' }; render(); },
+    linksave: () => {
+      const r = ui.link.recipe;
+      if (!r) return;
+      if (!r.title.trim() || !r.ingredients.some(x => x.trim()) || !r.steps.some(x => x.trim())) { toast('Bitte Titel, Zutaten und Zubereitung ausfüllen.'); return; }
+      const recipe = { ...r, title: r.title.trim(), serv: Math.max(1, Math.min(1000, Math.round(Number(r.serv) || 1))), time: Math.max(0, Math.min(10080, Math.round(Number(r.time) || 0))), ings: r.ingredients.map(x => x.trim()).filter(Boolean).map(parseLine), steps: r.steps.map(x => x.trim()).filter(Boolean) };
+      delete recipe.ingredients;
+      ui.link = { url: '', phase: 'idle' }; saveRecipe(recipe);
+    },
 
     /* Einkaufsliste */
     blockdel: (el) => { S.blocks[el.dataset.v] = null; update(); },
@@ -1246,6 +1272,7 @@
   });
   document.addEventListener('change', (e) => {
     const t = e.target;
+    if (t.id === 'l-cat' && ui.link.recipe) { ui.link.recipe.cat = t.value; return; }
     if (t.id === 'd-img') { if (t.files[0]) readImage(t.files[0], (url) => { ui.draft.image = url; render(); }); return; }
     if (t.dataset.act && t.tagName === 'INPUT') { A[t.dataset.act](t, e); return; }
     if (t.dataset.diet) {
@@ -1290,6 +1317,13 @@
     if (t.id === 's-title') { ui.scan.title = t.value; return; }
     if (t.dataset.si) { ui.scan.ings[Number(t.dataset.si)].text = t.value; return; }
     if (t.id === 'l-url') { ui.link.url = t.value; return; }
+    if (ui.link.recipe && t.id.startsWith('l-')) {
+      const fields = { 'l-title': 'title', 'l-serv': 'serv', 'l-time': 'time', 'l-ingredients': 'ingredients', 'l-steps': 'steps' };
+      const key = fields[t.id];
+      if (key) ui.link.recipe[key] = ['ingredients', 'steps'].includes(key) ? t.value.split('\n') : t.value;
+      return;
+    }
+
     if (t.id === 'p-quick') { $('#p-prev').innerHTML = quickPreview(t.value); }
   });
   document.addEventListener('keydown', (e) => {
@@ -1315,6 +1349,15 @@
   if (!['book', 'finder', 'plan', 'pantry', 'shop'].includes(S.tab)) S.tab = 'book';
   // ältere Versionen hatten eine zweite, getrennte Einkaufsliste (S.shop) – in die eine Liste übernehmen
   if (!S.blocks || typeof S.blocks !== 'object') S.blocks = { finder: null, plan: null };
+  let migratedWebsiteLists = false;
+  for (const [oldKey, blockKey] of [['planList', 'plan'], ['finderList', 'finder']]) {
+    if (Array.isArray(S[oldKey]) && S[oldKey].length && !S.blocks[blockKey]) {
+      S.blocks[blockKey] = { items: S[oldKey], created: Date.now() };
+      migratedWebsiteLists = true;
+    }
+    if (oldKey in S) { delete S[oldKey]; migratedWebsiteLists = true; }
+  }
+  if (migratedWebsiteLists) save();
   if (S.shop && Array.isArray(S.shop.items)) {
     const items = S.shop.items.filter((i) => i && i.checked !== false);
     if (S.shop.source === 'Wochenplan') S.blocks.plan = S.blocks.plan || { items, created: S.shop.created || Date.now() };
