@@ -152,7 +152,18 @@
 
   KA.bodyValid = (b) => b && b.enabled && b.age > 0 && b.height > 0 && b.weight > 0;
 
-  KA.targets = (prefs) => {
+  // Anteil des Tagesbedarfs, den der Plan decken soll. Normal 1 (die gewählten Mahlzeiten decken den ganzen Tag).
+  // Mit prefs.partial und weniger als drei Mahlzeiten nur der Anteil, den diese Mahlzeiten an einem Tag mit
+  // Frühstück, Mittag- und Abendessen hätten (z. B. Mittag + Abend = 72 %).
+  KA.dayShare = (prefs) => {
+    const slots = ['f', 'm', 'a', 's'].filter((s) => prefs.meals && prefs.meals[s]);
+    if (!prefs.partial || !slots.length || slots.length >= 3) return 1;
+    const w = (list) => list.reduce((s, k) => s + MEALS[k].w, 0);
+    return Math.min(1, w(slots) / w(['f', 'm', 'a']));
+  };
+
+  // opt.full: immer der volle Tagesbedarf (z. B. für „% vom Tagesbedarf“ bei einem einzelnen Rezept)
+  KA.targets = (prefs, opt) => {
     const b = prefs.body;
     const T = {};
     let kcal, prot, sexMale = true, known = false;
@@ -183,8 +194,14 @@
       fiber: Math.max(30, Math.round((kcal / 1000) * 14)),
       vitC: pick(110, 95), vitA: pick(850, 700), vitD: 20, b12: 4, folat: 300, ca: 1000,
       fe: pick(10, age < 51 ? 15 : 10), mg: pick(350, 300), zn: pick(11, 8), k: 4000,
-      known, custom,
+      known, custom, share: 1, fullKcal: kcal,
     });
+    const share = opt && opt.full ? 1 : KA.dayShare(prefs);
+    if (share < 1) {
+      NK.forEach((k) => { T[k] = k === 'kcal' ? Math.round((T[k] * share) / 10) * 10 : Math.round(T[k] * share * 10) / 10; });
+      ['prot', 'carb', 'fat', 'fiber'].forEach((k) => { T[k] = Math.round(T[k]); });
+      T.share = share;
+    }
     return T;
   };
   KA.targetVec = (T) => NK.map((k) => T[k]);
@@ -477,7 +494,7 @@
   }
 
   KA.planSig = (prefs) =>
-    JSON.stringify([prefs.diets, prefs.cuisines || [], prefs.dislikes, prefs.maxTime, prefs.maxDiff, !!prefs.onlyMine, prefs.meals, prefs.macro && prefs.macro.enabled ? prefs.macro : null, prefs.body && prefs.body.enabled ? prefs.body : null]);
+    JSON.stringify([prefs.diets, prefs.cuisines || [], prefs.dislikes, prefs.maxTime, prefs.maxDiff, !!prefs.onlyMine, prefs.meals, KA.dayShare(prefs), prefs.macro && prefs.macro.enabled ? prefs.macro : null, prefs.body && prefs.body.enabled ? prefs.body : null]);
 
   KA.slotPool = (prefs, slot) => RECIPES.filter((r) => !r.book && KA.recipeMatches(r, prefs, slot));
 

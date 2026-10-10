@@ -11,7 +11,7 @@
     my: [], list: [], extras: [], done: {}, // Rezeptbuch: eigene Rezepte, Rezepte auf der Einkaufsliste, freie Artikel, Häkchen
     prefs: {
       diets: [], cuisines: [], dislikes: [], maxTime: 60, maxDiff: 3, persons: 2, assumeStaples: true, onlyMine: false,
-      meals: { f: 1, m: 1, a: 1, s: 0 },
+      meals: { f: 1, m: 1, a: 1, s: 0 }, partial: false,
       macro: { enabled: false, p: 20, c: 50, f: 30 },
       body: { enabled: false, sex: 'm', age: 30, height: 175, weight: 70, activity: 1.6, goal: 'keep' },
     },
@@ -194,9 +194,15 @@
     const p = S.prefs, b = p.body, m = p.macro;
     const T = KA.targets(p);
     const sum = m.p + m.c + m.f;
+    const nMeals = KA.activeSlots(p).length;
+    const partShare = KA.dayShare(Object.assign({}, p, { partial: true }));
     return `<section class="card"><h2>Plan-Einstellungen</h2>
       <div class="fgroup"><div class="flabel">Mahlzeiten pro Tag</div>
         <div class="chips">${['f', 'm', 'a', 's'].map((k) => `<label class="chip"><input type="checkbox" data-meal="${k}" ${p.meals[k] ? 'checked' : ''}><span>${MEALS[k].label}</span></label>`).join('')}</div></div>
+      ${nMeals > 0 && nMeals < 3 ? `<label class="switch"><input type="checkbox" data-bind="prefs.partial" ${p.partial ? 'checked' : ''}><span>Nur anteilig abdecken <span class="muted">(${r0(partShare * 100)} % des Tagesbedarfs)</span></span></label>
+        <p class="muted sm">${p.partial
+          ? `Der Plan deckt nur den Anteil an Kalorien und Nährwerten, der auf ${nMeals === 1 ? 'diese Mahlzeit' : 'diese Mahlzeiten'} entfällt – den Rest isst du außerhalb des Plans.`
+          : `Du planst weniger als drei Mahlzeiten. Ohne diese Option ${nMeals === 1 ? 'deckt die eine Mahlzeit' : 'decken die gewählten Mahlzeiten'} den gesamten Tagesbedarf und ${nMeals === 1 ? 'fällt' : 'fallen'} entsprechend groß aus.`}</p>` : ''}
 
       <h4 class="cat">Makro-Verhältnis <span class="opt">optional</span></h4>
       <label class="switch"><input type="checkbox" data-bind="prefs.macro.enabled" ${m.enabled ? 'checked' : ''}><span>Verhältnis von Eiweiß / Kohlenhydraten / Fett selbst festlegen</span></label>
@@ -220,7 +226,7 @@
         <label>Aktivität<select data-bind="prefs.body.activity" data-num="1">${Object.entries(KA.ACTIVITY).map(([v, l]) => `<option value="${v}" ${Number(b.activity) === Number(v) ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
         <label>Ziel<select data-bind="prefs.body.goal">${[['keep', 'Gewicht halten'], ['lose', 'Abnehmen'], ['gain', 'Muskeln aufbauen']].map(([v, l]) => `<option value="${v}" ${b.goal === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
       </div>
-      <div class="tgt"><b>Tagesziel${T.known ? '' : ' (Referenz)'}:</b> ${KA.fmtNum(T.kcal, 0)} kcal · ${T.prot} g Eiweiß · ${T.carb} g Kohlenhydrate · ${T.fat} g Fett · ${T.fiber} g Ballaststoffe
+      <div class="tgt"><b>${T.share < 1 ? `Ziel für den Plan (${r0(T.share * 100)} % von ${KA.fmtNum(T.fullKcal, 0)} kcal)` : 'Tagesziel'}${T.known ? '' : ' (Referenz)'}:</b> ${KA.fmtNum(T.kcal, 0)} kcal · ${T.prot} g Eiweiß · ${T.carb} g Kohlenhydrate · ${T.fat} g Fett · ${T.fiber} g Ballaststoffe
         ${T.known ? `<br><span class="muted sm">Grundumsatz ${r0(T.bmr)} kcal (Mifflin-St Jeor) × Aktivitätsfaktor, angepasst ans Ziel.</span>` : ''}</div>
       <p class="muted sm">Nährwerte sind Näherungswerte und ersetzen keine Ernährungs- oder medizinische Beratung.</p>
     </section>`;
@@ -447,7 +453,7 @@
       <div class="seg wrap">${tabs}</div>
       <h4 class="cat">Makronährstoffe</h4>${idx('macro').map(([n, i]) => row(n, i)).join('')}
       <h4 class="cat">Mikronährstoffe</h4>${idx('micro').map(([n, i]) => row(n, i)).join('')}
-      <p class="muted sm">${T.known ? 'Ziele aus deinen Körperdaten.' : 'Referenzwerte für Erwachsene (ohne Körperdaten).'} Mikronährstoff-Ziele sind Tagesempfehlungen; bewertet wird der Wochendurchschnitt.</p>
+      <p class="muted sm">${T.known ? 'Ziele aus deinen Körperdaten.' : 'Referenzwerte für Erwachsene (ohne Körperdaten).'} Mikronährstoff-Ziele sind Tagesempfehlungen; bewertet wird der Wochendurchschnitt.${T.share < 1 ? ` Alle Ziele sind anteilig auf ${r0(T.share * 100)} % des Tagesbedarfs gerechnet, weil du weniger als drei Mahlzeiten planst.` : ''}</p>
       ${lacks.length ? `<p class="warn">⚠ Wochenschnitt unter 70 %: ${lacks.join(', ')}.${vegan ? ' Bei veganer Ernährung sollten Vitamin B12 (und oft Vitamin D) ergänzt werden – sprich das ggf. mit Ärzt:in ab.' : lacks.includes('Vitamin D') ? ' Vitamin D wird bei uns kaum über Essen gedeckt (Sonne/Supplement).' : ''}</p>` : ''}
     </section>`;
   }
@@ -465,7 +471,7 @@
         <button class="btn big" data-act="genplan">Wochenplan erstellen</button></section>`;
     } else {
       const slots = KA.activeSlots(p);
-      body += `<section class="card bar-actions"><div><b>Ziel:</b> ${KA.fmtNum(T.kcal, 0)} kcal · ${T.prot} g Eiweiß${T.known ? '' : ' <span class="muted">(Referenz)</span>'}</div>
+      body += `<section class="card bar-actions"><div><b>Ziel:</b> ${KA.fmtNum(T.kcal, 0)} kcal · ${T.prot} g Eiweiß${T.known ? '' : ' <span class="muted">(Referenz)</span>'}${T.share < 1 ? ` <span class="muted">· anteilig ${r0(T.share * 100)} % des Tagesbedarfs</span>` : ''}</div>
         <div class="btnrow"><button class="btn" data-act="genplan">🎲 Alles neu würfeln</button><span class="muted sm">🔒 gesperrte Mahlzeiten bleiben</span></div></section>`;
       if (stale) body += '<div class="card warnbox">Deine Präferenzen haben sich seit der Erstellung geändert. Erstelle den Plan neu, damit sie berücksichtigt werden.</div>';
       body += `<div class="week">${plan.days.map((day, d) => {
@@ -809,7 +815,7 @@
   function nutritionCard(r, base) {
     if (!base) return `<div class="card ingcard"><h2>Nährwerte</h2><p class="muted">Für dieses Rezept lassen sich keine Nährwerte berechnen: Keine Zutat wurde als bekanntes Lebensmittel mit Menge erkannt.</p>${unknownFoods(r)}</div>`;
     const n = KA.recipeNutr(base);
-    const T = KA.targets(S.prefs);
+    const T = KA.targets(S.prefs, { full: true });
     const rows = NUTRIENTS.map((nu, i) => {
       const pct = (n[i] / T[nu.k]) * 100;
       return `<div class="nurow"><span>${nu.label}</span><b>${KA.fmtNum(n[i], n[i] < 10 ? 1 : 0)} ${nu.unit}</b><div class="bar"><i style="width:${Math.min(100, pct)}%"></i></div><span class="muted">${r0(pct)} %</span></div>`;
