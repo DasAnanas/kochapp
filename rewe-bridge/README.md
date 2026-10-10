@@ -8,7 +8,7 @@ Keine Installation nötig: Windows PowerShell + Chrome (oder Edge).
 
 ## So wird sie benutzt
 
-**Aus der Kochapp (Windows-App):** In der Einkaufsliste „Bei REWE bestellen“ bzw. unter „Vorrat & Einkauf“
+**Aus der Kochapp (Windows-App):** Im Bereich „Einkaufsliste“ auf
 „Bei REWE in den Warenkorb …“ klicken und die Postleitzahl eingeben. Die App startet die Bridge bei Bedarf
 selbst (Konsolenfenster + eigenes Chrome-Fenster), wählt den Markt zur Postleitzahl, füllt den Warenkorb und
 holt das REWE-Fenster mit dem Warenkorb nach vorn. Der API-Schlüssel wird von der App automatisch gesetzt.

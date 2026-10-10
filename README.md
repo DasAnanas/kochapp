@@ -48,7 +48,7 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
 - Zum Entwickeln lässt sich `index.html` weiterhin direkt im Browser öffnen (`start.bat`/`server.js` optional mit Node.js).
 
 ## Bei REWE bestellen
-- In der Einkaufsliste (Schublade) **„Bei REWE bestellen“** oder unter „Vorrat & Einkauf“ **„Bei REWE in den Warenkorb …“** klicken. Die App fragt nach der **Postleitzahl** (und Liefer- oder Abholservice), wählt den passenden REWE-Markt, legt die Artikel der Liste in den Warenkorb auf rewe.de und holt das REWE-Fenster mit dem Warenkorb nach vorn.
+- Im Bereich „Einkaufsliste“ auf **„Bei REWE in den Warenkorb …“** klicken. Übergeben werden alle Artikel, die noch nicht abgehakt sind. Die App fragt nach der **Postleitzahl** (und Liefer- oder Abholservice), wählt den passenden REWE-Markt, legt die Artikel der Liste in den Warenkorb auf rewe.de und holt das REWE-Fenster mit dem Warenkorb nach vorn.
 - **Es wird nie automatisch bestellt.** Warenkorb prüfen, Liefertermin wählen und die Bestellung abschließen macht der Mensch selbst auf rewe.de.
 - Technik: Der Ordner `rewe-bridge` (liegt neben `Kochapp.exe`) enthält eine kleine lokale Schnittstelle, die ein eigenes Chrome- bzw. Edge-Fenster steuert. Die Windows-App startet sie bei Bedarf selbst (es erscheinen ein Konsolenfenster und das REWE-Fenster) und setzt den API-Schlüssel automatisch. Wer sich in diesem REWE-Fenster einmal anmeldet, bleibt dort angemeldet. Details: `rewe-bridge/README.md`.
 - Für jeden Artikel wird das erste lieferbare Suchergebnis genommen und die Menge auf ganze Packungen aufgerundet; nach dem Füllen zeigt die App je Artikel, welches Produkt gewählt wurde und was nicht gefunden wurde. Feste Produkte lassen sich in `rewe-bridge/mappings.json` hinterlegen.
@@ -59,18 +59,18 @@ Die Windows-EXE öffnet die App in einem eigenen Fenster und benötigt Windows 1
 - **Rezeptseite** mit Portionsrechner: Zutatenmengen passen sich an.
 - **Eigene Rezepte** anlegen: Zutaten wie „200 g Mehl“ eintippen, Menge/Einheit werden erkannt; Titelbild optional. Zutaten, deren Name in der Lebensmittelliste steht (wie bei „Mein Vorrat“) und die eine Menge in g, ml oder Stk haben, werden mit Nährwerten verknüpft; die Eingabe zeigt das sofort an.
 - **Eigene Rezepte in Finder und Wochenplan:** Rezepte mit mindestens einer verknüpften Zutat stehen auch im Vorrats-Finder und im Wochenplan zur Verfügung. Mit dem Schalter **„Nur meine eigenen Rezepte verwenden“** (Präferenzen) arbeiten beide ausschließlich mit ihnen. Nicht verknüpfte Zutaten zählen nicht für Nährwerte und Vorrat, landen aber auf der Einkaufsliste; solche Rezepte werden bei aktiver Ernährungsform (vegan, glutenfrei …) vorsichtshalber ausgelassen.
-- **Einkaufsliste** (Schublade rechts, über „Einkaufsliste“ in der Seitenleiste): Rezepte mit Personenzahl sammeln, Zutaten werden zusammengefasst, eigene Artikel ergänzen, abhaken, als Text herunterladen oder mit „Drucken & bestellen“ an „Vorrat & Einkauf“ übergeben.
+- **Eine Einkaufsliste** (eigener Bereich in der Seitenleiste): Sie sammelt alles an einer Stelle – Rezepte aus dem Rezeptbuch („+ Liste“, Personenzahl änderbar), die übernommene Rezept-Auswahl, den übernommenen Wochenplan und eigene Artikel. Gleiche Lebensmittel werden zusammengefasst; jede Zeile zeigt, woher sie kommt. Abhaken, kopieren, als CSV speichern, drucken oder bei REWE in den Warenkorb legen.
 - **Foto-Scan und Linkimport sind Demos** mit festem Beispielrezept – es findet keine Texterkennung und kein Webabruf statt.
 
 ## Funktionen
 1. **Profil** – Ernährungsformen als frei kombinierbare Toggles (vegan, vegetarisch, pescetarisch, glutenfrei, laktosefrei, nussfrei, eifrei, sojafrei, sesamfrei, halal, low carb, high protein), Ausschlüsse (Freitext), max. Zubereitungszeit, max. Schwierigkeit, Personenzahl, Mahlzeiten pro Tag, optionale Körperdaten.
-2. **Vorrat & Rezepte** – drei Modi, jederzeit umschaltbar (im Tab „Vorrat & Einkauf“ und über den Rezepten):
+2. **Vorrat & Rezepte** – drei Modi, jederzeit umschaltbar (im Bereich „Vorrat“ und über den Rezepten):
    - **Ohne Vorrat** – nichts pflegen; Rezepte, Wochenplan und Einkaufslisten enthalten alle Zutaten. Der Tab heißt dann „Rezepte finden“.
    - **Nur abhaken** – antippen, was da ist (ohne Mengen). Abgehaktes gilt als vorhanden und kommt nicht auf die Einkaufsliste.
    - **Mit Mengen** – genau mitzählen mit −/+; „Gekocht“ zieht den Verbrauch ab. Einträge ohne Menge („Menge offen“) zählen als vorhanden.
    Schnell-Eingabe in natürlicher Sprache: „3 Bananen, 500 g Haferflocken, Milch“, „2 Dosen Kichererbsen“, „1 Packung Eier“, „drei Karotten“ (Packungsgrößen und Stückgewichte in `logic.js`, `KA.PACK`/`KA.PIECE`). Mit Vorrat rankt die App Rezepte nach Vorrat-Nutzung, schlägt die *beste Kombination* vor und erstellt die **Einkaufsliste für die Reste**.
 3. **Wochenplan** – 7 Tage, optimiert auf Energie, Makros und 10 Mikronährstoffe (Wochendurchschnitt). Pro Mahlzeit: 🎲 Reroll, ⇄ Swap (Alternativen mit Bewertung), 🔒 Sperren. Ohne Körperdaten wird mit 2.000 kcal-Referenz geplant. Einkaufsliste optional abzüglich Vorrat.
-4. **Einkauf & Bestellung** – Liste abhaken/bearbeiten, kopieren, CSV, drucken, bestellen.
+4. **Einkaufsliste** – die eine Liste der App: abhaken, eigene Artikel ergänzen, kopieren, CSV, drucken, bestellen.
 
 ## Bestell-Schnittstelle (`order.js`)
 Adapter-Modell (`KA.Providers`):

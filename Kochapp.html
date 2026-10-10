@@ -305,27 +305,14 @@ input.flag{background:var(--warm-soft);border-color:var(--warm)} .note{font:500 
 .lk-top{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px}
 @media (max-width:999px){.addtabs,.am-top,.am-two,.scan,.lk-top{grid-template-columns:minmax(0,1fr)} .addtabs{gap:8px} .addcard{padding:20px} .scanimg{height:220px}}
 
-/* ---------- Einkaufsliste des Rezeptbuchs (Schublade) ---------- */
-.scrim{position:fixed;inset:0;background:rgba(20,35,28,.2);z-index:30}
-.drawer{background:var(--card);position:fixed;top:0;right:0;bottom:0;width:380px;max-width:100%;z-index:31;overflow:auto;display:flex;flex-direction:column;box-shadow:-24px 0 60px -24px rgba(20,50,35,.35)}
-.dr-head{padding:30px 24px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line2)}
-.dr-head h2{margin:0;font-size:26px} .dr-head div{display:flex;align-items:center;gap:12px}
-.sq{width:36px;height:36px;border:0;border-radius:10px;background:var(--side);cursor:pointer;font:500 18px/1 var(--body);color:var(--ink)}
-.dr-sec{padding:18px 24px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line2)}
+/* ---------- Einkaufsliste: Quellen (Rezepte, Rezept-Auswahl, Wochenplan) ---------- */
+.srcs{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
 .dr-rec{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:10px;padding:8px 8px 8px 12px}
 .dr-rec .t{flex:1;min-width:0;font:500 14px/1.25 var(--body);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dr-add{padding:16px 24px 6px} .dr-add input{width:100%;font-size:14px}
-.dr-items{padding:6px 24px 24px;display:flex;flex-direction:column;gap:18px;flex:1}
-.dr-items>div{display:flex;flex-direction:column} .dr-items .slabel{padding:10px 0 4px}
-.dr-it{cursor:pointer;display:grid;grid-template-columns:20px 1fr auto auto;gap:12px;align-items:start;padding:9px 0;border-bottom:1px solid var(--line2)}
-.dr-it .box{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--line3);color:transparent;font:700 12px/17px var(--body);text-align:center}
-.dr-it>div{display:flex;flex-direction:column;gap:2px;min-width:0}
-.dr-it .n{font:500 14px/1.3 var(--body)} .dr-it .f{font:400 12px/1.3 var(--body);color:var(--faint)} .dr-it .q{font:600 13px var(--body);white-space:nowrap}
-.dr-it.done .box{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.dr-it.done .n,.dr-it.done .q{color:var(--faint)} .dr-it.done .n{text-decoration:line-through}
-.dr-foot{padding:16px 24px;border-top:1px solid var(--line2);display:flex;flex-wrap:wrap;gap:8px;position:sticky;bottom:0;background:var(--card)}
-.dr-foot .btn{flex:1 1 auto;padding:10px;font-size:13px} .dr-foot .dark{flex-basis:100%}
-@media (max-width:999px){.drawer{width:100%;bottom:74px} .scrim{bottom:74px}}
+.dr-rec .t small{font-weight:400;margin-left:6px} .dr-rec .btn.sm{margin-top:0}
+.slist .nm small{display:block;font:400 12px/1.3 var(--body);color:var(--faint)}
+.slist li.off .nm small{text-decoration:none}
+@media print{.printable .slist .nm small{display:none}}
 
 /* ---------- Dialog & Hinweis ---------- */
 dialog{border:0;border-radius:18px;padding:0;max-width:min(640px,94vw);width:100%;background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.35)}
@@ -341,7 +328,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 @media (max-width:999px){#toast{bottom:96px}}
 
 @media print{
-  .side,.mtop,.tabbar,#overlay,.ph,.noprint,#toast,dialog,.card:not(.printable){display:none!important}
+  .side,.mtop,.tabbar,.ph,.noprint,#toast,dialog,.card:not(.printable){display:none!important}
   /* Einkaufsliste als Zettel zum Abhaken: leere Kästchen, Menge vor Artikel, zwei Spalten, ohne Preise */
   @page{margin:14mm 16mm}
   html,body{background:#fff!important}
@@ -381,7 +368,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   </main>
 </div>
 <nav class="tabbar" id="tabbar" aria-label="Bereiche"></nav>
-<div id="overlay"></div>
 <dialog id="dlg"><div id="dlg-body"></div></dialog>
 <div id="toast" role="status" aria-live="polite"></div>
 <noscript>Diese App benötigt JavaScript.</noscript>
@@ -1718,7 +1704,9 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       macro: { enabled: false, p: 20, c: 50, f: 30 },
       body: { enabled: false, sex: 'm', age: 30, height: 175, weight: 70, activity: 1.6, goal: 'keep' },
     },
-    pantry: {}, pantryMode: 'simple', sel: [], comboN: 3, plan: null, shop: null, subPantry: true,
+    pantry: {}, pantryMode: 'simple', sel: [], comboN: 3, plan: null, subPantry: true,
+    // Einkaufsliste: Rezepte (list) + übernommene Rezept-Auswahl / Wochenplan (blocks) + eigene Artikel (extras); done = abgehakt
+    blocks: { finder: null, plan: null },
     order: { provider: 'rewe', cfg: { rewe: { service: 'DELIVERY' }, rest: { method: 'POST', authHeader: 'Authorization' }, mailto: {}, mock: {} }, customer: { name: '', street: '', zip: '', city: '' } },
   });
   const merge = (a, b) => {
@@ -1735,7 +1723,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   const ui = {
     open: new Set(), nutDay: -1, preview: false, orderResult: null, ordering: false, planError: '', focus: null,
     book: 'library', selId: null, detailServ: 2, filter: 'Alle', query: '', addMode: 'manual', draft: emptyDraft(),
-    scan: null, scanPhase: 'idle', link: { url: '', phase: 'idle' }, listOpen: false,
+    scan: null, scanPhase: 'idle', link: { url: '', phase: 'idle' },
   };
 
   const setPath = (o, path, v) => {
@@ -1931,7 +1919,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     const info = mode === 'off' ? 'Ohne Vorrat – es werden alle Zutaten eingeplant.' : n ? `${n} Lebensmittel ${mode === 'simple' ? 'abgehakt' : 'eingetragen'}` : 'Noch nichts eingetragen';
     return `<section class="card pbar"><div><b>Vorrat</b> <span class="muted">${esc(info)}</span></div>
       <div class="pbar-r"><div class="seg">${PMODES.map(([k, , l]) => `<button class="${mode === k ? 'on' : ''}" data-act="pmode" data-v="${k}">${l}</button>`).join('')}</div>
-      ${mode === 'off' ? '' : '<button class="btn ghost sm" data-act="tab" data-v="shop">Vorrat bearbeiten →</button>'}</div></section>`;
+      ${mode === 'off' ? '' : '<button class="btn ghost sm" data-act="tab" data-v="pantry">Vorrat bearbeiten →</button>'}</div></section>`;
   }
 
   function quickAdd() {
@@ -2025,7 +2013,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       sel.length
         ? `<p class="muted">Für ${sel.length} ausgewählte${sel.length > 1 ? '' : 's'} Gericht${sel.length > 1 ? 'e' : ''}: ${sel.map((id) => esc(REC[id].name)).join(' · ')}</p>${listHTML(list)}
            <div class="total">Geschätzt: <b>${KA.fmtEUR(listTotal(list))}</b></div>
-           <div class="btnrow"><button class="btn" data-act="tofinderlist">Zur Einkaufsliste & Bestellung →</button><button class="btn ghost" data-act="clearsel">Auswahl leeren</button></div>`
+           <div class="btnrow"><button class="btn" data-act="tofinderlist">Auf die Einkaufsliste →</button><button class="btn ghost" data-act="clearsel">Auswahl leeren</button></div>`
         : `<p class="muted">${empty}</p>`}</section>`;
   }
 
@@ -2064,7 +2052,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       }
     } else {
       out = `<section class="card"><h2>Rezepte</h2><p class="muted">${mode === 'simple' ? 'Hake zuerst ab, was du da hast' : 'Trage zuerst deinen Vorrat ein'} – die App schlägt dann Rezepte vor, die möglichst viel davon verwenden, und erstellt eine Einkaufsliste für den Rest. Oder nutze die App ganz ohne Vorrat.</p>
-        <div class="btnrow"><button class="btn" data-act="tab" data-v="shop">Zum Vorrat →</button><button class="btn ghost" data-act="pmode" data-v="off">Ohne Vorrat weiter</button></div></section>`;
+        <div class="btnrow"><button class="btn" data-act="tab" data-v="pantry">Zum Vorrat →</button><button class="btn ghost" data-act="pmode" data-v="off">Ohne Vorrat weiter</button></div></section>`;
     }
     return pageHead('Rezepte aus Vorrat', 'Verwerte, was du da hast – der Rest kommt auf die Einkaufsliste.') + pantryBar() + prefsCard() + out;
   }
@@ -2131,7 +2119,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       body += `<section class="card"><h2>Einkaufsliste zum Plan</h2>
         ${pMode() === 'off' ? '<p class="muted sm">Ohne Vorrat: Alle Zutaten kommen auf die Liste.</p>' : `<label class="switch"><input type="checkbox" data-bind="subPantry" ${S.subPantry ? 'checked' : ''}><span>${pMode() === 'simple' ? 'Abgehakte Lebensmittel aus „Mein Vorrat“ weglassen' : 'Vorhandene Mengen aus „Mein Vorrat“ abziehen'} (${pIds().length} Artikel)</span></label>`}
         <p class="muted sm">Mengen für ${p.persons} Person${p.persons > 1 ? 'en' : ''} (siehe Profil).</p>
-        <button class="btn" data-act="toplanlist">Einkaufsliste erstellen →</button></section>`;
+        <button class="btn" data-act="toplanlist">${S.blocks.plan ? 'Auf der Einkaufsliste aktualisieren →' : 'Auf die Einkaufsliste →'}</button></section>`;
       void slots;
     }
     return pageHead('Wochenplan', 'Sieben Tage, abgestimmt auf Präferenzen und Nährstoffbedarf.') + prefsCard() + planSettings() + body;
@@ -2151,7 +2139,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     const c = o.customer;
     const cf = [['name', 'Name'], ['street', 'Straße & Nr.'], ['zip', 'PLZ'], ['city', 'Ort']].map(([k, l]) =>
       `<label>${l}<input value="${esc(c[k])}" data-bind="order.customer.${k}"></label>`).join('');
-    const items = S.shop.items;
+    const items = cartItems();
     const prev = ui.preview ? `<pre class="json">${esc(JSON.stringify(prov.preview(items, cfg, c), null, 2))}</pre>` : '';
     const r = ui.orderResult;
     const res = r ? `<div class="card ${r.ok ? 'okbox' : 'err'}">${esc(r.message)}${r.lines && r.lines.length
@@ -2180,22 +2168,72 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
 
   const resetCard = () => '<div class="btnrow"><button class="btn ghost" data-act="reset">Alle gespeicherten Daten zurücksetzen</button></div>';
 
-  function viewShop() {
-    const hasPlan = !!S.plan;
-    const hasSel = S.sel.length > 0 && (pMode() === 'off' || Object.keys(pantryEff()).length > 0);
-    const sh = S.shop;
-    let out = pageHead('Vorrat & Einkauf', 'Vorrat pflegen, Einkaufsliste drucken oder bestellen.') + pantryCard() + `<section class="card"><h2>Einkaufsliste erzeugen aus …</h2><div class="btnrow">
-      <button class="btn ghost" data-act="tofinderlist" ${hasSel ? '' : 'disabled'}>Rezept-Auswahl${pMode() === 'off' ? '' : ' (Reste)'}</button>
-      <button class="btn ghost" data-act="toplanlist" ${hasPlan ? '' : 'disabled'}>Wochenplan</button>
-      <button class="btn ghost" data-act="listtoshop" ${S.list.length || S.extras.length ? '' : 'disabled'}>Rezeptbuch-Liste</button></div></section>`;
-    if (!sh) return out + `<section class="card"><p class="muted">Noch keine Einkaufsliste. Erstelle sie im Tab „${pMode() === 'off' ? 'Rezepte finden' : 'Rezepte aus Vorrat'}“ oder „Wochenplan“.</p></section>` + resetCard();
-    const total = listTotal(sh.items);
-    out += `<section class="card printable"><div class="lh"><h2>Einkaufsliste <span class="opt">${esc(sh.source)}</span></h2><span class="muted sm">${new Date(sh.created).toLocaleString('de-DE')}</span></div>
-      <div class="plist">${listHTML(sh.items, { editable: true })}</div>
-      <div class="total">Geschätzt (${sh.items.filter((i) => i.checked !== false).length} Artikel): <b>${KA.fmtEUR(total)}</b> <span class="muted sm">· Preise sind grobe Richtwerte</span></div>
-      <div class="btnrow noprint"><button class="btn ghost" data-act="copy">Kopieren</button><button class="btn ghost" data-act="csv">CSV</button><button class="btn ghost" data-act="print">Drucken</button></div></section>`;
-    return out + (sh.items.length ? orderPanel() : '') + resetCard();
+  // Die eine Einkaufsliste der App. Sie setzt sich zusammen aus den Rezepten, die über „+ Liste“ gewählt wurden
+  // (S.list, Portionen änderbar), der übernommenen Rezept-Auswahl und dem übernommenen Wochenplan (S.blocks,
+  // jeweils ein Stand zum Zeitpunkt der Übernahme, Vorrat schon abgezogen) sowie eigenen Artikeln (S.extras).
+  // Gleiche Lebensmittel werden zusammengefasst. checked = noch zu kaufen (nicht abgehakt).
+  function cartItems() {
+    const map = {};
+    const put = (id, name, unit, cat, qty, from, extra) => {
+      const key = extra ? 'e|' + KA.norm(name) : id ? 'i|' + id : 'x|' + KA.norm(name) + '|' + (unit || '');
+      const a = map[key] || (map[key] = { key, id: id || null, name: id ? ING[id].name : name, unit: id ? ING[id].unit : unit || '', cat: id ? ING[id].cat : cat || 'SO', qty: 0, from: [], extra: !!extra });
+      if (qty) a.qty += qty;
+      [].concat(from || []).forEach((f) => { if (!a.from.includes(f)) a.from.push(f); });
+    };
+    bookAgg().forEach((a) => put(a.id, a.name, a.unit, a.cat, a.qty, a.from, a.extra));
+    [['finder', 'Rezept-Auswahl'], ['plan', 'Wochenplan']].forEach(([k, label]) => {
+      const b = S.blocks[k];
+      if (b) b.items.forEach((i) => put(i.id && ING[i.id] ? i.id : null, i.name, i.unit, i.cat, i.amount, label));
+    });
+    const order = Object.keys(CATS);
+    return Object.values(map).map((a) => {
+      const amount = a.id ? KA.buyAmount(a.id, a.qty) : a.qty ? Math.round(a.qty * 100) / 100 : null;
+      return { key: a.key, id: a.id, name: a.name, cat: a.cat, unit: a.unit, amount, price: a.id ? KA.price(a.id, amount) : 0,
+        label: a.id ? '' : a.qty ? fmtQ(a.qty, a.unit) : '', from: a.from, extra: a.extra, checked: !S.done[a.key] };
+    }).filter((i) => !i.id || i.amount > 0)
+      .sort((a, b) => order.indexOf(a.cat) - order.indexOf(b.cat) || a.name.localeCompare(b.name, 'de'));
   }
+  const cartOpen = () => cartItems().filter((i) => i.checked);
+
+  function cartHTML(items) {
+    let html = '', cat = null;
+    items.forEach((it) => {
+      if (it.cat !== cat) { if (cat) html += '</ul>'; cat = it.cat; html += `<h4 class="cat">${esc(CATS[cat])}</h4><ul class="slist">`; }
+      html += `<li class="${it.checked ? '' : 'off'}">
+        <label class="chk" title="Abhaken, wenn erledigt"><input type="checkbox" data-act="listchk" data-k="${esc(it.key)}" ${it.checked ? '' : 'checked'}><span></span></label>
+        <span class="nm">${esc(it.name)}<small>${esc(it.from.join(', '))}</small></span><span class="am">${it.id ? KA.fmtAmount(it.id, it.amount) : esc(it.label)}</span>
+        <span class="pr">${it.id ? KA.fmtEUR(it.price) : ''}</span>
+        ${it.extra ? `<button class="x" data-act="extradel" data-n="${esc(it.name)}" title="Entfernen">✕</button>` : '<span class="x"></span>'}</li>`;
+    });
+    return html + (cat ? '</ul>' : '');
+  }
+
+  function viewShop() {
+    const items = cartItems(), open = items.filter((i) => i.checked);
+    const b = S.blocks;
+    const when = (t) => new Date(t).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const block = (k, title, act) => (b[k] ? `<div class="dr-rec"><span class="t">${title} <small class="muted">Stand ${when(b[k].created)}</small></span>
+      <button class="btn ghost sm" data-act="${act}">Aktualisieren</button><button class="x" data-act="blockdel" data-v="${k}" title="Von der Liste nehmen">×</button></div>` : '');
+    const hasSel = S.sel.some((id) => REC[id]);
+    const sources = `<section class="card noprint"><h2>Woraus die Liste besteht</h2>
+      <div class="srcs">${S.list.map((l) => `<div class="dr-rec"><span class="t">${esc(bookRecipe(l.id).title)}</span>
+          <div class="step sm"><button data-act="listserv" data-id="${esc(l.id)}" data-d="-1" aria-label="Weniger">−</button><span>${l.serv} Pers.</span><button data-act="listserv" data-id="${esc(l.id)}" data-d="1" aria-label="Mehr">+</button></div>
+          <button class="x" data-act="listdel" data-id="${esc(l.id)}" title="Von der Liste nehmen">×</button></div>`).join('')}
+        ${block('finder', 'Rezept-Auswahl' + (b.finder && b.finder.names ? ': ' + esc(b.finder.names.join(', ')) : ''), 'tofinderlist')}${block('plan', 'Wochenplan', 'toplanlist')}</div>
+      ${S.list.length || b.finder || b.plan ? '' : '<p class="muted">Noch keine Rezepte. Füge welche im Rezeptbuch über „+ Liste“ hinzu, übernimm eine Rezept-Auswahl oder den Wochenplan.</p>'}
+      <div class="addrow"><input id="extra-in" placeholder="Eigenen Artikel hinzufügen, z. B. Küchenrolle" autocomplete="off"><button class="btn ghost" data-act="addextra">Hinzufügen</button></div>
+      <div class="btnrow">${S.plan && !b.plan ? '<button class="btn ghost" data-act="toplanlist">Wochenplan übernehmen</button>' : ''}
+        ${hasSel && !b.finder ? '<button class="btn ghost" data-act="tofinderlist">Rezept-Auswahl übernehmen</button>' : ''}</div></section>`;
+    if (!items.length) return pageHead('Einkaufsliste', 'Alles, was du einkaufen willst – an einer Stelle.') + sources;
+    const list = `<section class="card printable"><div class="lh"><h2>Einkaufsliste</h2><span class="muted sm">${new Date().toLocaleDateString('de-DE')}</span></div>
+      <div class="plist">${cartHTML(items)}</div>
+      <div class="total">Geschätzt (${open.length} Artikel offen): <b>${KA.fmtEUR(listTotal(items))}</b> <span class="muted sm">· Preise sind grobe Richtwerte</span></div>
+      <div class="btnrow noprint"><button class="btn ghost" data-act="copy">Kopieren</button><button class="btn ghost" data-act="csv">CSV</button><button class="btn ghost" data-act="print">Drucken</button>
+        ${items.length > open.length ? '<button class="btn ghost" data-act="listreset">Häkchen zurücksetzen</button>' : ''}</div></section>`;
+    return pageHead('Einkaufsliste', `${open.length} von ${items.length} Artikeln offen – abhaken, drucken oder bei REWE in den Warenkorb legen.`) + sources + list + (open.length ? orderPanel() : '');
+  }
+
+  const viewPantry = () => pageHead('Vorrat', 'Was du zu Hause hast – wird bei Rezeptvorschlägen und Einkaufslisten berücksichtigt.') + pantryCard() + resetCard();
 
   /* ---------- Rezeptbuch: Bibliothek, Detail, eigene Rezepte ---------- */
   const pageHead = (title, sub, extra) => `<div class="ph"><div><h1>${esc(title)}</h1><p>${esc(sub)}</p></div>${extra || ''}</div>`;
@@ -2553,63 +2591,30 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     });
     return Object.values(agg);
   }
-  const aggQty = (a) => (!a.qty ? '' : a.id ? KA.fmtAmount(a.id, a.qty) : fmtQ(a.qty, a.unit));
-  const aggGroups = (items) => Object.keys(CATS).map((c) => [c, items.filter((a) => a.cat === c)
-    .sort((a, b) => !!S.done[a.key] - !!S.done[b.key] || a.name.localeCompare(b.name, 'de'))]).filter((g) => g[1].length);
-
-  function drawer() {
-    if (!ui.listOpen) return '';
-    const items = bookAgg();
-    const open = items.filter((a) => !S.done[a.key]).length;
-    return `<div class="scrim" data-act="closelist"></div>
-    <aside class="drawer" role="dialog" aria-modal="true" aria-label="Einkaufsliste">
-      <div class="dr-head"><h2>Einkaufsliste</h2><div><span class="muted sm">${open} von ${items.length} offen</span><button class="sq" data-act="closelist" aria-label="Schließen">×</button></div></div>
-      <div class="dr-sec"><span class="slabel">Für diese Rezepte</span>
-        ${S.list.length ? '' : '<span class="muted sm">Noch keine Rezepte. Füge eins über „+ Liste“ hinzu.</span>'}
-        ${S.list.map((l) => `<div class="dr-rec"><span class="t">${esc(bookRecipe(l.id).title)}</span>
-          <div class="step sm"><button data-act="listserv" data-id="${esc(l.id)}" data-d="-1" aria-label="Weniger">−</button><span>${l.serv} Pers.</span><button data-act="listserv" data-id="${esc(l.id)}" data-d="1" aria-label="Mehr">+</button></div>
-          <button class="x" data-act="listdel" data-id="${esc(l.id)}" title="Von der Liste nehmen">×</button></div>`).join('')}</div>
-      <div class="dr-add"><input id="extra-in" placeholder="+ Artikel hinzufügen" autocomplete="off"></div>
-      <div class="dr-items">${aggGroups(items).map(([c, list]) => `<div><span class="slabel">${esc(CATS[c])}</span>
-        ${list.map((a) => `<div class="dr-it ${S.done[a.key] ? 'done' : ''}" data-act="listchk" data-k="${esc(a.key)}"><span class="box">✓</span>
-          <div><span class="n">${esc(a.name)}</span><span class="f">${esc(a.from.join(', '))}</span></div><span class="q">${esc(aggQty(a))}</span>
-          ${a.extra ? `<button class="x" data-act="extradel" data-n="${esc(a.name)}" title="Entfernen">×</button>` : ''}</div>`).join('')}</div>`).join('')}</div>
-      <div class="dr-foot"><button class="btn ghost" data-act="listreset">Häkchen zurücksetzen</button><button class="btn ghost" data-act="listdl">Herunterladen</button>
-        <button class="btn ghost" data-act="listtoshop" ${items.length ? '' : 'disabled'}>Drucken & mehr →</button>
-        <button class="btn dark" data-act="listtorewe" ${items.length ? '' : 'disabled'}>Bei REWE bestellen →</button></div>
-    </aside>`;
-  }
 
   /* ---------- Render ---------- */
-  const TABS = [['book', 'Rezeptbuch', 'Rezepte'], ['finder', 'Rezepte aus Vorrat', 'Vorrat'], ['plan', 'Wochenplan', 'Plan'], ['shop', 'Vorrat & Einkauf', 'Einkauf']];
+  const TABS = [['book', 'Rezeptbuch', 'Rezepte'], ['finder', 'Rezepte aus Vorrat', 'Finden'], ['plan', 'Wochenplan', 'Plan'], ['pantry', 'Vorrat', 'Vorrat'], ['shop', 'Einkaufsliste', 'Liste']];
   function chrome() {
-    const open = bookAgg().filter((a) => !S.done[a.key]).length;
+    const open = cartOpen().length;
     const book = allBook();
-    const count = { book: book.length, shop: S.shop ? S.shop.items.length : '' };
+    const count = { book: book.length, pantry: pMode() === 'off' ? '' : pIds().length, shop: open };
     const inLib = S.tab === 'book' && ui.book === 'library';
     TABS[1][1] = pMode() === 'off' ? 'Rezepte finden' : 'Rezepte aus Vorrat';
-    TABS[1][2] = pMode() === 'off' ? 'Finden' : 'Vorrat';
     $('#side').innerHTML = `<div class="brand"><b>Kochapp</b><span>Rezepte · Vorrat · Wochenplan</span></div>
       <button class="newbtn" data-act="bookadd"><span>+</span>Neues Rezept</button>
-      <nav class="snav">${TABS.map(([k, l]) => `<button class="${S.tab === k ? 'on' : ''}" data-act="tab" data-v="${k}"><span>${l}</span><i>${count[k] == null ? '' : count[k]}</i></button>`).join('')}
-        <button class="${ui.listOpen ? 'on' : ''}" data-act="openlist"><span>Einkaufsliste</span><i>${open}</i></button></nav>
+      <nav class="snav">${TABS.map(([k, l]) => `<button class="${S.tab === k ? 'on' : ''}" data-act="tab" data-v="${k}"><span>${l}</span><i>${count[k] == null ? '' : count[k]}</i></button>`).join('')}</nav>
       <div class="snav"><div class="slabel">Sammlungen</div>${BOOK_CATS.concat(['Eigene']).map((c) =>
         `<button class="${inLib && ui.filter === c ? 'on' : ''}" data-act="bookfilter" data-v="${c}"><span>${c}</span><i>${book.filter((r) => (c === 'Eigene' ? !r.builtin : r.cat === c)).length}</i></button>`).join('')}</div>`;
     $('#mtop').innerHTML = '<b>Kochapp</b><button data-act="bookadd" aria-label="Neues Rezept">+</button>';
-    $('#tabbar').innerHTML = TABS.map(([k, , l]) => `<button class="${S.tab === k && !ui.listOpen ? 'on' : ''}" data-act="tab" data-v="${k}">${l}</button>`).join('') +
-      `<button class="${ui.listOpen ? 'on' : ''}" data-act="openlist">Liste<i>${open || ''}</i></button>`;
+    $('#tabbar').innerHTML = TABS.map(([k, , l]) => `<button class="${S.tab === k ? 'on' : ''}" data-act="tab" data-v="${k}">${l}${k === 'shop' ? `<i>${open || ''}</i>` : ''}</button>`).join('');
   }
   function render() {
     syncRecipes();
     const y = window.scrollY;
-    const old = $('.drawer');
-    const dy = old ? old.scrollTop : 0;
     // angefangene Eingaben über den Neuaufbau retten
     const keep = ['d-ing', 'd-step', 'extra-in', 'p-quick'].map((id) => [id, $('#' + id) ? $('#' + id).value : '']);
-    $('#view').innerHTML = { book: viewBook, finder: viewFinder, plan: viewPlan, shop: viewShop }[S.tab]();
+    $('#view').innerHTML = { book: viewBook, finder: viewFinder, plan: viewPlan, pantry: viewPantry, shop: viewShop }[S.tab]();
     chrome();
-    $('#overlay').innerHTML = drawer();
-    if ($('.drawer')) $('.drawer').scrollTop = dy;
     keep.forEach(([id, v]) => { if (v && $('#' + id)) $('#' + id).value = v; });
     if ($('#d-ing')) $('#d-prev').innerHTML = previewHTML($('#d-ing').value);
     if ($('#p-quick')) $('#p-prev').innerHTML = quickPreview($('#p-quick').value);
@@ -2667,12 +2672,12 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   }
 
   const A = {
-    tab: (el) => { S.tab = el.dataset.v; ui.book = 'library'; ui.listOpen = false; update(); window.scrollTo(0, 0); },
+    tab: (el) => { S.tab = el.dataset.v; ui.book = 'library'; update(); window.scrollTo(0, 0); },
 
     /* Rezeptbuch */
     booklib: () => { S.tab = 'book'; ui.book = 'library'; ui.filter = 'Alle'; update(); window.scrollTo(0, 0); },
     bookfilter: (el) => { S.tab = 'book'; ui.book = 'library'; ui.filter = el.dataset.v; update(); },
-    bookadd: () => { S.tab = 'book'; ui.book = 'add'; ui.listOpen = false; update(); window.scrollTo(0, 0); },
+    bookadd: () => { S.tab = 'book'; ui.book = 'add'; update(); window.scrollTo(0, 0); },
     openrec: (el) => openRecipe(el.dataset.id),
     addlist: (el) => {
       const r = bookRecipe(el.dataset.id);
@@ -2730,9 +2735,8 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     linkreset: () => { clearTimeout(demoTimer); ui.link = { url: '', phase: 'idle' }; render(); },
     linksave: () => { ui.link = { url: '', phase: 'idle' }; saveRecipe(JSON.parse(JSON.stringify(LINK))); },
 
-    /* Einkaufsliste des Rezeptbuchs */
-    openlist: () => { ui.listOpen = true; render(); },
-    closelist: () => { ui.listOpen = false; render(); },
+    /* Einkaufsliste */
+    blockdel: (el) => { S.blocks[el.dataset.v] = null; update(); },
     listserv: (el) => { const l = S.list.find((x) => x.id === el.dataset.id); l.serv = Math.max(1, Math.min(30, l.serv + Number(el.dataset.d))); update(); },
     listdel: (el) => { S.list = S.list.filter((x) => x.id !== el.dataset.id); update(); },
     listchk: (el) => { const k = el.dataset.k; if (S.done[k]) delete S.done[k]; else S.done[k] = true; update(); },
@@ -2744,27 +2748,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     },
     extradel: (el) => { S.extras = S.extras.filter((x) => x !== el.dataset.n); delete S.done['e|' + KA.norm(el.dataset.n)]; update(); },
     listreset: () => { S.done = {}; update(); },
-    listdl: () => {
-      const text = aggGroups(bookAgg()).map(([c, list]) => CATS[c] + '\n' + list.map((a) => `[${S.done[a.key] ? 'x' : ' '}] ${(aggQty(a) + ' ' + a.name).trim()}`).join('\n')).join('\n\n');
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
-      a.download = 'Einkaufsliste.txt'; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    },
-    // Übernimmt die Rezeptbuch-Liste in „Vorrat & Einkauf“ (Drucken, CSV, Bestellen); Abgehaktes bleibt abgewählt
-    listtoshop: () => {
-      const order = Object.keys(CATS);
-      const items = bookAgg().map((a) => {
-        const checked = !S.done[a.key];
-        if (!a.id) return { id: null, name: a.name, cat: 'SO', amount: a.qty ? Math.round(a.qty * 100) / 100 : null, unit: a.unit, label: aggQty(a), price: 0, checked };
-        const amount = KA.buyAmount(a.id, a.qty);
-        return { id: a.id, name: a.name, cat: a.cat, amount, unit: a.unit, price: KA.price(a.id, amount), checked };
-      }).filter((i) => !i.id || i.amount > 0)
-        .sort((a, b) => order.indexOf(a.cat) - order.indexOf(b.cat) || a.name.localeCompare(b.name, 'de'));
-      if (!items.length) { toast('Die Einkaufsliste ist leer.'); return; }
-      S.shop = { source: 'Rezeptbuch', items, created: Date.now() };
-      ui.orderResult = null; ui.listOpen = false; S.tab = 'shop'; update(); window.scrollTo(0, 0);
-    },
 
     setTime: (el) => { S.prefs.maxTime = Number(el.dataset.v); update(); },
     setDiff: (el) => { S.prefs.maxDiff = Number(el.dataset.v); update(); },
@@ -2822,14 +2805,18 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       S.sel = S.sel.filter((x) => x !== el.dataset.id);
       update(); toast('Vorrat aktualisiert');
     },
+    // Rezept-Auswahl bzw. Wochenplan auf die Einkaufsliste übernehmen (ersetzt den vorher übernommenen Stand)
     tofinderlist: () => {
-      S.shop = { source: pMode() === 'off' ? 'Rezept-Auswahl' : 'Rezepte (Reste zum Vorrat)', items: finderList(S.sel.filter((id) => REC[id]), pantryEff()), created: Date.now() };
+      const sel = S.sel.filter((id) => REC[id]);
+      if (!sel.length) { toast('Keine Rezepte ausgewählt.'); return; }
+      S.blocks.finder = { items: finderList(sel, pantryEff()), names: sel.map((id) => REC[id].name), created: Date.now() };
       ui.orderResult = null; S.tab = 'shop'; update(); window.scrollTo(0, 0);
     },
     setMacro: (el) => { const v = MACRO_PRESETS[el.dataset.v]; Object.assign(S.prefs.macro, { enabled: true, p: v[1], c: v[2], f: v[3] }); update(); },
     genplan: () => { genPlan(); update(); },
     toplanlist: () => {
-      S.shop = { source: 'Wochenplan', items: planList(), created: Date.now() };
+      if (!S.plan) { toast('Es gibt noch keinen Wochenplan.'); return; }
+      S.blocks.plan = { items: planList(), created: Date.now() };
       ui.orderResult = null; S.tab = 'shop'; update(); window.scrollTo(0, 0);
     },
     nutday: (el) => { ui.nutDay = Number(el.dataset.v); render(); },
@@ -2849,12 +2836,10 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     },
     view: (el) => openDlg(recipeDialog(el.dataset.id, Number(el.dataset.f) || 1)),
     closedlg: closeDlg,
-    chk: (el) => { S.shop.items[Number(el.dataset.i)].checked = el.checked; update(); },
-    delitem: (el) => { S.shop.items.splice(Number(el.dataset.i), 1); update(); },
-    copy: async () => { toast((await copyText(KA.listToText(S.shop.items, null))) ? 'Liste kopiert' : 'Kopieren nicht möglich'); },
+    copy: async () => { toast((await copyText(KA.listToText(cartOpen(), null))) ? 'Liste kopiert' : 'Kopieren nicht möglich'); },
     csv: () => {
       const rows = [['Kategorie', 'Artikel', 'Menge', 'Einheit', 'Preis (EUR)']].concat(
-        S.shop.items.filter((i) => i.checked !== false).map((i) => [CATS[i.cat], i.name, i.amount == null ? '' : String(i.amount).replace('.', ','), i.unit, i.price.toFixed(2).replace('.', ',')]));
+        cartOpen().map((i) => [CATS[i.cat], i.name, i.amount == null ? '' : String(i.amount).replace('.', ','), i.unit, i.price.toFixed(2).replace('.', ',')]));
       const csv = '﻿' + rows.map((r) => r.map((c) => '"' + String(c).replace(/"/g, '""') + '"').join(';')).join('\r\n');
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
@@ -2865,8 +2850,8 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
     order: () => {
       const o = S.order;
       const prov = KA.Providers[o.provider];
-      const items = S.shop.items.filter((i) => i.checked !== false);
-      if (!items.length) { toast('Keine Artikel ausgewählt.'); return; }
+      const items = cartOpen();
+      if (!items.length) { toast('Auf der Einkaufsliste ist nichts mehr offen.'); return; }
       if (ui.ordering) return;
       if (prov.needsZip) { // REWE: erst die Postleitzahl abfragen
         openDlg(zipDialog(items.length));
@@ -2882,14 +2867,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
       Object.assign((S.order.cfg.rewe = S.order.cfg.rewe || {}), { zip, service });
       save(); closeDlg();
       runOrder({ zip, service });
-    },
-    // Einkaufsliste des Rezeptbuchs direkt an REWE übergeben
-    listtorewe: () => {
-      A.listtoshop();
-      if (S.tab !== 'shop' || !S.shop) return;
-      S.order.provider = 'rewe'; ui.preview = false;
-      update();
-      A.order();
     },
   };
 
@@ -2909,7 +2886,7 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   // Übergibt die ausgewählten Artikel an den gewählten Anbieter; ctx nur bei REWE ({ zip, service })
   async function runOrder(ctx) {
     const o = S.order, prov = KA.Providers[o.provider];
-    const items = S.shop.items.filter((i) => i.checked !== false);
+    const items = cartOpen();
     ui.ordering = true; ui.orderResult = null; ui.orderProgress = ''; render();
     if (ctx) ctx.onProgress = (t) => { ui.orderProgress = t; const el = $('#order-progress'); if (el) el.textContent = t; };
     try { ui.orderResult = await prov.submit(items, o.cfg[o.provider] || {}, o.customer, ctx); } catch (e) { ui.orderResult = { ok: false, message: e.message }; }
@@ -2972,7 +2949,6 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   });
   document.addEventListener('keydown', (e) => {
     const t = e.target;
-    if (e.key === 'Escape' && ui.listOpen && !$('#dlg').open) { A.closelist(); return; }
     if ((e.key === 'Enter' || e.key === ' ') && t.classList.contains('bcard')) { e.preventDefault(); openRecipe(t.dataset.id); return; }
     if (e.key !== 'Enter') return;
     if (t.id === 'd-ing' && t.value.trim()) { ui.draft.ings.push(parseLine(t.value)); t.value = ''; ui.focus = 'd-ing'; render(); return; }
@@ -2991,7 +2967,15 @@ dialog::backdrop{background:rgba(20,35,28,.35)}
   }, true);
   $('#dlg').addEventListener('click', (e) => { if (e.target.id === 'dlg') closeDlg(); });
 
-  if (!['book', 'finder', 'plan', 'shop'].includes(S.tab)) S.tab = 'book';
+  if (!['book', 'finder', 'plan', 'pantry', 'shop'].includes(S.tab)) S.tab = 'book';
+  // ältere Versionen hatten eine zweite, getrennte Einkaufsliste (S.shop) – in die eine Liste übernehmen
+  if (!S.blocks || typeof S.blocks !== 'object') S.blocks = { finder: null, plan: null };
+  if (S.shop && Array.isArray(S.shop.items)) {
+    const items = S.shop.items.filter((i) => i && i.checked !== false);
+    if (S.shop.source === 'Wochenplan') S.blocks.plan = S.blocks.plan || { items, created: S.shop.created || Date.now() };
+    else if (S.shop.source !== 'Rezeptbuch') S.blocks.finder = S.blocks.finder || { items, created: S.shop.created || Date.now() };
+  }
+  delete S.shop;
   S.list = S.list.filter((l) => bookRecipe(l.id));
   // einmalig: REWE als Anbieter voreinstellen, auch wenn aus einer älteren Version noch der Demo-Shop gespeichert ist
   if (!S.order.reweDefault) { S.order.provider = 'rewe'; S.order.reweDefault = true; }
