@@ -1,4 +1,4 @@
-﻿# Baut die Kochapp aus dem aktuellen main und veröffentlicht sie als GitHub-Release (Kochapp-Windows.zip).
+﻿# Baut dAIlykitchen aus dem aktuellen main und veröffentlicht es als GitHub-Release (dAIlykitchen-Windows.zip).
 # Die EXE liegt nicht im Repository; der Download-Link in der README zeigt immer auf das neueste Release.
 #   powershell -ExecutionPolicy Bypass -File desktop\release.ps1              (Version = Datum und Uhrzeit)
 #   powershell -ExecutionPolicy Bypass -File desktop\release.ps1 -Tag v1.2.0  (eigene Versionsnummer)
@@ -26,19 +26,19 @@ if ((git rev-parse HEAD) -ne (git rev-parse origin/main)) { throw 'Lokales main 
 if ($LASTEXITCODE -ne 0) { throw 'Build fehlgeschlagen' }
 
 # EXE und die drei WebView2-Bibliotheken zusammen als ZIP – der Dateiname bleibt gleich, damit der Link
-# .../releases/latest/download/Kochapp-Windows.zip immer die neueste Version liefert
-$zip = Join-Path $app 'dist\Kochapp-Windows.zip'
+# .../releases/latest/download/dAIlykitchen-Windows.zip immer die neueste Version liefert
+$zip = Join-Path $app 'dist\dAIlykitchen-Windows.zip'
 if (Test-Path $zip) { [IO.File]::Delete($zip) }
 # nur die ausgelieferten Dateien packen – nicht rewe-bridge\.data (Browserprofil und API-Schlüssel eines lokalen Testlaufs)
 $stage = Join-Path ([IO.Path]::GetTempPath()) ('kochapp-release-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force "$stage\rewe-bridge" | Out-Null
-Copy-Item "$app\dist\Kochapp.exe", "$app\dist\*.dll" $stage
+Copy-Item "$app\dist\dAIlykitchen.exe", "$app\dist\*.dll" $stage
 Get-ChildItem "$app\dist\rewe-bridge" -File | Copy-Item -Destination "$stage\rewe-bridge"
 Compress-Archive -Path "$stage\*" -DestinationPath $zip
 [IO.Directory]::Delete($stage, $true)
 
 $commit = git rev-parse HEAD
-if (-not $Notes) { $Notes = "Kochapp für Windows 10/11, keine Installation nötig.`n`n1. Kochapp-Windows.zip herunterladen`n2. Rechtsklick > Alle extrahieren`n3. Im entpackten Ordner Kochapp.exe starten (die drei DLL-Dateien müssen daneben liegen bleiben)`n`nGebaut aus Commit $commit." }
-gh release create $Tag $zip --target $commit --title "Kochapp $Tag" --notes $Notes --latest
+if (-not $Notes) { $Notes = "dAIlykitchen für Windows 10/11, keine Installation nötig.`n`n1. dAIlykitchen-Windows.zip herunterladen`n2. Rechtsklick > Alle extrahieren`n3. Im entpackten Ordner dAIlykitchen.exe starten (die drei DLL-Dateien müssen daneben liegen bleiben)`n`nGebaut aus Commit $commit." }
+gh release create $Tag $zip --target $commit --title "dAIlykitchen $Tag" --notes $Notes --latest
 if ($LASTEXITCODE -ne 0) { throw 'Release konnte nicht angelegt werden' }
 Write-Output "Veröffentlicht: $Tag"

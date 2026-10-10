@@ -1,4 +1,4 @@
-/* Kochapp – Oberfläche */
+/* dAIlykitchen – Oberfläche */
 (function () {
   'use strict';
   const KA = window.KA;
@@ -667,7 +667,7 @@
     if (bookMap) return bookMap;
     bookMap = {};
     KA.BOOK.forEach((b) => {
-      bookMap[b.id] = { id: b.id, title: b.title, cat: b.cat, cuisine: b.cuisine, diff: b.diff, time: b.time, serv: b.serv, source: 'Kochapp', builtin: true,
+      bookMap[b.id] = { id: b.id, title: b.title, cat: b.cat, cuisine: b.cuisine, diff: b.diff, time: b.time, serv: b.serv, source: 'dAIlykitchen', builtin: true,
         tone: hash(b.id) % TONES.length, image: KA.dishImage(b.img, b.id), ings: b.ings.map((t) => linkIng(parseLine(t))), steps: b.steps };
     });
     return bookMap;
@@ -679,7 +679,7 @@
     const meta = KA.BUILTIN_META[id] || {};
     const cat = meta.cat || builtinCat(r);
     return {
-      id, title: r.name, cat, cuisine: r.k, time: r.time, serv: r.s, source: 'Kochapp', builtin: true,
+      id, title: r.name, cat, cuisine: r.k, time: r.time, serv: r.s, source: 'dAIlykitchen', builtin: true,
       tone: hash(id) % TONES.length, image: KA.dishImage(meta.img || CAT_IMG[cat], id),
       ings: r.i.map(([iid, a]) => ({ id: iid, qty: a, base: a, unit: ING[iid].unit, name: ING[iid].name, std: true })), steps: r.st,
     };
@@ -1135,12 +1135,12 @@
     const count = { book: book.length, pantry: pMode() === 'off' ? '' : pIds().length, shop: open };
     const inLib = S.tab === 'book' && ui.book === 'library';
     TABS[1][1] = pMode() === 'off' ? 'Rezepte finden' : 'Rezepte aus Vorrat';
-    $('#side').innerHTML = `<div class="brand"><b>Kochapp</b><span>Rezepte · Vorrat · Wochenplan</span></div>
+    $('#side').innerHTML = `<div class="brand"><b aria-label="dAIlykitchen">d<span class="ai">AI</span>lykitchen</b><span>Rezepte · Vorrat · Wochenplan</span></div>
       <button class="newbtn" data-act="bookadd"><span>+</span>Neues Rezept</button>
       <nav class="snav">${TABS.map(([k, l]) => `<button class="${S.tab === k ? 'on' : ''}" data-act="tab" data-v="${k}"><span>${l}</span><i>${count[k] == null ? '' : count[k]}</i></button>`).join('')}</nav>
       <div class="snav"><div class="slabel">Sammlungen</div>${BOOK_CATS.concat(['Eigene']).map((c) =>
         `<button class="${inLib && ui.filter === c ? 'on' : ''}" data-act="bookfilter" data-v="${c}"><span>${c}</span><i>${book.filter((r) => (c === 'Eigene' ? !r.builtin : r.cat === c)).length}</i></button>`).join('')}</div>`;
-    $('#mtop').innerHTML = '<b>Kochapp</b><button data-act="bookadd" aria-label="Neues Rezept">+</button>';
+    $('#mtop').innerHTML = '<b aria-label="dAIlykitchen">d<span class="ai">AI</span>lykitchen</b><button data-act="bookadd" aria-label="Neues Rezept">+</button>';
     $('#tabbar').innerHTML = TABS.map(([k, , l]) => `<button class="${S.tab === k ? 'on' : ''}" data-act="tab" data-v="${k}">${l}${k === 'shop' ? `<i>${open || ''}</i>` : ''}</button>`).join('');
   }
   function render() {
@@ -1488,7 +1488,7 @@
   function zipDialog(count) {
     const cfg = S.order.cfg.rewe || {};
     return `<h2>Bei REWE in den Warenkorb</h2>
-      <p>Die Kochapp legt ${count} Artikel in deinen Warenkorb auf rewe.de und öffnet ihn danach im REWE-Fenster. <b>Es wird nichts bestellt</b> – die Bestellung schließt du dort selbst ab.</p>
+      <p>dAIlykitchen legt ${count} Artikel in deinen Warenkorb auf rewe.de und öffnet ihn danach im REWE-Fenster. <b>Es wird nichts bestellt</b> – die Bestellung schließt du dort selbst ab.</p>
       <div class="grid2">
         <label>Deine Postleitzahl<input id="zip-in" inputmode="numeric" maxlength="5" value="${esc(cfg.zip || S.order.customer.zip || '')}" placeholder="z. B. 10115" autocomplete="postal-code"></label>
         <label>Service<select id="zip-svc"><option value="DELIVERY" ${cfg.service !== 'PICKUP' ? 'selected' : ''}>Lieferservice</option><option value="PICKUP" ${cfg.service === 'PICKUP' ? 'selected' : ''}>Abholservice im Markt</option></select></label>

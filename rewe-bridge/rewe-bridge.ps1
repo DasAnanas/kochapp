@@ -8,7 +8,7 @@ param(
   [int]$DebugPort = 9333,
   [string]$ChromePath,
   [switch]$Visible,           # keep the browser window visible the whole time (default: hidden until the basket is ready)
-  [int]$ParentPid             # exit when this process is gone (set by the Kochapp desktop app)
+  [int]$ParentPid             # exit when this process is gone (set by the dAIlykitchen desktop app)
 )
 
 $ErrorActionPreference = 'Stop'
@@ -345,7 +345,7 @@ try {
   $nextParentCheck = Get-Date
   while ($true) {
     if ($ParentPid -and (Get-Date) -gt $nextParentCheck) {
-      if (-not (Get-Process -Id $ParentPid -ErrorAction SilentlyContinue)) { Log 'Kochapp was closed - stopping the bridge (the browser window stays open).'; break }
+      if (-not (Get-Process -Id $ParentPid -ErrorAction SilentlyContinue)) { Log 'dAIlykitchen was closed - stopping the bridge (the browser window stays open).'; break }
       $nextParentCheck = (Get-Date).AddSeconds(2)
     }
     Pump-Http

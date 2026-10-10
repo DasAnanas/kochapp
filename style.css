@@ -1,4 +1,4 @@
-/* Kochapp – Gestaltung im Küchenbuch-Stil: Seitenleiste, helle Karten, Bricolage Grotesque + Manrope */
+/* dAIlykitchen – Gestaltung im Küchenbuch-Stil: Seitenleiste, helle Karten, Bricolage Grotesque + Manrope */
 :root{
   --bg:#F6F8F5; --card:#FFFFFF; --side:#EEF2EC; --hover:#E2EBDF; --ink:#1B2420; --ink2:#36423C; --muted:#5C6862; --faint:#8C978F;
   --line:#E3E8E1; --line2:#EDF1EB; --line3:#D3DBD0;
@@ -35,6 +35,8 @@ a{color:var(--acc)}
 .side .brand{display:flex;flex-direction:column;gap:4px;padding:0 12px}
 .side .brand b{font:500 28px/1 var(--head);letter-spacing:-.01em}
 .side .brand span{font:500 14px/1.3 var(--body);color:var(--muted)}
+/* Markenname dAIlykitchen: das AI ist hervorgehoben */
+.side .brand b .ai,.mtop b .ai{font:inherit;font-weight:800;color:var(--acc);letter-spacing:.01em}
 .newbtn{border:0;cursor:pointer;background:var(--acc);color:var(--acc-ink);font:600 14px var(--body);padding:12px 14px;border-radius:10px;text-align:left;display:flex;align-items:center;gap:10px}
 .newbtn:hover{background:var(--acc-h)} .newbtn span{font-size:18px;line-height:1}
 .snav{display:flex;flex-direction:column;gap:2px}

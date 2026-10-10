@@ -1,4 +1,4 @@
-/* Kochapp – Desktop-Hülle (Windows)
+/* dAIlykitchen – Desktop-Hülle (Windows)
  *
  * Zeigt die App in einem eigenen Fenster über die in Windows eingebaute WebView2-Engine.
  * Es läuft kein Browser und kein lokaler Server. Die Oberfläche (HTML/CSS/JS) ist als Ressource
@@ -50,9 +50,9 @@ namespace Kochapp
             foreach (string dll in new[] { "Microsoft.Web.WebView2.Core.dll", "Microsoft.Web.WebView2.WinForms.dll", "WebView2Loader.dll" })
             {
                 if (File.Exists(Path.Combine(dir, dll))) continue;
-                MessageBox.Show("Die Datei " + dll + " fehlt neben Kochapp.exe.\n\nBitte die ZIP-Datei zuerst vollständig entpacken " +
-                    "(Rechtsklick > Alle extrahieren) und Kochapp.exe aus dem entpackten Ordner starten.",
-                    "Kochapp", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Die Datei " + dll + " fehlt neben dAIlykitchen.exe.\n\nBitte die ZIP-Datei zuerst vollständig entpacken " +
+                    "(Rechtsklick > Alle extrahieren) und dAIlykitchen.exe aus dem entpackten Ordner starten.",
+                    "dAIlykitchen", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
             Run();
@@ -98,7 +98,7 @@ namespace Kochapp
 
         public MainForm()
         {
-            Text = "Kochapp";
+            Text = "dAIlykitchen";
             StartPosition = FormStartPosition.CenterScreen;
             Rectangle area = Screen.PrimaryScreen.WorkingArea;
             ClientSize = new Size(Math.Min(1360, area.Width - 80), Math.Min(900, area.Height - 80));
@@ -134,16 +134,16 @@ namespace Kochapp
                 core.WebResourceRequested += OnResource;
                 core.NavigationStarting += OnNavigation;
                 core.NewWindowRequested += OnNewWindow;
-                core.DocumentTitleChanged += delegate { Text = string.IsNullOrEmpty(core.DocumentTitle) ? "Kochapp" : core.DocumentTitle; };
+                core.DocumentTitleChanged += delegate { Text = string.IsNullOrEmpty(core.DocumentTitle) ? "dAIlykitchen" : core.DocumentTitle; };
                 await core.AddScriptToExecuteOnDocumentCreatedAsync("window.KA_DESKTOP = true;");
 
                 core.Navigate(Origin + "/index.html");
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, "Die Kochapp konnte nicht gestartet werden.\n\n" + ex.Message +
+                MessageBox.Show(this, "dAIlykitchen konnte nicht gestartet werden.\n\n" + ex.Message +
                     "\n\nBenötigt wird die Microsoft Edge WebView2-Laufzeit (in Windows 11 enthalten).",
-                    "Kochapp", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    "dAIlykitchen", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Close();
             }
         }
@@ -320,7 +320,7 @@ namespace Kochapp
                 {
                     using (HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, url))
                     {
-                        req.Headers.TryAddWithoutValidation("User-Agent", "Kochapp/1.2 (https://github.com/DasAnanas/kochapp)");
+                        req.Headers.TryAddWithoutValidation("User-Agent", "dAIlykitchen/1.4 (https://github.com/DasAnanas/kochapp)");
                         using (HttpResponseMessage res = await http.SendAsync(req))
                         {
                             if (res.IsSuccessStatusCode) return Respond(200, "OK", await res.Content.ReadAsByteArrayAsync(), "application/json; charset=utf-8");
@@ -345,7 +345,7 @@ namespace Kochapp
         /// Reicht /api/rewe/… an die Bridge weiter und setzt deren API-Schlüssel (aus rewe-bridge\.data\token.txt) –
         /// so muss ihn niemand abtippen. POST /api/rewe/start startet die Bridge (start-rewe-bridge.cmd) im Hintergrund:
         /// ohne Konsolenfenster, das REWE-Browserfenster bleibt verborgen, bis der Warenkorb fertig ist. Die Bridge
-        /// beendet sich selbst, sobald die Kochapp geschlossen wird (-ParentPid); ihr Protokoll steht in
+        /// beendet sich selbst, sobald dAIlykitchen geschlossen wird (-ParentPid); ihr Protokoll steht in
         /// rewe-bridge\.data\bridge.log. Mit KOCHAPP_REWE_VISIBLE=1 läuft alles sichtbar (zur Fehlersuche).
         /// </summary>
         async Task<CoreWebView2WebResourceResponse> ForwardRewe(Uri uri, string method, string body)
@@ -354,7 +354,7 @@ namespace Kochapp
             if (path == "/start")
             {
                 string cmd = Path.Combine(ReweDir, "start-rewe-bridge.cmd");
-                if (!File.Exists(cmd)) return Error(404, "Der Ordner rewe-bridge fehlt neben Kochapp.exe.");
+                if (!File.Exists(cmd)) return Error(404, "Der Ordner rewe-bridge fehlt neben dAIlykitchen.exe.");
                 if (Environment.GetEnvironmentVariable("KOCHAPP_REWE_VISIBLE") == "1")
                     Process.Start(new ProcessStartInfo(cmd, "-Visible") { UseShellExecute = true, WorkingDirectory = ReweDir });
                 else

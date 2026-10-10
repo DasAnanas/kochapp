@@ -1,4 +1,4 @@
-/* Kochapp – Logik (ohne DOM): Nährwerte, Filter, Rezept-Finder, Wochenplaner, Einkaufsliste */
+/* dAIlykitchen – Logik (ohne DOM): Nährwerte, Filter, Rezept-Finder, Wochenplaner, Einkaufsliste */
 (function (root) {
   const KA = (root.KA = root.KA || {});
   const { NUTRIENTS, ING, RECIPES, DIETS, MEALS, CATS } = KA;

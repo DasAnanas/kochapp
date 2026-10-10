@@ -1,4 +1,4 @@
-/* Kochapp – Rezeptbilder
+/* dAIlykitchen – Rezeptbilder
  * Zeichnet zu jedem Rezept eine Illustration als SVG (läuft offline, keine Bilddateien nötig).
  * Bild-Angabe: 'art:farbe1,farbe2,farbe3' – z. B. 'pizza:tomate,kaese,kraut'.
  * Farben sind Namen aus FARBE oder Hex-Werte (#RRGGBB).
