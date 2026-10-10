@@ -19,6 +19,9 @@ using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -84,7 +87,7 @@ namespace Kochapp
 
         static readonly Dictionary<string, string> Types = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { ".html", "text/html; charset=utf-8" }, { ".js", "text/javascript; charset=utf-8" },
+            { ".html", "text/html; charset=utf-8" }, { ".js", "text/javascript; charset=utf-8" }, { ".mjs", "text/javascript; charset=utf-8" },
             { ".css", "text/css; charset=utf-8" }, { ".json", "application/json" },
             { ".png", "image/png" }, { ".jpg", "image/jpeg" }, { ".svg", "image/svg+xml" }, { ".ico", "image/x-icon" },
         };
@@ -178,17 +181,118 @@ namespace Kochapp
             Uri uri = new Uri(e.Request.Uri);
             bool rewe = uri.AbsolutePath.StartsWith(RewePrefix + "/", StringComparison.Ordinal);
             bool food = uri.AbsolutePath == "/api/foodsearch";
-            if (uri.AbsolutePath != "/api/order" && !rewe && !food) { e.Response = ServeFile(uri); return; }
+            bool page = uri.AbsolutePath == "/api/fetch-page";
+            if (uri.AbsolutePath != "/api/order" && !rewe && !food && !page) { e.Response = ServeFile(uri); return; }
 
             string method = e.Request.Method;
             if (food ? method != "GET" : method != "POST" && !(rewe && method == "GET")) { e.Response = Error(405, "Methode nicht erlaubt"); return; }
             string body = ReadAll(e.Request.Content);
             CoreWebView2Deferral deferral = e.GetDeferral();
             CoreWebView2WebResourceResponse response;
-            try { response = food ? await SearchFood(uri) : rewe ? await ForwardRewe(uri, method, body) : await ForwardOrder(body); }
-            catch (Exception ex) { response = Error(502, (food ? "Suche nicht erreichbar: " : rewe ? "REWE-Bridge nicht erreichbar: " : "Ziel nicht erreichbar: ") + Innermost(ex).Message); }
+            try { response = page ? await FetchPage(body) : food ? await SearchFood(uri) : rewe ? await ForwardRewe(uri, method, body) : await ForwardOrder(body); }
+            catch (Exception ex) { response = Error(502, (page ? "Seite nicht erreichbar: " : food ? "Suche nicht erreichbar: " : rewe ? "REWE-Bridge nicht erreichbar: " : "Ziel nicht erreichbar: ") + Innermost(ex).Message); }
             e.Response = response;
             deferral.Complete();
+        }
+
+        // ---------- Linkimport: öffentliche Rezeptseite abrufen (ausgewertet wird sie in der Oberfläche, import-recipe.mjs) ----------
+
+        const int MaxPage = 3 * 1024 * 1024;
+        class ImportException : Exception { public ImportException(string message) : base(message) { } }
+        readonly HttpClient pageHttp = new HttpClient(new HttpClientHandler
+        {
+            AllowAutoRedirect = false, // Weiterleitungen einzeln prüfen (siehe PublicUrl)
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+        });
+
+        /// <summary>
+        /// Lässt nur Adressen öffentlicher Websites zu – entspricht publicURL() in import-recipe.mjs und prüft zusätzlich,
+        /// dass der Name nicht auf diesen Rechner oder ins lokale Netz zeigt.
+        /// </summary>
+        static async Task<Uri> PublicUrl(string value)
+        {
+            Uri url;
+            if (!Uri.TryCreate(value, UriKind.Absolute, out url) || (url.Scheme != "http" && url.Scheme != "https"))
+                throw new ImportException("Bitte einen vollständigen https://-Link eingeben.");
+            string host = url.Host.ToLowerInvariant();
+            if (url.UserInfo.Length > 0 || !url.IsDefaultPort || url.HostNameType != UriHostNameType.Dns || !host.Contains(".") ||
+                Regex.IsMatch(host, @"^[\d.]+$") || Regex.IsMatch(host, @"(^|\.)(localhost|local|internal|test|invalid|onion|home|lan)$"))
+                throw new ImportException("Bitte einen Link zu einer öffentlichen Rezeptwebsite verwenden.");
+            IPAddress[] addresses;
+            try { addresses = await Dns.GetHostAddressesAsync(host); }
+            catch (Exception) { throw new ImportException("Die Website konnte nicht erreicht werden. Bitte den Link prüfen."); }
+            foreach (IPAddress a in addresses)
+            {
+                IPAddress ip = a.IsIPv4MappedToIPv6 ? a.MapToIPv4() : a;
+                byte[] b = ip.GetAddressBytes();
+                bool local = IPAddress.IsLoopback(ip) || ip.IsIPv6LinkLocal || ip.IsIPv6SiteLocal ||
+                    (ip.AddressFamily == AddressFamily.InterNetworkV6 && (b[0] & 0xFE) == 0xFC) ||
+                    (ip.AddressFamily == AddressFamily.InterNetwork && (b[0] == 0 || b[0] == 10 || b[0] == 127 || (b[0] == 169 && b[1] == 254) ||
+                        (b[0] == 172 && b[1] >= 16 && b[1] <= 31) || (b[0] == 192 && b[1] == 168) || (b[0] == 100 && b[1] >= 64 && b[1] <= 127)));
+                if (local) throw new ImportException("Bitte einen Link zu einer öffentlichen Rezeptwebsite verwenden.");
+            }
+            return new UriBuilder(url) { Fragment = "" }.Uri;
+        }
+
+        /// <summary>POST /api/fetch-page { url } liefert das HTML der Seite (höchstens 3 MB, UTF-8); die endgültige Adresse steht im Kopf X-Final-Url.</summary>
+        async Task<CoreWebView2WebResourceResponse> FetchPage(string body)
+        {
+            Dictionary<string, object> data = null;
+            try { data = json.Deserialize<Dictionary<string, object>>(body); } catch (Exception) { /* unten als Fehler behandelt */ }
+            string value = data == null ? null : Get(data, "url") as string;
+            if (string.IsNullOrEmpty(value) || value.Length > 2000) return Error(400, "Bitte einen Rezeptlink eingeben.");
+            try
+            {
+                Uri url = await PublicUrl(value);
+                using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(18)))
+                {
+                    for (int redirects = 0; redirects <= 4; redirects++)
+                    {
+                        using (HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Get, url))
+                        {
+                            req.Headers.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml");
+                            req.Headers.TryAddWithoutValidation("User-Agent", "KochappRecipeImporter/1.0");
+                            using (HttpResponseMessage res = await pageHttp.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cts.Token))
+                            {
+                                int code = (int)res.StatusCode;
+                                if (code == 301 || code == 302 || code == 303 || code == 307 || code == 308)
+                                {
+                                    if (res.Headers.Location == null) throw new ImportException("Die Website liefert eine ungültige Weiterleitung.");
+                                    url = await PublicUrl(new Uri(url, res.Headers.Location).AbsoluteUri);
+                                    continue;
+                                }
+                                if (!res.IsSuccessStatusCode)
+                                    throw new ImportException("Die Website erlaubt den Abruf nicht (HTTP " + code + "). Bitte einen anderen Link versuchen oder das Rezept manuell eintragen.");
+                                var type = res.Content.Headers.ContentType;
+                                string media = type == null ? "" : (type.MediaType ?? "").ToLowerInvariant();
+                                if (media != "text/html" && media != "application/xhtml+xml") throw new ImportException("Der Link führt nicht zu einer Rezept-Webseite.");
+                                if (res.Content.Headers.ContentLength > MaxPage) throw new ImportException("Die Rezeptseite ist zu groß für den Import.");
+                                byte[] bytes;
+                                using (Stream s = await res.Content.ReadAsStreamAsync())
+                                using (MemoryStream ms = new MemoryStream())
+                                {
+                                    byte[] buf = new byte[81920];
+                                    int n;
+                                    while ((n = await s.ReadAsync(buf, 0, buf.Length, cts.Token)) > 0)
+                                    {
+                                        ms.Write(buf, 0, n);
+                                        if (ms.Length > MaxPage) throw new ImportException("Die Rezeptseite ist zu groß für den Import.");
+                                    }
+                                    bytes = ms.ToArray();
+                                }
+                                Encoding enc = Encoding.UTF8;
+                                try { if (!string.IsNullOrEmpty(type.CharSet)) enc = Encoding.GetEncoding(type.CharSet.Trim('"')); } catch (ArgumentException) { /* unbekannter Zeichensatz: UTF-8 */ }
+                                if (enc.CodePage != Encoding.UTF8.CodePage) bytes = Encoding.UTF8.GetBytes(enc.GetString(bytes));
+                                return Respond(200, "OK", bytes, "text/html; charset=utf-8", "X-Final-Url: " + url.AbsoluteUri);
+                            }
+                        }
+                    }
+                    throw new ImportException("Die Website leitet zu oft weiter.");
+                }
+            }
+            catch (ImportException ex) { return Error(422, ex.Message); }
+            catch (OperationCanceledException) { return Error(422, "Die Website antwortet zu langsam. Bitte später erneut versuchen."); }
+            catch (HttpRequestException) { return Error(422, "Die Website konnte nicht erreicht werden. Bitte später erneut versuchen oder einen anderen Rezeptlink verwenden."); }
         }
 
         // ---------- Nährwertsuche bei Open Food Facts (für eigene Lebensmittel) ----------
@@ -239,8 +343,10 @@ namespace Kochapp
 
         /// <summary>
         /// Reicht /api/rewe/… an die Bridge weiter und setzt deren API-Schlüssel (aus rewe-bridge\.data\token.txt) –
-        /// so muss ihn niemand abtippen. POST /api/rewe/start öffnet die Bridge wie ein Doppelklick auf
-        /// start-rewe-bridge.cmd, sichtbar in einem eigenen Konsolenfenster.
+        /// so muss ihn niemand abtippen. POST /api/rewe/start startet die Bridge (start-rewe-bridge.cmd) im Hintergrund:
+        /// ohne Konsolenfenster, das REWE-Browserfenster bleibt verborgen, bis der Warenkorb fertig ist. Die Bridge
+        /// beendet sich selbst, sobald die Kochapp geschlossen wird (-ParentPid); ihr Protokoll steht in
+        /// rewe-bridge\.data\bridge.log. Mit KOCHAPP_REWE_VISIBLE=1 läuft alles sichtbar (zur Fehlersuche).
         /// </summary>
         async Task<CoreWebView2WebResourceResponse> ForwardRewe(Uri uri, string method, string body)
         {
@@ -249,7 +355,17 @@ namespace Kochapp
             {
                 string cmd = Path.Combine(ReweDir, "start-rewe-bridge.cmd");
                 if (!File.Exists(cmd)) return Error(404, "Der Ordner rewe-bridge fehlt neben Kochapp.exe.");
-                Process.Start(new ProcessStartInfo(cmd) { UseShellExecute = true, WorkingDirectory = ReweDir });
+                if (Environment.GetEnvironmentVariable("KOCHAPP_REWE_VISIBLE") == "1")
+                    Process.Start(new ProcessStartInfo(cmd, "-Visible") { UseShellExecute = true, WorkingDirectory = ReweDir });
+                else
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo("cmd.exe", "/c \"\"" + cmd + "\" -ParentPid " + Process.GetCurrentProcess().Id + "\"")
+                    {
+                        UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = ReweDir,
+                    };
+                    psi.EnvironmentVariables["KOCHAPP_BACKGROUND"] = "1"; // start-rewe-bridge.cmd wartet dann am Ende nicht auf eine Taste
+                    Process.Start(psi);
+                }
                 return Plain(202, "Accepted", "{\"started\":true}", "application/json");
             }
             using (HttpRequestMessage req = new HttpRequestMessage(method == "GET" ? HttpMethod.Get : HttpMethod.Post, ReweBridge + path + uri.Query))
@@ -342,10 +458,10 @@ namespace Kochapp
             return ex;
         }
 
-        CoreWebView2WebResourceResponse Respond(int status, string reason, byte[] bytes, string type)
+        CoreWebView2WebResourceResponse Respond(int status, string reason, byte[] bytes, string type, string extraHeader = null)
         {
             return view.CoreWebView2.Environment.CreateWebResourceResponse(new MemoryStream(bytes), status, reason,
-                "Content-Type: " + type + "\nCache-Control: no-store");
+                "Content-Type: " + type + "\nCache-Control: no-store" + (extraHeader == null ? "" : "\n" + extraHeader));
         }
 
         CoreWebView2WebResourceResponse Plain(int status, string reason, string text, string type)
