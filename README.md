@@ -12,9 +12,13 @@
 - Zum Entwickeln lässt sich `index.html` weiterhin direkt im Browser öffnen (`start.bat`/`server.js` optional mit Node.js).
 
 ## Rezeptbuch (aus dem Projekt „Küchenbuch“ übernommen)
-- **Bibliothek** aller Rezepte mit Suche nach Titel oder Zutat, Kategorien und Sammlungen in der Seitenleiste.
+- **Bibliothek** mit rund 250 Rezepten, Suche nach Titel, Zutat oder Küche, Kategorien und Sammlungen in der Seitenleiste.
+- **Kategorien:** Frühstück, Hauptgericht, Snack, Backen, Nachtisch, Getränke (je ca. 30 Rezepte, Hauptgerichte knapp 100) sowie „Eigene“.
+- **Hauptgerichte nach Küche filtern:** Italienisch, Deutsch, Mexikanisch, Indisch, Asiatisch, Griechisch, Orientalisch, Französisch, Spanisch, Amerikanisch, International.
+- **Bilder:** Jedes Rezept hat ein Bild. Die mitgelieferten Rezepte bekommen eine gezeichnete Illustration (`bilder.js`, funktioniert offline); eigene Rezepte ohne Foto erhalten eine passende Illustration ihrer Kategorie.
+- Die zusätzlichen Rezepte aus `rezepte.js` erscheinen im Rezeptbuch und auf der Einkaufsliste, aber nicht im Vorrats-Finder oder Wochenplan (dafür fehlen Nährwerte).
 - **Rezeptseite** mit Portionsrechner: Zutatenmengen passen sich an.
-- **Eigene Rezepte** anlegen: Zutaten wie „200 g Mehl“ eintippen, Menge/Einheit werden erkannt; Titelbild optional. Eigene Rezepte erscheinen im Rezeptbuch und auf der Einkaufsliste, aber nicht im Vorrats-Finder oder Wochenplan (dafür fehlen Nährwerte).
+- **Eigene Rezepte** anlegen: Zutaten wie „200 g Mehl“ eintippen, Menge/Einheit werden erkannt; Titelbild optional, bei Hauptgerichten optional die Küche. Eigene Rezepte erscheinen im Rezeptbuch und auf der Einkaufsliste, aber nicht im Vorrats-Finder oder Wochenplan (dafür fehlen Nährwerte).
 - **Einkaufsliste** (Schublade rechts): Rezepte mit Personenzahl sammeln, Zutaten werden zusammengefasst, eigene Artikel ergänzen, abhaken, als Text herunterladen oder mit „Drucken & bestellen“ an „Vorrat & Einkauf“ übergeben.
 - **Foto-Scan und Linkimport sind Demos** mit festem Beispielrezept – es findet keine Texterkennung und kein Webabruf statt.
 
@@ -33,7 +37,7 @@ Adapter-Modell (`KA.Providers`):
 Einen konkreten Händler anbinden: in `KA.Providers` einen Eintrag mit `fields`, `preview()` und `submit()` ergänzen und dort das Payload auf das API-Format des Händlers abbilden. Hinweis: Die meisten Supermärkte bieten keine offene Bestell-API; ein eigener Zwischen-Endpunkt oder ein Partnerzugang ist meist nötig.
 
 ## Dateien
-`index.html` · `style.css` · `data.js` (50 Rezepte, 76 Lebensmittel, Nährwerte) · `logic.js` (Filter, Finder, Planer) · `app.js` (UI) · `order.js` · `server.js` · `start.bat` · `Kochapp.exe` · `desktop\Program.cs` · `desktop\build.ps1` · `desktop\lib` (WebView2-DLLs zum Einbetten)
+`index.html` · `style.css` · `data.js` (50 Rezepte mit Nährwerten, 76 Lebensmittel) · `rezepte.js` (weitere ~200 Rezepte fürs Rezeptbuch, Küchen, Bildangaben) · `bilder.js` (Rezept-Illustrationen als SVG) · `logic.js` (Filter, Finder, Planer) · `app.js` (UI) · `order.js` · `server.js` · `start.bat` · `Kochapp.exe` · `desktop\Program.cs` · `desktop\build.ps1` · `desktop\lib` (WebView2-DLLs zum Einbetten)
 
 ## Hinweise
 Nährwerte und Preise sind gerundete Näherungswerte, keine Ernährungsberatung. Vitamin D (und bei veganer Kost B12) werden im Plan ehrlich als Lücke angezeigt.
