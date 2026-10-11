@@ -6,9 +6,9 @@ Erzeugt von `tools/naehrwerte/verify.ps1` – nicht von Hand ändern.
 - Schweizer Nährwertdatenbank V 7.1, Bundesamt für Lebensmittelsicherheit und Veterinärwesen (BLV), https://naehrwertdaten.ch
 - USDA FoodData Central, SR Legacy (2018-04), U.S. Department of Agriculture, https://fdc.nal.usda.gov
 
-**Vorgehen:** Jedes Lebensmittel wurde je einem Eintrag beider Datenbanken zugeordnet (`foods.tsv`). Für jeden der 15 Nährstoffe werden beide Werte verglichen. Übernommen wird der Schweizer Wert; fehlt er, der USDA-Wert. Wo die Abweichungen bei den Makronährstoffen von Hand geprüft wurden und der Schweizer Eintrag ein anderes Produkt beschreibt als hierzulande üblich, ist in `foods.tsv` (Spalte `pick`) stattdessen der USDA-Wert oder der Mittelwert beider Quellen gewählt; die Spalte „übernommen“ zeigt das an. Als Übereinstimmung gilt eine Abweichung von höchstens 20 % (Ballaststoffe 30 %, Vitamine und Mineralstoffe 50 %) oder eine kleine absolute Differenz. Kohlenhydrate sind verfügbare Kohlenhydrate (USDA: Gesamtkohlenhydrate minus Ballaststoffe). Bei Flüssigkeiten sind die Werte mit der Dichte auf 100 ml umgerechnet.
+**Vorgehen:** Jedes Lebensmittel wurde je einem Eintrag beider Datenbanken zugeordnet (`foods.tsv`). Für jeden der 16 Nährstoffe (einschließlich Alkohol) werden beide Werte verglichen. Übernommen wird der Schweizer Wert; fehlt er, der USDA-Wert. Wo die Abweichungen bei den Makronährstoffen von Hand geprüft wurden und der Schweizer Eintrag ein anderes Produkt beschreibt als hierzulande üblich, ist in `foods.tsv` (Spalte `pick`) stattdessen der USDA-Wert oder der Mittelwert beider Quellen gewählt; die Spalte „übernommen“ zeigt das an. Als Übereinstimmung gilt eine Abweichung von höchstens 20 % (Ballaststoffe 30 %, Vitamine und Mineralstoffe 50 %) oder eine kleine absolute Differenz. Kohlenhydrate sind verfügbare Kohlenhydrate (USDA: Gesamtkohlenhydrate minus Ballaststoffe). Bei Flüssigkeiten sind die Werte mit der Dichte auf 100 ml umgerechnet. Lebensmittel, die in keiner der beiden Datenbanken stehen (Aperol, Amaretto, Mirin), tragen Hersteller- bzw. Händlerangaben als Schätzwert (Spalte `est` in `foods.tsv`); ihr Alkoholgehalt ist aus den Volumenprozent berechnet (× 0,789 g/ml). Alkohol ist der Gehalt der rohen Zutat – beim Kochen verfliegt ein Teil.
 
-**Ergebnis:** 154 Lebensmittel – 144 mit zwei Quellen, 9 mit nur einer Quelle, 1 ohne Quelle (Schätzwert bleibt). Von 2310 Einzelwerten stimmen 1917 in beiden Quellen überein, 203 weichen ab, 174 stammen aus nur einer Quelle, 16 haben keine Quelle.
+**Ergebnis:** 169 Lebensmittel – 155 mit zwei Quellen, 10 mit nur einer Quelle, 4 ohne Quelle (Schätzwert bleibt). Von 2704 Einzelwerten stimmen 2212 in beiden Quellen überein, 207 weichen ab, 218 stammen aus nur einer Quelle, 67 haben keine Quelle.
 
 Abweichungen bei Vitaminen und Mineralstoffen sind zwischen Datenbanken üblich (Sorte, Anbau, Messmethode, Anreicherung).
 
@@ -16,160 +16,175 @@ Abweichungen bei Vitaminen und Mineralstoffen sind zwischen Datenbanken üblich 
 
 | Lebensmittel | Schweizer Nährwertdatenbank (ID) | USDA (FDC-ID) | gleich | abweichend | 1 Quelle | übernommen | Status |
 |---|---|---|---|---|---|---|---|
-| Haferflocken | Haferflocken (198) | Cereals, oats, regular and quick, not fortified, dry (173904) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Vollkornnudeln | Teigwaren ohne Ei, Vollkorn, trocken (801) | Pasta, whole-wheat, dry (169738) | 13 | 0 | 2 | CH | doppelt geprüft |
-| Nudeln | Teigwaren ohne Ei, trocken (800) | Pasta, dry, unenriched (168927) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Reis | Reis poliert, trocken (427) | Rice, white, long-grain, regular, raw, unenriched (169756) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Quinoa | Quinoa, roh (13394) | Quinoa, uncooked (168874) | 14 | 0 | 1 | CH | doppelt geprüft |
+| Haferflocken | Haferflocken (198) | Cereals, oats, regular and quick, not fortified, dry (173904) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Vollkornnudeln | Teigwaren ohne Ei, Vollkorn, trocken (801) | Pasta, whole-wheat, dry (169738) | 13 | 0 | 3 | CH | doppelt geprüft |
+| Nudeln | Teigwaren ohne Ei, trocken (800) | Pasta, dry, unenriched (168927) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Reis | Reis poliert, trocken (427) | Rice, white, long-grain, regular, raw, unenriched (169756) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Quinoa | Quinoa, roh (13394) | Quinoa, uncooked (168874) | 14 | 0 | 2 | CH | doppelt geprüft |
 | Couscous | – | Couscous, dry (169699) | 0 | 0 | 15 | USDA | nur eine Quelle |
-| Kartoffeln | Kartoffel, geschält, roh (813) | Potatoes, flesh and skin, raw (170026) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Süßkartoffel | Süsskartoffel, roh (13406) | Sweet potato, raw, unprepared (168482) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Vollkornbrot | Weizenvollkornbrot (821) | Bread, whole-wheat, commercially prepared (172688) | 12 | 3 | 0 | CH | doppelt geprüft, 3 Abweichung(en) |
-| Weizen-Tortilla | – | Tortillas, ready-to-bake or -fry, flour, refrigerated (175037) | 0 | 0 | 15 | USDA | nur eine Quelle |
-| Weizenmehl | Weizenmehl (Backmehl), Typ 550 (204) | Wheat flour, white, all-purpose, unenriched (169761) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Rote Linsen | Linse, geschält, getrocknet (13385) | Lentils, pink or red, raw (174284) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Kichererbsen (Dose) | Kichererbse, gekocht (ohne Zugabe von Fett und Salz) (1059) | Chickpeas (garbanzo beans, bengal gram), mature seeds, canned, drained solids (173800) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Kidneybohnen (Dose) | Bohne (alle Arten), gekocht (ohne Zugabe von Fett und Salz) (13388) | Beans, kidney, red, mature seeds, canned, drained solids (174285) | 12 | 2 | 1 | USDA | doppelt geprüft, 2 Abweichung(en) |
-| Tofu | Tofu, fest, nature (Durchschnitt) (13437) | Tofu, raw, firm, prepared with calcium sulfate (172475) | 11 | 3 | 1 | CH | doppelt geprüft, 3 Abweichung(en) |
-| Erdnussmus | Erdnussbutter (751) | Peanut butter, smooth style, without salt (172470) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Mandeln | Mandel (273) | Nuts, almonds (170567) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Walnüsse | Baumnuss (271) | Nuts, walnuts, english (170187) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Chiasamen | Chia-Samen (13457) | Seeds, chia seeds, dried (170554) | 11 | 2 | 2 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Leinsamen | Leinsamen (277) | Seeds, flaxseed (169414) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Kürbiskerne | Kürbiskerne (276) | Seeds, pumpkin and squash seed kernels, dried (170556) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Tahin (Sesammus) | – | Seeds, sesame butter, tahini, from roasted and toasted kernels (most common type) (170189) | 0 | 0 | 15 | USDA | nur eine Quelle |
-| Milch | Halbentrahmte Milch 1.5% Fett, UHT (13399) | Milk, lowfat, fluid, 1% milkfat, with added vitamin A and vitamin D (170872) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Hafermilch (angereichert) | Hafergetränk, nature mit Calcium und Vitaminen angereichert (14130) | – | 0 | 0 | 15 | CH | nur eine Quelle |
-| Naturjoghurt | Joghurt, nature (52) | Yogurt, plain, whole milk (171284) | 15 | 0 | 0 | CH | doppelt geprüft |
+| Kartoffeln | Kartoffel, geschält, roh (813) | Potatoes, flesh and skin, raw (170026) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Süßkartoffel | Süsskartoffel, roh (13406) | Sweet potato, raw, unprepared (168482) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Vollkornbrot | Weizenvollkornbrot (821) | Bread, whole-wheat, commercially prepared (172688) | 13 | 3 | 0 | CH | doppelt geprüft, 3 Abweichung(en) |
+| Weizen-Tortilla | – | Tortillas, ready-to-bake or -fry, flour, refrigerated (175037) | 0 | 0 | 16 | USDA | nur eine Quelle |
+| Weizenmehl | Weizenmehl (Backmehl), Typ 550 (204) | Wheat flour, white, all-purpose, unenriched (169761) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Rote Linsen | Linse, geschält, getrocknet (13385) | Lentils, pink or red, raw (174284) | 13 | 2 | 1 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Kichererbsen (Dose) | Kichererbse, gekocht (ohne Zugabe von Fett und Salz) (1059) | Chickpeas (garbanzo beans, bengal gram), mature seeds, canned, drained solids (173800) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Kidneybohnen (Dose) | Bohne (alle Arten), gekocht (ohne Zugabe von Fett und Salz) (13388) | Beans, kidney, red, mature seeds, canned, drained solids (174285) | 13 | 2 | 1 | USDA | doppelt geprüft, 2 Abweichung(en) |
+| Tofu | Tofu, fest, nature (Durchschnitt) (13437) | Tofu, raw, firm, prepared with calcium sulfate (172475) | 11 | 3 | 2 | CH | doppelt geprüft, 3 Abweichung(en) |
+| Erdnussmus | Erdnussbutter (751) | Peanut butter, smooth style, without salt (172470) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Mandeln | Mandel (273) | Nuts, almonds (170567) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Walnüsse | Baumnuss (271) | Nuts, walnuts, english (170187) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Chiasamen | Chia-Samen (13457) | Seeds, chia seeds, dried (170554) | 11 | 2 | 3 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Leinsamen | Leinsamen (277) | Seeds, flaxseed (169414) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Kürbiskerne | Kürbiskerne (276) | Seeds, pumpkin and squash seed kernels, dried (170556) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Tahin (Sesammus) | – | Seeds, sesame butter, tahini, from roasted and toasted kernels (most common type) (170189) | 0 | 0 | 16 | USDA | nur eine Quelle |
+| Milch | Halbentrahmte Milch 1.5% Fett, UHT (13399) | Milk, lowfat, fluid, 1% milkfat, with added vitamin A and vitamin D (170872) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Hafermilch (angereichert) | Hafergetränk, nature mit Calcium und Vitaminen angereichert (14130) | – | 0 | 0 | 16 | CH | nur eine Quelle |
+| Naturjoghurt | Joghurt, nature (52) | Yogurt, plain, whole milk (171284) | 16 | 0 | 0 | CH | doppelt geprüft |
 | Skyr | – | – | 0 | 0 | 0 | – | ungeprüft (Schätzwert) |
-| Magerquark | Quark, nature, mager (71) | – | 0 | 0 | 15 | CH | nur eine Quelle |
-| Feta | Käse in Salzlake (Schaf- und Ziegenmilch) (549) | Cheese, feta (173420) | 9 | 5 | 1 | CH | doppelt geprüft, 5 Abweichung(en) |
-| Mozzarella | Mozzarella (82) | Cheese, mozzarella, whole milk (170845) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Parmesan | Parmesan (482) | Cheese, parmesan, hard (170848) | 13 | 0 | 2 | CH | doppelt geprüft |
-| Gouda / Schnittkäse | Hart- und Halbhartkäse, vollfett (Durchschnitt) (1193) | Cheese, gouda (171241) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Butter | Vorzugsbutter (49) | Butter, without salt (173430) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Eier | Hühnerei, ganz, roh (290) | Egg, whole, raw, fresh (171287) | 14 | 0 | 1 | CH | doppelt geprüft |
-| Kokosmilch | Kokosnussmilch (13458) | Nuts, coconut milk, canned (liquid expressed from grated meat and water) (170173) | 14 | 0 | 1 | CH | doppelt geprüft |
-| Hähnchenbrust | Poulet, Brust, ohne Haut, roh (22) | Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw (171077) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Rinderhack | Rind, Gehacktes, roh (14237) | Beef, ground, 85% lean meat / 15% fat, raw (171796) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Schinkenwürfel | Hinterschinken (691) | Ham, sliced, pre-packaged, deli meat (96%fat free, water added) (173863) | 12 | 2 | 1 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Lachsfilet | Lachs, Zucht, roh (194) | Fish, salmon, Atlantic, farmed, raw (175167) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Thunfisch (Dose) | Thon im Wasser, abgetropft (417) | Fish, tuna, light, canned in water, drained solids (173709) | 12 | 2 | 1 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Garnelen | Garnele, geschält, roh (frisch oder tiefgekuhlt) (766) | Crustaceans, shrimp, raw (175179) | 8 | 1 | 6 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Zwiebel | Zwiebel, roh (368) | Onions, raw (170000) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Knoblauchzehe | Knoblauch, roh (356) | Garlic, raw (169230) | 10 | 5 | 0 | USDA | doppelt geprüft, 5 Abweichung(en) |
-| Tomaten | Tomate, roh (348) | Tomatoes, red, ripe, raw, year round average (170457) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Dosentomaten (gehackt) | Tomate, geschält (Konserve) (637) | Tomatoes, red, ripe, canned, packed in tomato juice (170051) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Tomatenmark | Tomatenpüree (636) | Tomato products, canned, paste, without salt added (170459) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Paprika | Peperoni, rot, roh (360) | Peppers, sweet, red, raw (170108) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Zucchini | Zucchetti, roh (367) | Squash, summer, zucchini, includes skin, raw (169291) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Aubergine | Aubergine, roh (349) | Eggplant, raw (169228) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Gurke | Gurke, roh (354) | Cucumber, with peel, raw (168409) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Karotten | Karotte, roh (355) | Carrots, raw (170393) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Brokkoli | Broccoli, roh (351) | Broccoli, raw (170379) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Spinat | Spinat, roh (365) | Spinach, raw (168462) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Blumenkohl | Blumenkohl, roh (350) | Cauliflower, raw (169986) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Champignons | Champignon, roh (375) | Mushrooms, white, raw (169251) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Rucola | Rucola, roh (468) | Arugula, raw (169387) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Lauch | Lauch, roh (358) | Leeks, (bulb and lower leaf-portion), raw (169246) | 8 | 7 | 0 | CH | doppelt geprüft, 7 Abweichung(en) |
-| Kürbis (Hokkaido) | Kürbis, roh (480) | Pumpkin, raw (168448) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Mais (Dose) | Zuckermais (Konserve) (632) | Corn, sweet, yellow, canned, whole kernel, drained solids (169214) | 13 | 2 | 0 | Mittelwert | doppelt geprüft, 2 Abweichung(en) |
-| Erbsen (TK) | Erbse, grün, tiefgekühlt (14219) | Peas, green, frozen, unprepared (170016) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Ingwer | Ingwer, roh (14239) | Ginger root, raw (169231) | 13 | 2 | 0 | Mittelwert | doppelt geprüft, 2 Abweichung(en) |
-| Avocado | Avocado, roh (380) | Avocados, raw, all commercial varieties (171705) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Zitrone | Zitrone, roh (398) | Lemons, raw, without peel (167746) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Banane | Banane, roh (381) | Bananas, raw (173944) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Apfel | Apfel, roh (378) | Apples, raw, with skin (171688) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Beeren (TK-Mix) | Beeren (Durchschnitt), roh (1119) | – | 0 | 0 | 15 | CH | nur eine Quelle |
-| Olivenöl | Olivenöl (591) | Oil, olive, salad or cooking (171413) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Salz | Kochsalz ohne Jod und Fluor (634) | Salt, table (173468) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Pfeffer | – | Spices, pepper, black (170931) | 0 | 0 | 15 | USDA | nur eine Quelle |
-| Gemüsebrühe | Bouillon, Gemüse, zubereitet (664) | – | 0 | 0 | 14 | CH | nur eine Quelle |
-| Currypulver | – | Spices, curry powder (170924) | 0 | 0 | 15 | USDA | nur eine Quelle |
-| Zimt | Zimt (911) | Spices, cinnamon, ground (171320) | 10 | 5 | 0 | Mittelwert | doppelt geprüft, 5 Abweichung(en) |
-| Paprikapulver | Paprika (Gewürz) (663) | Spices, paprika (171329) | 11 | 4 | 0 | Mittelwert | doppelt geprüft, 4 Abweichung(en) |
-| Sojasauce | Sojasauce (13456) | Soy sauce made from soy and wheat (shoyu) (174277) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Honig | Honig (Blütenhonig) (472) | Honey (169640) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Zucker | Zucker, weiss (470) | Sugars, granulated (169655) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Weizenvollkornmehl | Weizenmehl, Vollkorn, Typ 1700 (206) | Wheat flour, whole-grain (168893) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Speisestärke | Maisstärke (426) | Cornstarch (169698) | 13 | 1 | 1 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Hefe (frisch) | Bäckerhefe, gepresst (763) | Leavening agents, yeast, baker's, compressed (175042) | 12 | 3 | 0 | CH | doppelt geprüft, 3 Abweichung(en) |
-| Sahne | Vollrahm, pasteurisiert (65) | Cream, fluid, heavy whipping (170859) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Saure Sahne | Saurer Halbrahm (575) | Cream, sour, cultured (171257) | 14 | 0 | 1 | Mittelwert | doppelt geprüft |
-| Frischkäse | Frischkäse, Doppelrahm (567) | Cheese, cream (173418) | 10 | 3 | 2 | USDA | doppelt geprüft, 3 Abweichung(en) |
-| Hüttenkäse | Hüttenkäse, nature (505) | Cheese, cottage, creamed, large or small curd (172179) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Sonnenblumenöl | Sonnenblumenöl (598) | Oil, sunflower, linoleic, (approx. 65%) (171025) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Rapsöl | Rapsöl (600) | Oil, canola (172336) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Essig | Essig (1693) | Vinegar, distilled (172237) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Balsamicoessig | Balsamicoessig (13455) | Vinegar, balsamic (172241) | 9 | 2 | 4 | Mittelwert | doppelt geprüft, 2 Abweichung(en) |
-| Senf | Senf (13464) | Mustard, prepared, yellow (172234) | 12 | 3 | 0 | Mittelwert | doppelt geprüft, 3 Abweichung(en) |
-| Ketchup | Ketchup (635) | Catsup (168556) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Mayonnaise | Mayonnaise (771) | Salad dressing, mayonnaise, regular (171009) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Petersilie | Petersilie, roh (373) | Parsley, fresh (170416) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Schnittlauch | Schnittlauch, roh (374) | Chives, raw (169994) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Basilikum | Basilikum, roh (464) | Basil, fresh (172232) | 12 | 3 | 0 | CH | doppelt geprüft, 3 Abweichung(en) |
-| Thymian | Thymian, roh (460) | Thyme, fresh (173470) | 7 | 8 | 0 | Mittelwert | doppelt geprüft, 8 Abweichung(en) |
-| Rosmarin | Rosmarin, roh (462) | Rosemary, fresh (173473) | 7 | 8 | 0 | Mittelwert | doppelt geprüft, 8 Abweichung(en) |
-| Orange | Orange, roh (405) | Oranges, raw, all commercial varieties (169097) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Zitronensaft | Zitronensaft (605) | Lemon juice, raw (167747) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Erdbeeren | Erdbeere, roh (385) | Strawberries, raw (167762) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Himbeeren | Himbeere, roh (390) | Raspberries, raw (167755) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Heidelbeeren | Heidelbeere, roh (389) | Blueberries, raw (171711) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Birne | Birne, roh (382) | Pears, raw (169118) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Weintrauben | Traube, weiss, roh (478) | Grapes, red or green (European type, such as Thompson seedless), raw (174683) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Mango | Mango, roh (396) | Mangos, raw (169910) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Ananas | Ananas, roh (377) | Pineapple, raw, all varieties (169124) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Rosinen | Rosine, getrocknet (477) | Raisins, dark, seedless (168165) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Datteln | Dattel, getrocknet (384) | Dates, deglet noor (171726) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Fenchel | Fenchel, roh (352) | Fennel, bulb, raw (169385) | 12 | 3 | 0 | CH | doppelt geprüft, 3 Abweichung(en) |
-| Staudensellerie | Stangensellerie, roh (366) | Celery, raw (169988) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Knollensellerie | Knollensellerie, roh (357) | Celeriac, raw (170400) | 12 | 3 | 0 | CH | doppelt geprüft, 3 Abweichung(en) |
-| Rote Bete | Rande, roh (451) | Beets, raw (169145) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Weißkohl | Weisskohl, roh (453) | Cabbage, raw (169975) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Rotkohl | Rotkohl, roh (364) | Cabbage, red, raw (169977) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Rosenkohl | Rosenkohl, roh (363) | Brussels sprouts, raw (170383) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Grüne Bohnen | Bohne, grün, roh (353) | Beans, snap, green, raw (169961) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Spargel | Spargel (weiss und grün), roh  (443) | Asparagus, raw (168389) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Kopfsalat | Kopfsalat, roh (448) | Lettuce, butterhead (includes boston and bibb types), raw (168429) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Eisbergsalat | Eisbergsalat, roh (459) | Lettuce, iceberg (includes crisphead types), raw (169248) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Radieschen | Radieschen, roh (456) | Radishes, raw (169276) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Kohlrabi | Kohlrabi, roh (449) | Kohlrabi, raw (168424) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Grünkohl | Federkohl, roh (13400) | Kale, raw (168421) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Pastinake | Pastinake, roh (13439) | Parsnips, raw (170417) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Schalotte | Schalotte, roh (14281) | Shallots, raw (170499) | 11 | 4 | 0 | CH | doppelt geprüft, 4 Abweichung(en) |
-| Oliven | Olive, schwarz (493) | Olives, ripe, canned (small-extra large) (169094) | 10 | 5 | 0 | CH | doppelt geprüft, 5 Abweichung(en) |
-| Putenbrust | Truthahn, Brust, Schnitzel oder Geschnetzeltes, roh (713) | Turkey, retail parts, breast, meat only, raw (174515) | 13 | 1 | 1 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Schweinefilet | Schwein, Filet, roh (677) | Pork, fresh, loin, tenderloin, separable lean only, raw (168249) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Schweinehack | Schwein, Gehacktes, roh (7) | Pork, fresh, ground, raw (167902) | 12 | 2 | 1 | Mittelwert | doppelt geprüft, 2 Abweichung(en) |
-| Rindfleisch (Gulasch) | Rind, Voressen, roh (38) | Beef, chuck for stew, separable lean and fat, all grades, raw (171206) | 13 | 2 | 0 | USDA | doppelt geprüft, 2 Abweichung(en) |
-| Speck | Kochspeck (704) | Pork, cured, bacon, unprepared (168277) | 12 | 3 | 0 | Mittelwert | doppelt geprüft, 3 Abweichung(en) |
-| Kabeljau | Dorsch, roh (285) | Fish, cod, Atlantic, raw (171955) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Forelle | Forelle, roh (289) | Fish, trout, rainbow, farmed, raw (173717) | 11 | 3 | 1 | CH | doppelt geprüft, 3 Abweichung(en) |
-| Räucherlachs | Lachs, geräuchert (193) | Fish, salmon, chinook, smoked (173687) | 9 | 6 | 0 | CH | doppelt geprüft, 6 Abweichung(en) |
-| Tempeh | Tempeh, nature (14251) | Tempeh (174272) | 13 | 1 | 1 | Mittelwert | doppelt geprüft, 1 Abweichung(en) |
-| Kichererbsen (getrocknet) | Kichererbse, getrocknet (439) | Chickpeas (garbanzo beans, bengal gram), mature seeds, raw (173756) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Linsen (braun) | Linse, ganz, getrocknet (370) | Lentils, raw (172420) | 11 | 4 | 0 | CH | doppelt geprüft, 4 Abweichung(en) |
-| Edamame | Edamame (unreife Sojabohne), geschält, gefroren (14160) | Edamame, frozen, unprepared (168410) | 8 | 4 | 3 | CH | doppelt geprüft, 4 Abweichung(en) |
-| Haselnüsse | Haselnuss (270) | Nuts, hazelnuts or filberts (170581) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Cashewkerne | Cashewnuss (275) | Nuts, cashew nuts, raw (170162) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Erdnüsse | Erdnuss, geröstet, ohne Salz (14238) | Peanuts, all types, dry-roasted, without salt (173806) | 14 | 0 | 1 | CH | doppelt geprüft |
-| Sonnenblumenkerne | Sonnenblumenkerne (281) | Seeds, sunflower seed kernels, dried (170562) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Sesam | Sesamsamen ungeschält (280) | Seeds, sesame seeds, whole, dried (170150) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Pinienkerne | Pinienkerne (283) | Nuts, pine nuts, dried (170591) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Kokosraspel | Kokosnuss, getrocknet (Kokosrapseln, Kokosflocken) (742) | Nuts, coconut meat, dried (desiccated), not sweetened (170170) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Hirse | Hirse, Korn geschält (422) | Millet, raw (169702) | 12 | 3 | 0 | CH | doppelt geprüft, 3 Abweichung(en) |
-| Buchweizen | Buchweizen, Korn geschält (421) | Buckwheat (170286) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Polenta (Maisgrieß) | Maisgriess, trocken (425) | Cornmeal, degermed, unenriched, yellow (168929) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Hartweizengrieß | Hartweizengriess, trocken (423) | Semolina, unenriched (168933) | 13 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
-| Paniermehl | Paniermehl (750) | Bread, crumbs, dry, grated, plain (174928) | 10 | 5 | 0 | CH | doppelt geprüft, 5 Abweichung(en) |
-| Weißbrot | Weissbrot (823) | Bread, white, commercially prepared (includes soft bread crumbs) (174924) | 11 | 4 | 0 | CH | doppelt geprüft, 4 Abweichung(en) |
-| Vollkornreis | Reis unpoliert, trocken (428) | Rice, brown, long-grain, raw (169703) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Zartbitterschokolade | Schokolade, dunkel (bitter) (196) | Chocolate, dark, 45- 59% cacao solids (170271) | 12 | 0 | 3 | CH | doppelt geprüft |
-| Kakaopulver | Kakaopulver, ohne Zucker (581) | Cocoa, dry powder, unsweetened (169593) | 8 | 7 | 0 | CH | doppelt geprüft, 7 Abweichung(en) |
-| Ahornsirup | Ahornsirup (14093) | Syrups, maple (169661) | 15 | 0 | 0 | CH | doppelt geprüft |
-| Konfitüre | Konfitüre (696) | Jams and preserves (169641) | 13 | 1 | 1 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Sojadrink | Sojagetränk, nature (72) | Soymilk, original and vanilla, unfortified (172446) | 14 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
-| Orangensaft | Orangensaft (576) | Orange juice, raw (169098) | 15 | 0 | 0 | CH | doppelt geprüft |
+| Magerquark | Quark, nature, mager (71) | – | 0 | 0 | 16 | CH | nur eine Quelle |
+| Feta | Käse in Salzlake (Schaf- und Ziegenmilch) (549) | Cheese, feta (173420) | 10 | 5 | 1 | CH | doppelt geprüft, 5 Abweichung(en) |
+| Mozzarella | Mozzarella (82) | Cheese, mozzarella, whole milk (170845) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Parmesan | Parmesan (482) | Cheese, parmesan, hard (170848) | 14 | 0 | 2 | CH | doppelt geprüft |
+| Gouda / Schnittkäse | Hart- und Halbhartkäse, vollfett (Durchschnitt) (1193) | Cheese, gouda (171241) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Butter | Vorzugsbutter (49) | Butter, without salt (173430) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Eier | Hühnerei, ganz, roh (290) | Egg, whole, raw, fresh (171287) | 15 | 0 | 1 | CH | doppelt geprüft |
+| Kokosmilch | Kokosnussmilch (13458) | Nuts, coconut milk, canned (liquid expressed from grated meat and water) (170173) | 14 | 0 | 2 | CH | doppelt geprüft |
+| Hähnchenbrust | Poulet, Brust, ohne Haut, roh (22) | Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw (171077) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Rinderhack | Rind, Gehacktes, roh (14237) | Beef, ground, 85% lean meat / 15% fat, raw (171796) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Schinkenwürfel | Hinterschinken (691) | Ham, sliced, pre-packaged, deli meat (96%fat free, water added) (173863) | 13 | 2 | 1 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Lachsfilet | Lachs, Zucht, roh (194) | Fish, salmon, Atlantic, farmed, raw (175167) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Thunfisch (Dose) | Thon im Wasser, abgetropft (417) | Fish, tuna, light, canned in water, drained solids (173709) | 13 | 2 | 1 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Garnelen | Garnele, geschält, roh (frisch oder tiefgekuhlt) (766) | Crustaceans, shrimp, raw (175179) | 8 | 1 | 7 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Zwiebel | Zwiebel, roh (368) | Onions, raw (170000) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Knoblauchzehe | Knoblauch, roh (356) | Garlic, raw (169230) | 11 | 5 | 0 | USDA | doppelt geprüft, 5 Abweichung(en) |
+| Tomaten | Tomate, roh (348) | Tomatoes, red, ripe, raw, year round average (170457) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Dosentomaten (gehackt) | Tomate, geschält (Konserve) (637) | Tomatoes, red, ripe, canned, packed in tomato juice (170051) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Tomatenmark | Tomatenpüree (636) | Tomato products, canned, paste, without salt added (170459) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Paprika | Peperoni, rot, roh (360) | Peppers, sweet, red, raw (170108) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Zucchini | Zucchetti, roh (367) | Squash, summer, zucchini, includes skin, raw (169291) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Aubergine | Aubergine, roh (349) | Eggplant, raw (169228) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Gurke | Gurke, roh (354) | Cucumber, with peel, raw (168409) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Karotten | Karotte, roh (355) | Carrots, raw (170393) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Brokkoli | Broccoli, roh (351) | Broccoli, raw (170379) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Spinat | Spinat, roh (365) | Spinach, raw (168462) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Blumenkohl | Blumenkohl, roh (350) | Cauliflower, raw (169986) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Champignons | Champignon, roh (375) | Mushrooms, white, raw (169251) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Rucola | Rucola, roh (468) | Arugula, raw (169387) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Lauch | Lauch, roh (358) | Leeks, (bulb and lower leaf-portion), raw (169246) | 9 | 7 | 0 | CH | doppelt geprüft, 7 Abweichung(en) |
+| Kürbis (Hokkaido) | Kürbis, roh (480) | Pumpkin, raw (168448) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Mais (Dose) | Zuckermais (Konserve) (632) | Corn, sweet, yellow, canned, whole kernel, drained solids (169214) | 14 | 2 | 0 | Mittelwert | doppelt geprüft, 2 Abweichung(en) |
+| Erbsen (TK) | Erbse, grün, tiefgekühlt (14219) | Peas, green, frozen, unprepared (170016) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Ingwer | Ingwer, roh (14239) | Ginger root, raw (169231) | 14 | 2 | 0 | Mittelwert | doppelt geprüft, 2 Abweichung(en) |
+| Avocado | Avocado, roh (380) | Avocados, raw, all commercial varieties (171705) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Zitrone | Zitrone, roh (398) | Lemons, raw, without peel (167746) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Banane | Banane, roh (381) | Bananas, raw (173944) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Apfel | Apfel, roh (378) | Apples, raw, with skin (171688) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Beeren (TK-Mix) | Beeren (Durchschnitt), roh (1119) | – | 0 | 0 | 16 | CH | nur eine Quelle |
+| Olivenöl | Olivenöl (591) | Oil, olive, salad or cooking (171413) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Salz | Kochsalz ohne Jod und Fluor (634) | Salt, table (173468) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Pfeffer | – | Spices, pepper, black (170931) | 0 | 0 | 16 | USDA | nur eine Quelle |
+| Gemüsebrühe | Bouillon, Gemüse, zubereitet (664) | – | 0 | 0 | 15 | CH | nur eine Quelle |
+| Currypulver | – | Spices, curry powder (170924) | 0 | 0 | 16 | USDA | nur eine Quelle |
+| Zimt | Zimt (911) | Spices, cinnamon, ground (171320) | 11 | 5 | 0 | Mittelwert | doppelt geprüft, 5 Abweichung(en) |
+| Paprikapulver | Paprika (Gewürz) (663) | Spices, paprika (171329) | 12 | 4 | 0 | Mittelwert | doppelt geprüft, 4 Abweichung(en) |
+| Sojasauce | Sojasauce (13456) | Soy sauce made from soy and wheat (shoyu) (174277) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Honig | Honig (Blütenhonig) (472) | Honey (169640) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Zucker | Zucker, weiss (470) | Sugars, granulated (169655) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Weizenvollkornmehl | Weizenmehl, Vollkorn, Typ 1700 (206) | Wheat flour, whole-grain (168893) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Speisestärke | Maisstärke (426) | Cornstarch (169698) | 14 | 1 | 1 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Hefe (frisch) | Bäckerhefe, gepresst (763) | Leavening agents, yeast, baker's, compressed (175042) | 13 | 3 | 0 | CH | doppelt geprüft, 3 Abweichung(en) |
+| Sahne | Vollrahm, pasteurisiert (65) | Cream, fluid, heavy whipping (170859) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Saure Sahne | Saurer Halbrahm (575) | Cream, sour, cultured (171257) | 15 | 0 | 1 | Mittelwert | doppelt geprüft |
+| Frischkäse | Frischkäse, Doppelrahm (567) | Cheese, cream (173418) | 11 | 3 | 2 | USDA | doppelt geprüft, 3 Abweichung(en) |
+| Hüttenkäse | Hüttenkäse, nature (505) | Cheese, cottage, creamed, large or small curd (172179) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Sonnenblumenöl | Sonnenblumenöl (598) | Oil, sunflower, linoleic, (approx. 65%) (171025) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Rapsöl | Rapsöl (600) | Oil, canola (172336) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Essig | Essig (1693) | Vinegar, distilled (172237) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Balsamicoessig | Balsamicoessig (13455) | Vinegar, balsamic (172241) | 9 | 2 | 5 | Mittelwert | doppelt geprüft, 2 Abweichung(en) |
+| Senf | Senf (13464) | Mustard, prepared, yellow (172234) | 13 | 3 | 0 | Mittelwert | doppelt geprüft, 3 Abweichung(en) |
+| Ketchup | Ketchup (635) | Catsup (168556) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Mayonnaise | Mayonnaise (771) | Salad dressing, mayonnaise, regular (171009) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Petersilie | Petersilie, roh (373) | Parsley, fresh (170416) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Schnittlauch | Schnittlauch, roh (374) | Chives, raw (169994) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Basilikum | Basilikum, roh (464) | Basil, fresh (172232) | 13 | 3 | 0 | CH | doppelt geprüft, 3 Abweichung(en) |
+| Thymian | Thymian, roh (460) | Thyme, fresh (173470) | 7 | 8 | 1 | Mittelwert | doppelt geprüft, 8 Abweichung(en) |
+| Rosmarin | Rosmarin, roh (462) | Rosemary, fresh (173473) | 7 | 8 | 1 | Mittelwert | doppelt geprüft, 8 Abweichung(en) |
+| Orange | Orange, roh (405) | Oranges, raw, all commercial varieties (169097) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Zitronensaft | Zitronensaft (605) | Lemon juice, raw (167747) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Erdbeeren | Erdbeere, roh (385) | Strawberries, raw (167762) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Himbeeren | Himbeere, roh (390) | Raspberries, raw (167755) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Heidelbeeren | Heidelbeere, roh (389) | Blueberries, raw (171711) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Birne | Birne, roh (382) | Pears, raw (169118) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Weintrauben | Traube, weiss, roh (478) | Grapes, red or green (European type, such as Thompson seedless), raw (174683) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Mango | Mango, roh (396) | Mangos, raw (169910) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Ananas | Ananas, roh (377) | Pineapple, raw, all varieties (169124) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Rosinen | Rosine, getrocknet (477) | Raisins, dark, seedless (168165) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Datteln | Dattel, getrocknet (384) | Dates, deglet noor (171726) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Fenchel | Fenchel, roh (352) | Fennel, bulb, raw (169385) | 13 | 3 | 0 | CH | doppelt geprüft, 3 Abweichung(en) |
+| Staudensellerie | Stangensellerie, roh (366) | Celery, raw (169988) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Knollensellerie | Knollensellerie, roh (357) | Celeriac, raw (170400) | 13 | 3 | 0 | CH | doppelt geprüft, 3 Abweichung(en) |
+| Rote Bete | Rande, roh (451) | Beets, raw (169145) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Weißkohl | Weisskohl, roh (453) | Cabbage, raw (169975) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Rotkohl | Rotkohl, roh (364) | Cabbage, red, raw (169977) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Rosenkohl | Rosenkohl, roh (363) | Brussels sprouts, raw (170383) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Grüne Bohnen | Bohne, grün, roh (353) | Beans, snap, green, raw (169961) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Spargel | Spargel (weiss und grün), roh  (443) | Asparagus, raw (168389) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Kopfsalat | Kopfsalat, roh (448) | Lettuce, butterhead (includes boston and bibb types), raw (168429) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Eisbergsalat | Eisbergsalat, roh (459) | Lettuce, iceberg (includes crisphead types), raw (169248) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Radieschen | Radieschen, roh (456) | Radishes, raw (169276) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Kohlrabi | Kohlrabi, roh (449) | Kohlrabi, raw (168424) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Grünkohl | Federkohl, roh (13400) | Kale, raw (168421) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Pastinake | Pastinake, roh (13439) | Parsnips, raw (170417) | 14 | 1 | 1 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Schalotte | Schalotte, roh (14281) | Shallots, raw (170499) | 12 | 4 | 0 | CH | doppelt geprüft, 4 Abweichung(en) |
+| Oliven | Olive, schwarz (493) | Olives, ripe, canned (small-extra large) (169094) | 11 | 5 | 0 | CH | doppelt geprüft, 5 Abweichung(en) |
+| Putenbrust | Truthahn, Brust, Schnitzel oder Geschnetzeltes, roh (713) | Turkey, retail parts, breast, meat only, raw (174515) | 14 | 1 | 1 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Schweinefilet | Schwein, Filet, roh (677) | Pork, fresh, loin, tenderloin, separable lean only, raw (168249) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Schweinehack | Schwein, Gehacktes, roh (7) | Pork, fresh, ground, raw (167902) | 12 | 2 | 2 | Mittelwert | doppelt geprüft, 2 Abweichung(en) |
+| Rindfleisch (Gulasch) | Rind, Voressen, roh (38) | Beef, chuck for stew, separable lean and fat, all grades, raw (171206) | 14 | 2 | 0 | USDA | doppelt geprüft, 2 Abweichung(en) |
+| Speck | Kochspeck (704) | Pork, cured, bacon, unprepared (168277) | 13 | 3 | 0 | Mittelwert | doppelt geprüft, 3 Abweichung(en) |
+| Kabeljau | Dorsch, roh (285) | Fish, cod, Atlantic, raw (171955) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Forelle | Forelle, roh (289) | Fish, trout, rainbow, farmed, raw (173717) | 12 | 3 | 1 | CH | doppelt geprüft, 3 Abweichung(en) |
+| Räucherlachs | Lachs, geräuchert (193) | Fish, salmon, chinook, smoked (173687) | 10 | 6 | 0 | CH | doppelt geprüft, 6 Abweichung(en) |
+| Tempeh | Tempeh, nature (14251) | Tempeh (174272) | 13 | 1 | 2 | Mittelwert | doppelt geprüft, 1 Abweichung(en) |
+| Kichererbsen (getrocknet) | Kichererbse, getrocknet (439) | Chickpeas (garbanzo beans, bengal gram), mature seeds, raw (173756) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Linsen (braun) | Linse, ganz, getrocknet (370) | Lentils, raw (172420) | 12 | 4 | 0 | CH | doppelt geprüft, 4 Abweichung(en) |
+| Edamame | Edamame (unreife Sojabohne), geschält, gefroren (14160) | Edamame, frozen, unprepared (168410) | 9 | 4 | 3 | CH | doppelt geprüft, 4 Abweichung(en) |
+| Haselnüsse | Haselnuss (270) | Nuts, hazelnuts or filberts (170581) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Cashewkerne | Cashewnuss (275) | Nuts, cashew nuts, raw (170162) | 15 | 0 | 1 | CH | doppelt geprüft |
+| Erdnüsse | Erdnuss, geröstet, ohne Salz (14238) | Peanuts, all types, dry-roasted, without salt (173806) | 15 | 0 | 1 | CH | doppelt geprüft |
+| Sonnenblumenkerne | Sonnenblumenkerne (281) | Seeds, sunflower seed kernels, dried (170562) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Sesam | Sesamsamen ungeschält (280) | Seeds, sesame seeds, whole, dried (170150) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Pinienkerne | Pinienkerne (283) | Nuts, pine nuts, dried (170591) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Kokosraspel | Kokosnuss, getrocknet (Kokosrapseln, Kokosflocken) (742) | Nuts, coconut meat, dried (desiccated), not sweetened (170170) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Hirse | Hirse, Korn geschält (422) | Millet, raw (169702) | 12 | 3 | 1 | CH | doppelt geprüft, 3 Abweichung(en) |
+| Buchweizen | Buchweizen, Korn geschält (421) | Buckwheat (170286) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Polenta (Maisgrieß) | Maisgriess, trocken (425) | Cornmeal, degermed, unenriched, yellow (168929) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Hartweizengrieß | Hartweizengriess, trocken (423) | Semolina, unenriched (168933) | 14 | 2 | 0 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Paniermehl | Paniermehl (750) | Bread, crumbs, dry, grated, plain (174928) | 11 | 5 | 0 | CH | doppelt geprüft, 5 Abweichung(en) |
+| Weißbrot | Weissbrot (823) | Bread, white, commercially prepared (includes soft bread crumbs) (174924) | 12 | 4 | 0 | CH | doppelt geprüft, 4 Abweichung(en) |
+| Vollkornreis | Reis unpoliert, trocken (428) | Rice, brown, long-grain, raw (169703) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Zartbitterschokolade | Schokolade, dunkel (bitter) (196) | Chocolate, dark, 45- 59% cacao solids (170271) | 12 | 0 | 4 | CH | doppelt geprüft |
+| Kakaopulver | Kakaopulver, ohne Zucker (581) | Cocoa, dry powder, unsweetened (169593) | 9 | 7 | 0 | CH | doppelt geprüft, 7 Abweichung(en) |
+| Ahornsirup | Ahornsirup (14093) | Syrups, maple (169661) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Konfitüre | Konfitüre (696) | Jams and preserves (169641) | 14 | 1 | 1 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Sojadrink | Sojagetränk, nature (72) | Soymilk, original and vanilla, unfortified (172446) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Orangensaft | Orangensaft (576) | Orange juice, raw (169098) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Rotwein | Wein rot, 12 vol% (509) | Alcoholic beverage, wine, table, red (173190) | 14 | 1 | 1 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Weißwein | Wein weiss, 12.5 vol% (511) | Alcoholic beverage, wine, table, white (174837) | 15 | 1 | 0 | CH | doppelt geprüft, 1 Abweichung(en) |
+| Prosecco | Schaumwein (551) | – | 0 | 0 | 15 | CH | nur eine Quelle |
+| Bier | Bier, Lager (816) | Alcoholic beverage, beer, regular, all (168746) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Brandy | Branntwein aus Wein (z.B.Cognac, Brandy) (519) | Alcoholic beverage, distilled, all (gin, rum, vodka, whiskey) 80 proof (174815) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Kirschwasser | Kirsch (644) | Alcoholic beverage, distilled, all (gin, rum, vodka, whiskey) 80 proof (174815) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Rum | Branntwein aus Zuckerrohr (z.B. Rum) (520) | Alcoholic beverage, distilled, rum, 80 proof (174817) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Wodka | Spirituosen 40 vol% (z.B. Vodka, Gin) (646) | Alcoholic beverage, distilled, vodka, 80 proof (174818) | 14 | 0 | 2 | CH | doppelt geprüft |
+| Whisky | Branntwein aus Getreide, 40 vol% (z.B. Whisky) (518) | Alcoholic beverage, distilled, whiskey, 86 proof (174819) | 15 | 0 | 1 | CH | doppelt geprüft |
+| Sherry | Sherry, 18.5 vol% (515) | Alcoholic beverage, wine, dessert, dry (175112) | 13 | 2 | 1 | CH | doppelt geprüft, 2 Abweichung(en) |
+| Portwein | Portwein, 18.5 vol% (516) | Alcoholic beverage, wine, dessert, sweet (173176) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Marsala | Portwein, 18.5 vol% (516) | Alcoholic beverage, wine, dessert, sweet (173176) | 16 | 0 | 0 | CH | doppelt geprüft |
+| Amaretto | – | – | 0 | 0 | 0 | – | nicht in den Datenbanken – Herstellerangabe/Schätzwert |
+| Aperol | – | – | 0 | 0 | 0 | – | nicht in den Datenbanken – Herstellerangabe/Schätzwert |
+| Mirin | – | – | 0 | 0 | 0 | – | nicht in den Datenbanken – Herstellerangabe/Schätzwert |
 
 ## Abweichungen im Einzelnen
 
@@ -264,3 +279,6 @@ Abweichungen bei Vitaminen und Mineralstoffen sind zwischen Datenbanken üblich 
 - **Kakaopulver** (übernommen: CH): Energie: CH 380 / USDA 228; Kohlenhydrate: CH 11.6 / USDA 21; Fett: CH 20.6 / USDA 13.7; Vitamin D: CH 2.7 / USDA 0; Folat: CH 107 / USDA 32; Eisen: CH 49 / USDA 13.9; Kalium: CH 3900 / USDA 1524
 - **Konfitüre** (übernommen: CH): Eisen: CH 1.4 / USDA 0.5
 - **Sojadrink** (übernommen: CH): Kohlenhydrate: CH 1.5 / USDA 6.2
+- **Rotwein** (übernommen: CH): Kohlenhydrate: CH 0.3 / USDA 3
+- **Weißwein** (übernommen: CH): Kohlenhydrate: CH 0.1 / USDA 3
+- **Sherry** (übernommen: CH): Energie: CH 117 / USDA 150; Kohlenhydrate: CH 3.6 / USDA 11.9

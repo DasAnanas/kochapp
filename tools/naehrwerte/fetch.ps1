@@ -7,7 +7,8 @@
 param(
   [Parameter(Mandatory)][string]$Out,
   [string]$ChUrl = 'https://naehrwertdaten.ch/wp-content/uploads/2026/07/Schweizer_Nahrwertdatenbank.xlsx',
-  [string]$UsdaUrl = 'https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_sr_legacy_food_csv_2018-04.zip'
+  [string]$UsdaUrl = 'https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_sr_legacy_food_csv_2018-04.zip',
+  [switch]$NoDownload   # vorhandene, schon entpackte Daten in -Out erneut auswerten (nichts herunterladen)
 )
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -15,12 +16,14 @@ $ProgressPreference = 'SilentlyContinue'
 $inv = [Globalization.CultureInfo]::InvariantCulture
 $u8 = New-Object Text.UTF8Encoding($false)
 New-Item -ItemType Directory -Force $Out | Out-Null
-$keys = 'kcal', 'prot', 'carb', 'fat', 'fiber', 'vitC', 'vitA', 'vitD', 'b12', 'folat', 'ca', 'fe', 'mg', 'zn', 'k'
+$keys = 'kcal', 'prot', 'carb', 'fat', 'fiber', 'vitC', 'vitA', 'vitD', 'b12', 'folat', 'ca', 'fe', 'mg', 'zn', 'k', 'alc'
 
-Invoke-WebRequest $ChUrl -OutFile "$Out\ch.zip" -UserAgent 'Mozilla/5.0'
-Invoke-WebRequest $UsdaUrl -OutFile "$Out\usda.zip" -UserAgent 'Mozilla/5.0'
-Expand-Archive "$Out\ch.zip" "$Out\ch" -Force
-Expand-Archive "$Out\usda.zip" "$Out\usda" -Force
+if (-not $NoDownload) {
+  Invoke-WebRequest $ChUrl -OutFile "$Out\ch.zip" -UserAgent 'Mozilla/5.0'
+  Invoke-WebRequest $UsdaUrl -OutFile "$Out\usda.zip" -UserAgent 'Mozilla/5.0'
+  Expand-Archive "$Out\ch.zip" "$Out\ch" -Force
+  Expand-Archive "$Out\usda.zip" "$Out\usda" -Force
+}
 
 # ---- Schweizer Nährwertdatenbank: erstes Tabellenblatt der Excel-Datei lesen ----
 $ss = [xml][IO.File]::ReadAllText("$Out\ch\xl\sharedStrings.xml", [Text.Encoding]::UTF8)
@@ -38,7 +41,7 @@ $table = foreach ($row in $sheet.worksheet.sheetData.row) {
 }
 $h = $table[2]
 $pat = @{ kcal = '^Energie, Kilokalorien'; prot = '^Protein \(g\)'; carb = '^Kohlenhydrate, verf'; fat = '^Fett, total'; fiber = '^Nahrungsfasern'
-  vitC = '^Vitamin C'; vitA = '^Vitamin A-Aktivit.t, RAE'; vitD = '^Vitamin D'; b12 = '^Vitamin B12'; folat = '^Folat'; ca = '^Calcium'; fe = '^Eisen'; mg = '^Magnesium'; zn = '^Zink'; k = '^Kalium' }
+  vitC = '^Vitamin C'; vitA = '^Vitamin A-Aktivit.t, RAE'; vitD = '^Vitamin D'; b12 = '^Vitamin B12'; folat = '^Folat'; ca = '^Calcium'; fe = '^Eisen'; mg = '^Magnesium'; zn = '^Zink'; k = '^Kalium'; alc = '^Alkohol \(g\)' }
 $col = @{}
 foreach ($k in $keys) { $m = @(0..($h.Count - 1) | Where-Object { $h[$_] -match $pat[$k] }); if ($m.Count -ne 1) { throw "Spalte $k nicht eindeutig ($($m.Count) Treffer)" }; $col[$k] = $m[0] }
 $sb = New-Object Text.StringBuilder
@@ -53,7 +56,7 @@ for ($i = 3; $i -lt $table.Count; $i++) {
 # ---- USDA SR Legacy: Nährstoffe je Lebensmittel einsammeln ----
 $u = Get-ChildItem "$Out\usda" -Directory | Select-Object -First 1
 # Kohlenhydrate (1005) sind bei USDA "by difference" inkl. Ballaststoffe -> verfügbare KH = 1005 - 1079
-$nid = @{ '1008' = 'kcal'; '1003' = 'prot'; '1005' = 'carbT'; '1004' = 'fat'; '1079' = 'fiber'; '1162' = 'vitC'; '1106' = 'vitA'; '1114' = 'vitD'; '1178' = 'b12'; '1177' = 'folat'; '1087' = 'ca'; '1089' = 'fe'; '1090' = 'mg'; '1095' = 'zn'; '1092' = 'k' }
+$nid = @{ '1008' = 'kcal'; '1003' = 'prot'; '1005' = 'carbT'; '1004' = 'fat'; '1079' = 'fiber'; '1162' = 'vitC'; '1106' = 'vitA'; '1114' = 'vitD'; '1178' = 'b12'; '1177' = 'folat'; '1087' = 'ca'; '1089' = 'fe'; '1090' = 'mg'; '1095' = 'zn'; '1092' = 'k'; '1018' = 'alc' }
 $food = @{}
 foreach ($line in [IO.File]::ReadLines("$($u.FullName)\food_nutrient.csv")) {
   $p = $line.Replace('"', '').Split(',')

@@ -12,12 +12,12 @@ $u8 = New-Object Text.UTF8Encoding($false)
 $here = $PSScriptRoot
 $app = Split-Path (Split-Path $here -Parent) -Parent
 
-$keys = 'kcal', 'prot', 'carb', 'fat', 'fiber', 'vitC', 'vitA', 'vitD', 'b12', 'folat', 'ca', 'fe', 'mg', 'zn', 'k'
-$label = 'Energie', 'Eiweiß', 'Kohlenhydrate', 'Fett', 'Ballaststoffe', 'Vitamin C', 'Vitamin A', 'Vitamin D', 'Vitamin B12', 'Folat', 'Calcium', 'Eisen', 'Magnesium', 'Zink', 'Kalium'
-$digits = 0, 1, 1, 1, 1, 1, 0, 1, 2, 0, 0, 1, 0, 1, 0
+$keys = 'kcal', 'prot', 'carb', 'fat', 'fiber', 'vitC', 'vitA', 'vitD', 'b12', 'folat', 'ca', 'fe', 'mg', 'zn', 'k', 'alc'
+$label = 'Energie', 'Eiweiß', 'Kohlenhydrate', 'Fett', 'Ballaststoffe', 'Vitamin C', 'Vitamin A', 'Vitamin D', 'Vitamin B12', 'Folat', 'Calcium', 'Eisen', 'Magnesium', 'Zink', 'Kalium', 'Alkohol'
+$digits = 0, 1, 1, 1, 1, 1, 0, 1, 2, 0, 0, 1, 0, 1, 0, 1
 # Toleranz: relative Abweichung ODER absolute Abweichung darf unterschritten sein
-$rel = 0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
-$abs = 15, 1.5, 2, 1.5, 1.5, 5, 30, 0.5, 0.3, 15, 15, 0.5, 10, 0.4, 60
+$rel = 0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.2
+$abs = 15, 1.5, 2, 1.5, 1.5, 5, 30, 0.5, 0.3, 15, 15, 0.5, 10, 0.4, 60, 1.5
 
 function Num([string]$s) { $d = 0.0; if ($s -ne '' -and [double]::TryParse($s, [Globalization.NumberStyles]::Float, $inv, [ref]$d)) { return $d }; return $null }
 function Fmt($v, [int]$dg) { return ([Math]::Round([double]$v, $dg)).ToString($inv) }
@@ -60,11 +60,13 @@ foreach ($f in $foods) {
   if ($f.usda -and -not $u) { throw "USDA-Eintrag '$($f.usda)' für $id nicht gefunden" }
   # Schweizer Werte sind bei Getränken teils je 100 ml angegeben
   $chFactor = if ($c -and $c[4] -match 'ml') { 1.0 } else { $dens }
+  # Lebensmittel ohne Datenbankeintrag: Schätzwerte aus der Spalte est (z. B. "kcal=160;carb=26;alc=8.7", je 100 g bzw. ml)
+  $est = @{}; if ($f.est) { foreach ($kv in $f.est.Split(';')) { $p = $kv.Split('='); if ($p.Count -eq 2) { $est[$p[0].Trim()] = [double]::Parse($p[1].Trim(), $inv) } } }
   $vals = @(); $marks = @(); $cnt = @{ ok = 0; diff = 0; single = 0; none = 0 }
   for ($i = 0; $i -lt $keys.Count; $i++) {
     $a = if ($c) { Num $c[5 + $i] } else { $null }; if ($null -ne $a) { $a = $a * $chFactor }
     $b = if ($u) { Num $u[2 + $i] } else { $null }; if ($null -ne $b) { $b = $b * $dens }
-    $state = 'none'; $v = if ($isNew) { 0.0 } else { $old[$id].n[$i] }
+    $state = 'none'; $v = if ($est.ContainsKey($keys[$i])) { $est[$keys[$i]] } elseif ($isNew -or $i -ge $old[$id].n.Count) { 0.0 } else { $old[$id].n[$i] }
     if ($null -ne $a -and $null -ne $b) {
       $d = [Math]::Abs($a - $b); $mx = [Math]::Max([Math]::Abs($a), [Math]::Abs($b))
       $state = if ($d -le $abs[$i] -or ($mx -gt 0 -and $d / $mx -le $rel[$i])) { 'ok' } else { 'diff' }
@@ -80,7 +82,7 @@ foreach ($f in $foods) {
   }
   $result[$id] = $vals
   $srcN = [int][bool]$c + [int][bool]$u
-  $status = if ($srcN -eq 2) { if ($cnt.diff -eq 0) { 'doppelt geprüft' } else { "doppelt geprüft, $($cnt.diff) Abweichung(en)" } } elseif ($srcN -eq 1) { 'nur eine Quelle' } else { 'ungeprüft (Schätzwert)' }
+  $status = if ($srcN -eq 2) { if ($cnt.diff -eq 0) { 'doppelt geprüft' } else { "doppelt geprüft, $($cnt.diff) Abweichung(en)" } } elseif ($srcN -eq 1) { 'nur eine Quelle' } elseif ($f.est) { 'nicht in den Datenbanken – Herstellerangabe/Schätzwert' } else { 'ungeprüft (Schätzwert)' }
   $taken = if ($srcN -eq 2) { if ($f.pick -eq 'usda') { 'USDA' } elseif ($f.pick -eq 'avg') { 'Mittelwert' } else { 'CH' } } elseif ($c) { 'CH' } elseif ($u) { 'USDA' } else { '–' }
   [void]$summaryRows.Add("| $name | $(if ($c) { $c[1] + ' (' + $c[0] + ')' } else { '–' }) | $(if ($u) { $u[1].Replace($suffix, '') + ' (' + $u[0] + ')' } else { '–' }) | $($cnt.ok) | $($cnt.diff) | $($cnt.single) | $taken | $status |")
   if ($marks.Count) { [void]$detail.AppendLine("- **$name** (übernommen: $taken): " + ($marks -join '; ')) }
@@ -97,9 +99,9 @@ $zero = @($foods | Where-Object { -not $_.ch -and -not $_.usda }).Count
 [void]$report.AppendLine('- Schweizer Nährwertdatenbank V 7.1, Bundesamt für Lebensmittelsicherheit und Veterinärwesen (BLV), https://naehrwertdaten.ch')
 [void]$report.AppendLine('- USDA FoodData Central, SR Legacy (2018-04), U.S. Department of Agriculture, https://fdc.nal.usda.gov')
 [void]$report.AppendLine('')
-[void]$report.AppendLine('**Vorgehen:** Jedes Lebensmittel wurde je einem Eintrag beider Datenbanken zugeordnet (`foods.tsv`). Für jeden der 15 Nährstoffe werden beide Werte verglichen. Übernommen wird der Schweizer Wert; fehlt er, der USDA-Wert. Wo die Abweichungen bei den Makronährstoffen von Hand geprüft wurden und der Schweizer Eintrag ein anderes Produkt beschreibt als hierzulande üblich, ist in `foods.tsv` (Spalte `pick`) stattdessen der USDA-Wert oder der Mittelwert beider Quellen gewählt; die Spalte „übernommen“ zeigt das an. Als Übereinstimmung gilt eine Abweichung von höchstens 20 % (Ballaststoffe 30 %, Vitamine und Mineralstoffe 50 %) oder eine kleine absolute Differenz. Kohlenhydrate sind verfügbare Kohlenhydrate (USDA: Gesamtkohlenhydrate minus Ballaststoffe). Bei Flüssigkeiten sind die Werte mit der Dichte auf 100 ml umgerechnet.')
+[void]$report.AppendLine('**Vorgehen:** Jedes Lebensmittel wurde je einem Eintrag beider Datenbanken zugeordnet (`foods.tsv`). Für jeden der ' + $keys.Count + ' Nährstoffe (einschließlich Alkohol) werden beide Werte verglichen. Übernommen wird der Schweizer Wert; fehlt er, der USDA-Wert. Wo die Abweichungen bei den Makronährstoffen von Hand geprüft wurden und der Schweizer Eintrag ein anderes Produkt beschreibt als hierzulande üblich, ist in `foods.tsv` (Spalte `pick`) stattdessen der USDA-Wert oder der Mittelwert beider Quellen gewählt; die Spalte „übernommen“ zeigt das an. Als Übereinstimmung gilt eine Abweichung von höchstens 20 % (Ballaststoffe 30 %, Vitamine und Mineralstoffe 50 %) oder eine kleine absolute Differenz. Kohlenhydrate sind verfügbare Kohlenhydrate (USDA: Gesamtkohlenhydrate minus Ballaststoffe). Bei Flüssigkeiten sind die Werte mit der Dichte auf 100 ml umgerechnet. Lebensmittel, die in keiner der beiden Datenbanken stehen (Aperol, Amaretto, Mirin), tragen Hersteller- bzw. Händlerangaben als Schätzwert (Spalte `est` in `foods.tsv`); ihr Alkoholgehalt ist aus den Volumenprozent berechnet (× 0,789 g/ml). Alkohol ist der Gehalt der rohen Zutat – beim Kochen verfliegt ein Teil.')
 [void]$report.AppendLine('')
-[void]$report.AppendLine("**Ergebnis:** $($foods.Count) Lebensmittel – $two mit zwei Quellen, $one mit nur einer Quelle, $zero ohne Quelle (Schätzwert bleibt). Von $($foods.Count * 15) Einzelwerten stimmen $($stat.ok) in beiden Quellen überein, $($stat.diff) weichen ab, $($stat.single) stammen aus nur einer Quelle, $($stat.none) haben keine Quelle.")
+[void]$report.AppendLine("**Ergebnis:** $($foods.Count) Lebensmittel – $two mit zwei Quellen, $one mit nur einer Quelle, $zero ohne Quelle (Schätzwert bleibt). Von $($foods.Count * $keys.Count) Einzelwerten stimmen $($stat.ok) in beiden Quellen überein, $($stat.diff) weichen ab, $($stat.single) stammen aus nur einer Quelle, $($stat.none) haben keine Quelle.")
 [void]$report.AppendLine('')
 [void]$report.AppendLine('Abweichungen bei Vitaminen und Mineralstoffen sind zwischen Datenbanken üblich (Sorte, Anbau, Messmethode, Anreicherung).')
 [void]$report.AppendLine('')

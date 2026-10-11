@@ -203,7 +203,7 @@
     });
     const share = opt && opt.full ? 1 : KA.dayShare(prefs);
     if (share < 1) {
-      NK.forEach((k) => { T[k] = k === 'kcal' ? Math.round((T[k] * share) / 10) * 10 : Math.round(T[k] * share * 10) / 10; });
+      NK.forEach((k) => { if (T[k] == null) return; T[k] = k === 'kcal' ? Math.round((T[k] * share) / 10) * 10 : Math.round(T[k] * share * 10) / 10; });
       ['prot', 'carb', 'fat', 'fiber'].forEach((k) => { T[k] = Math.round(T[k]); });
       T.share = share;
     }
