@@ -166,6 +166,7 @@ details.pick2{border-top:1px solid var(--line2);padding-top:14px} details.pick2[
 .combolist{margin:.6rem 0;padding-left:1.3rem} .combolist li{margin:.25rem 0}
 .rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:14px}
 .rc{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:.6rem;transition:transform .15s,box-shadow .15s}
+.rc[data-act]{cursor:pointer} .rc[data-act]:hover{border-color:var(--line3)}
 .rc:hover{box-shadow:0 8px 20px -14px rgba(20,50,35,.35)}
 .rc.sel{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc-soft)}
 .rc-top{display:flex;justify-content:space-between;gap:.6rem;align-items:flex-start}
@@ -411,3 +412,10 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
 
 .restore{margin-top:20px;text-align:center}
 .listbar{margin:0 0 1.1rem;padding-bottom:1rem;border-bottom:1px solid var(--line2)}
+.macros{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:.4rem 0 .6rem}
+.macros div{display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center;background:var(--side);border-radius:12px;padding:14px 8px}
+.macros b{font:600 20px/1.1 var(--head);font-variant-numeric:tabular-nums}
+.macros span{font:500 12px var(--body);color:var(--muted)}
+.macros .kcal{background:var(--acc-soft)} .macros .kcal b,.macros .kcal span{color:var(--acc-deep)}
+@media (max-width:480px){.macros{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rc-more{align-self:flex-start}
