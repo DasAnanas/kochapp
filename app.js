@@ -792,7 +792,7 @@
       return `<div class="bcard" role="button" tabindex="0" data-act="openrec" data-id="${esc(r.id)}">
         <div class="thumb" style="${toneStyle(r)}">${recImg(r)}</div>
         <div class="bc-t"><span>${esc(catLabel(r))}</span><b>${esc(r.title)}</b><span>${r.time} Min · ${r.serv} Pers.</span></div>
-        <button class="lbtn ${inL ? 'on' : ''}" data-act="addlist" data-id="${esc(r.id)}">${inL ? '✓ Auf Liste' : '+ Liste'}</button></div>`;
+        <button class="lbtn ${inL ? 'on' : ''}" data-act="addlist" data-id="${esc(r.id)}" aria-pressed="${inL ? 'true' : 'false'}" title="${inL ? 'Von der Einkaufsliste entfernen' : 'Auf die Einkaufsliste setzen'}">${inL ? '<span class="l-on">✓ Auf Liste</span><span class="l-off">− Entfernen</span>' : '+ Liste'}</button></div>`;
     }).join('');
   }
 
@@ -857,7 +857,7 @@
         ${base ? `<div class="tags">${recipeTags(base, true)}</div>` : ''}
         <div class="servbox"><span class="muted">Portionen</span>
           <div class="step"><button data-act="dserv" data-d="-1" aria-label="Weniger">−</button><span>${persons(ui.detailServ)}</span><button data-act="dserv" data-d="1" aria-label="Mehr">+</button></div>
-          <button class="btn dark" data-act="addlistd">${inL ? (inL.serv === ui.detailServ ? '✓ Auf der Liste' : 'Liste aktualisieren') : 'Auf Einkaufsliste'}</button></div>
+          <button class="btn ${inL && inL.serv === ui.detailServ ? 'ghost' : 'dark'}" data-act="addlistd">${inL ? (inL.serv === ui.detailServ ? '✓ Auf der Liste · entfernen' : 'Liste aktualisieren') : 'Auf Einkaufsliste'}</button></div>
         ${r.builtin ? '' : `<p class="muted sm">${base ? 'Im Vorrats-Finder und Wochenplan nutzbar.' : 'Nicht im Vorrats-Finder und Wochenplan nutzbar: Keine Zutat wurde als bekanntes Lebensmittel mit Menge erkannt.'}</p>`}
       </div><div class="dt-img" style="${toneStyle(r)}">${recImg(r)}</div></div>
       <div class="dt-body">
@@ -1162,6 +1162,15 @@
     return Object.values(agg);
   }
 
+  // Rezept von der Einkaufsliste nehmen; Häkchen von Artikeln, die dadurch ganz wegfallen, werden mit entfernt
+  function unlist(id) {
+    const before = cartItems().map((i) => i.key);
+    S.list = S.list.filter((l) => l.id !== id);
+    const after = new Set(cartItems().map((i) => i.key));
+    before.forEach((k) => { if (!after.has(k)) delete S.done[k]; });
+    update(); toast('Von der Einkaufsliste entfernt');
+  }
+
   /* ---------- Render ---------- */
   const TABS = [['book', 'Rezeptbuch', 'Rezepte'], ['finder', 'Rezepte aus Vorrat', 'Finden'], ['plan', 'Wochenplan', 'Plan'], ['pantry', 'Vorrat', 'Vorrat'], ['shop', 'Einkaufsliste', 'Liste']];
   function chrome() {
@@ -1288,16 +1297,20 @@
     fmore: () => { ui.flimit += 24; render(); },
     bookadd: () => { S.tab = 'book'; ui.book = 'add'; update(); window.scrollTo(0, 0); },
     openrec: (el) => openRecipe(el.dataset.id),
+    // Umschalter: ein zweiter Klick nimmt das Rezept wieder von der Liste – seine Zutaten verschwinden damit in genau
+    // der Menge, die es beigetragen hat (die Einkaufsliste wird aus S.list berechnet)
     addlist: (el) => {
       const r = bookRecipe(el.dataset.id);
-      if (!r || S.list.some((l) => l.id === r.id)) return;
+      if (!r) return;
+      if (S.list.some((l) => l.id === r.id)) { unlist(r.id); return; }
       S.list.push({ id: r.id, serv: r.serv });
       update(); toast('Zur Einkaufsliste hinzugefügt');
     },
     addlistd: () => {
       const l = S.list.find((x) => x.id === ui.selId);
+      if (l && l.serv === ui.detailServ) { unlist(ui.selId); return; }
       if (l) l.serv = ui.detailServ; else S.list.push({ id: ui.selId, serv: ui.detailServ });
-      update(); toast('Zur Einkaufsliste hinzugefügt');
+      update(); toast(l ? 'Einkaufsliste aktualisiert' : 'Zur Einkaufsliste hinzugefügt');
     },
     dserv: (el) => { ui.detailServ = Math.max(1, Math.min(30, ui.detailServ + Number(el.dataset.d))); render(); },
     delrec: async () => {
@@ -1391,7 +1404,7 @@
     /* Einkaufsliste */
     blockdel: (el) => { S.blocks[el.dataset.v] = null; update(); },
     listserv: (el) => { const l = S.list.find((x) => x.id === el.dataset.id); l.serv = Math.max(1, Math.min(30, l.serv + Number(el.dataset.d))); update(); },
-    listdel: (el) => { S.list = S.list.filter((x) => x.id !== el.dataset.id); update(); },
+    listdel: (el) => unlist(el.dataset.id),
     listchk: (el) => { const k = el.dataset.k; if (S.done[k]) delete S.done[k]; else S.done[k] = true; update(); },
     addextra: () => {
       const v = $('#extra-in').value.trim();
