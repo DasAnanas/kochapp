@@ -9,6 +9,7 @@
   const DEF = () => ({
     tab: 'book',
     my: [], list: [], extras: [], done: {}, // Rezeptbuch: eigene Rezepte, Rezepte auf der Einkaufsliste, freie Artikel, Häkchen
+    hidden: [], // gelöschte mitgelieferte Rezepte (IDs) – lassen sich wiederherstellen
     prefs: {
       diets: [], cuisines: [], dislikes: [], maxTime: 60, maxDiff: 3, persons: 2, assumeStaples: true, onlyMine: false,
       meals: { f: 1, m: 1, a: 1, s: 0 }, partial: false,
@@ -717,7 +718,7 @@
     };
   }
   const builtins = () => KA.RECIPES.filter((r) => !r.user && !r.book);
-  const allBook = () => S.my.concat(builtins().map((r) => bookRecipe(r.id)), Object.values(bookData()));
+  const allBook = () => S.my.concat(builtins().map((r) => bookRecipe(r.id)), Object.values(bookData())).filter((r) => !r.builtin || !S.hidden.includes(r.id));
 
   // Eigene Rezepte in Finder und Wochenplan bereitstellen; Verweise auf gelöschte Rezepte aufräumen
   let usableMine = 0;
@@ -750,8 +751,9 @@
     // Rezeptbuch-Rezepte in die Rezeptfindung übernehmen (beim Start und wenn eigene Lebensmittel sie neu verknüpfen)
     if (!bookMap) KA.setBookRecipes(Object.values(bookData()));
     usableMine = KA.setUserRecipes(S.my);
-    S.sel = S.sel.filter((id) => REC[id]);
-    if (S.plan && S.plan.days.some((day) => day.some((m) => !REC[m.rid]))) S.plan = null;
+    KA.setHidden(S.hidden);
+    S.sel = S.sel.filter((id) => REC[id] && !KA.hidden.has(id));
+    if (S.plan && S.plan.days.some((day) => day.some((m) => !REC[m.rid] || KA.hidden.has(m.rid)))) S.plan = null;
   }
 
   // Zutaten ohne Stammdaten aus eigenen Rezepten als freie Artikel für die Einkaufsliste; entries: [{ rid, k }]
@@ -803,12 +805,13 @@
   }
 
   function viewLibrary() {
-    const n = S.my.length + builtins().length + KA.BOOK.length;
+    const n = allBook().length, nh = S.hidden.length;
     return `<div class="ph"><div><h1>Meine Rezepte</h1><p>${n} Rezepte · ${S.my.length} eigene</p></div>
         <input id="bk-q" class="search" value="${esc(ui.query)}" aria-label="Rezept oder Zutat suchen" placeholder="Rezept oder Zutat suchen …" autocomplete="off"></div>
       <div class="fchips">${['Alle'].concat(BOOK_CATS, ['Eigene']).map((f) => `<button class="${ui.filter === f ? 'on' : ''}" data-act="bookfilter" data-v="${f}">${f}</button>`).join('')}</div>
       ${ui.filter === 'Eigene' ? '' : cuisineChips()}
-      <div class="bgrid" id="bk-cards">${bookCards()}</div>`;
+      <div class="bgrid" id="bk-cards">${bookCards()}</div>
+      ${nh ? `<p class="muted sm restore">${nh} mitgelieferte${nh > 1 ? ' Rezepte' : 's Rezept'} gelöscht. <button class="lk" data-act="restorerec">Wiederherstellen</button></p>` : ''}`;
   }
 
   // Nährwerte einer Portion, zusammengerechnet aus den Zutaten (Werte je 100 g aus den Stammdaten)
@@ -863,7 +866,7 @@
         ${nutritionCard(r, base && base.i.length ? base : null)}</div>
         <div><h2>Zubereitung</h2>
           ${r.steps.length ? r.steps.map((s, k) => `<div class="srow"><span>${k + 1}</span><p>${esc(s)}</p></div>`).join('') : '<p class="muted">Keine Schritte hinterlegt.</p>'}
-          ${r.builtin ? '' : '<div class="btnrow"><button class="btn ghost" data-act="delrec">Rezept löschen</button></div>'}</div>
+          <div class="btnrow"><button class="btn ghost" data-act="delrec">Rezept löschen</button></div></div>
       </div></div>`;
   }
 
@@ -1299,11 +1302,16 @@
     dserv: (el) => { ui.detailServ = Math.max(1, Math.min(30, ui.detailServ + Number(el.dataset.d))); render(); },
     delrec: async () => {
       const r = bookRecipe(ui.selId);
-      if (!r || r.builtin || !await ask('Rezept löschen?', `„${r.title}“ wird aus deinem Rezeptbuch und von der Einkaufsliste entfernt.`, { ok: 'Löschen', danger: true })) return;
-      S.my = S.my.filter((x) => x.id !== r.id);
+      if (!r) return;
+      const text = r.builtin
+        ? `„${r.title}“ verschwindet aus Rezeptbuch, Rezept-Finder, Wochenplan und Einkaufsliste. Mitgelieferte Rezepte kannst du später im Rezeptbuch wiederherstellen.`
+        : `„${r.title}“ wird endgültig aus deinem Rezeptbuch und von der Einkaufsliste entfernt.`;
+      if (!await ask('Rezept löschen?', text, { ok: 'Löschen', danger: true })) return;
+      if (r.builtin) { if (!S.hidden.includes(r.id)) S.hidden.push(r.id); } else S.my = S.my.filter((x) => x.id !== r.id);
       S.list = S.list.filter((l) => l.id !== r.id);
       ui.book = 'library'; update(); toast('Rezept gelöscht');
     },
+    restorerec: () => { const n = S.hidden.length; S.hidden = []; update(); toast(n + (n > 1 ? ' Rezepte' : ' Rezept') + ' wiederhergestellt'); },
     addmode: (el) => { ui.addMode = el.dataset.v; render(); },
     dstep: (el) => { ui.draft.serv = Math.max(1, Math.min(30, ui.draft.serv + Number(el.dataset.d))); render(); },
     dcat: (el) => { ui.draft.cat = el.dataset.v; render(); },
