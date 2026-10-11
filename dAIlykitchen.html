@@ -8,429 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,800&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <style>
-/* dAIlykitchen – Gestaltung im Küchenbuch-Stil: Seitenleiste, helle Karten, Bricolage Grotesque + Manrope */
-:root{
-  --bg:#F6F8F5; --card:#FFFFFF; --side:#EEF2EC; --hover:#E2EBDF; --ink:#1B2420; --ink2:#36423C; --muted:#5C6862; --faint:#8C978F;
-  --line:#E3E8E1; --line2:#EDF1EB; --line3:#D3DBD0;
-  --acc:#2E8B57; --acc-h:#257549; --acc-ink:#fff; --acc-soft:#E0F1E6; --acc-deep:#1D6A40;
-  --warm:#C98A1E; --warm-soft:#FBEFD9; --warm-ink:#6B4A12;
-  --ok:#2E8B57; --mid:#d9a21f; --low:#cf4b3f;
-  --head:'Bricolage Grotesque',ui-sans-serif,system-ui,"Segoe UI",sans-serif; --body:'Manrope',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --r:14px;
-}
-@media (prefers-color-scheme:dark){
-  :root{--bg:#141a17; --card:#1c2420; --side:#18201c; --hover:#26322c; --ink:#e8efe9; --ink2:#cfd9d2; --muted:#97a39b; --faint:#7d8a82;
-    --line:#2c3731; --line2:#273029; --line3:#3a4740; --acc:#5fb98a; --acc-h:#72c79a; --acc-ink:#0d1f16; --acc-soft:#23362c; --acc-deep:#8fd6ae;
-    --warm:#f09a55; --warm-soft:#3a2a1d; --warm-ink:#f3c79f}
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--body);-webkit-font-smoothing:antialiased}
-h1,h2,h3,h4{margin:0;line-height:1.15}
-h1,h2,h3{font-family:var(--head);font-weight:500;letter-spacing:-.01em}
-h1{font-size:44px;line-height:1.05;letter-spacing:-.015em;text-wrap:balance}
-h2{font-size:24px;margin-bottom:.7rem}
-h2.sec{margin:1.8rem 0 .9rem}
-h3{font-size:18px}
-h4.cat,.slabel{font:600 13px var(--body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-h4.cat{margin:1.2rem 0 .4rem}
-p{margin:.5rem 0}
-a{color:var(--acc)}
-.muted{color:var(--muted)} .sm{font-size:.86rem}
-.opt{font:600 12px var(--body);background:var(--acc-soft);color:var(--acc-deep);border-radius:99px;padding:.2rem .65rem;vertical-align:middle;margin-left:.4rem;letter-spacing:0}
-
-/* ---------- Grundgerüst ---------- */
-.shell{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
-.side{background:var(--side);border-right:1px solid var(--line);padding:30px 16px;display:flex;flex-direction:column;gap:28px;position:sticky;top:0;height:100vh;overflow:auto}
-.side .brand{display:flex;flex-direction:column;gap:4px;padding:0 12px}
-.side .brand b{font:500 28px/1 var(--head);letter-spacing:-.01em}
-.side .brand span{font:500 14px/1.3 var(--body);color:var(--muted)}
-/* Markenname dAIlykitchen: das AI ist hervorgehoben */
-.side .brand b .ai,.mtop b .ai{font:inherit;font-weight:800;color:var(--acc);letter-spacing:.01em}
-.newbtn{border:0;cursor:pointer;background:var(--acc);color:var(--acc-ink);font:600 14px var(--body);padding:12px 14px;border-radius:10px;text-align:left;display:flex;align-items:center;gap:10px}
-.newbtn:hover{background:var(--acc-h)} .newbtn span{font-size:18px;line-height:1}
-.snav{display:flex;flex-direction:column;gap:2px}
-.snav .slabel{padding:0 12px 8px}
-.snav button{border:0;cursor:pointer;background:transparent;color:var(--ink);font:500 14px var(--body);padding:9px 12px;border-radius:8px;text-align:left;display:flex;justify-content:space-between;gap:8px}
-.snav button:hover,.snav button.on{background:var(--hover)} .snav button.on{font-weight:600}
-.snav button i{font-style:normal;color:var(--muted);font-weight:500}
-main{padding:40px 48px 90px;min-width:0}
-#view{max-width:1080px}
-.mtop,.tabbar{display:none}
-.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:24px}
-.ph>div{display:flex;flex-direction:column;gap:6px} .ph p{margin:0;color:var(--muted)}
-.search{width:300px;background:var(--card);padding:11px 14px}
-
-
-@media (max-width:999px){
-  .shell{grid-template-columns:minmax(0,1fr)} .side{display:none}
-  main{padding:18px 16px 110px}
-  h1{font-size:32px} .search{width:100%}
-  .mtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
-  .mtop b{font:600 24px/1 var(--head);letter-spacing:-.01em}
-  .mtop button{width:44px;height:44px;border:0;border-radius:12px;background:var(--acc);color:var(--acc-ink);cursor:pointer;font:500 22px/1 var(--body)}
-  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:8px 8px 18px}
-  .tabbar button{border:0;cursor:pointer;min-height:48px;border-radius:12px;background:transparent;color:var(--muted);font:600 13px var(--body);display:flex;align-items:center;justify-content:center;gap:5px}
-  .tabbar button.on{background:var(--acc-soft);color:var(--acc-deep)}
-  .tabbar i{font:700 11px var(--body);color:var(--acc);font-style:normal}
-}
-
-/* ---------- Karten, Knöpfe, Formulare ---------- */
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px}
-.card.center{text-align:center;padding:2.6rem 1.2rem}
-.card.err{border-color:var(--low);background:color-mix(in srgb,var(--low) 9%,var(--card))}
-.card.okbox{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,var(--card));margin-top:.8rem}
-.card.warnbox,.warn{background:var(--warm-soft);border-color:transparent;color:var(--warm-ink)}
-.warn{padding:12px 14px;border-radius:10px;font:500 14px/1.4 var(--body)}
-
-button{font-family:inherit}
-.btn{border:0;background:var(--acc);color:var(--acc-ink);border-radius:10px;padding:12px 18px;font:600 14px var(--body);cursor:pointer;transition:transform .08s,background .15s}
-.btn:hover{background:var(--acc-h)} .btn:active{transform:scale(.97)}
-.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)} .btn.ghost:hover{background:var(--side)}
-.btn.dark{background:var(--ink);color:var(--bg)} .btn.dark:hover{background:var(--ink2)}
-.btn.big{font-size:16px;padding:15px 28px}
-.btn.sm{padding:8px 12px;font-size:13px;margin-top:.6rem}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:1rem}
-.btnrow.end{justify-content:flex-end;border-top:1px solid var(--line2);padding-top:20px}
-.x{border:0;background:none;color:var(--faint);cursor:pointer;font-size:16px;padding:.15rem .4rem;border-radius:6px}
-.x:hover{background:var(--line);color:var(--low)}
-.back{align-self:flex-start;border:0;background:none;cursor:pointer;font:500 14px var(--body);color:var(--muted);padding:0}
-.back:hover{color:var(--acc)}
-
-input,select{font:400 15px var(--body);color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;outline:none}
-input::placeholder{color:var(--faint)}
-input:focus,select:focus{border-color:var(--acc)} button:focus-visible,[role=button]:focus-visible{outline:2.5px solid var(--acc);outline-offset:2px}
-label{display:flex;flex-direction:column;gap:8px;font:600 13px var(--body);color:var(--ink)}
-input.narrow{width:6rem}
-.addrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:.7rem}
-.addrow input:first-child{flex:2 1 14rem} .addrow input[type=number]{flex:0 1 7rem}
-.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:.9rem 0}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:.7rem 0}
-.dim{opacity:.45;pointer-events:none}
-
-.fgroup{margin-bottom:1rem} .flabel{font:600 13px var(--body);margin-bottom:8px} .flabel small{font-weight:400;color:var(--muted)}
-.frow{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end}
-.chips,.fchips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{flex-direction:row;cursor:pointer;color:inherit;font-weight:500}
-.chip input{position:absolute;opacity:0;pointer-events:none}
-.chip span,.fchips button{display:inline-block;cursor:pointer;border:1px solid var(--line3);border-radius:999px;padding:7px 14px;font:500 14px var(--body);background:transparent;color:var(--ink);transition:all .12s}
-.chip:hover span,.fchips button:hover{border-color:var(--ink)}
-.chip input:checked + span,.fchips button.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.chip input:focus-visible + span{outline:2.5px solid var(--acc);outline-offset:2px}
-.seg{display:inline-flex;gap:4px;background:var(--side);border-radius:10px;padding:4px}
-.seg.wrap{flex-wrap:wrap;margin-bottom:.5rem}
-.seg button{border:0;background:none;color:var(--ink);padding:7px 12px;border-radius:8px;font:500 13px var(--body);cursor:pointer}
-.seg button:hover{background:var(--hover)}
-/* gewählte Option wie bei den Ernährungs-Chips: in beiden Modi klar erkennbar */
-.seg button.on,.seg button.on:hover{background:var(--ink);color:var(--bg);font-weight:600}
-.step{display:inline-flex;align-items:center;gap:4px;background:var(--side);border-radius:10px;padding:4px}
-.step button{width:36px;height:36px;border:0;border-radius:8px;background:var(--card);cursor:pointer;font:500 18px var(--body);color:var(--ink)}
-.step span{min-width:44px;padding:0 8px;text-align:center;font:600 15px var(--body)}
-.step.sm{background:var(--card);padding:2px} .step.sm button{width:26px;height:26px;background:none;font-size:15px} .step.sm span{font-size:14px;min-width:52px;padding:0}
-.switch{flex-direction:row;align-items:center;gap:.6rem;color:var(--ink);font-weight:500;font-size:14px;cursor:pointer;margin:.4rem 0}
-.switch input{width:2.5rem;height:1.4rem;appearance:none;-webkit-appearance:none;border-radius:99px;background:var(--line3);border:0;padding:0;position:relative;cursor:pointer;flex:0 0 auto;transition:background .15s}
-.switch input::after{content:"";position:absolute;top:.15rem;left:.15rem;width:1.1rem;height:1.1rem;border-radius:50%;background:#fff;transition:transform .15s}
-.switch input:checked{background:var(--acc)} .switch input:checked::after{transform:translateX(1.1rem)}
-.pills{display:flex;gap:.4rem;flex-wrap:wrap}
-.pill{display:inline-flex;align-items:center;gap:.2rem;background:var(--warm-soft);color:var(--warm-ink);border-radius:99px;padding:.2rem .3rem .2rem .8rem;font-size:14px}
-.pills2{display:flex;gap:8px;flex-wrap:wrap}
-.pills2 span{font:600 14px var(--body);background:var(--side);color:var(--ink2);padding:5px 10px;border-radius:999px}
-.pills2 span.acc{background:var(--acc-soft);color:var(--acc-deep)}
-.tgt{background:var(--acc-soft);color:var(--acc-deep);border-radius:10px;padding:12px 14px;margin-top:.6rem}
-
-details.filt summary,details summary{cursor:pointer;font-weight:600}
-details.filt{padding:.8rem 1.2rem} details.filt[open] summary{margin-bottom:.9rem}
-details summary .muted{font-weight:400;margin-left:.5rem;font-size:.88rem}
-
-.ptable,.ings{width:100%;border-collapse:collapse}
-.ptable td,.ings td{padding:9px 4px;border-top:1px solid var(--line2)}
-.ptable input{width:6.5rem;padding:6px 10px}
-.ings .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
-.st{font-size:12px;font-weight:600;border-radius:99px;padding:.15rem .6rem;white-space:nowrap}
-.st.ok{background:var(--acc-soft);color:var(--acc-deep)}
-.st.part{background:var(--warm-soft);color:var(--warm-ink)}
-.st.miss{background:color-mix(in srgb,var(--low) 14%,transparent);color:var(--low)}
-.st.basic{background:var(--side);color:var(--muted)}
-
-/* ---------- Vorrat ---------- */
-.pbar{display:flex;justify-content:space-between;align-items:center;gap:12px 20px;flex-wrap:wrap;padding:14px 18px}
-.pbar .muted{margin-left:.4rem}
-.pbar-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap} .pbar-r .btn.sm{margin:0}
-.prev b.bad{background:var(--warm-soft);color:var(--warm-ink)}
-.pgrid{display:flex;flex-direction:column;gap:16px}
-.pcat{display:flex;flex-direction:column;gap:8px}
-.pcat .slabel em{font-style:normal;background:var(--acc-soft);color:var(--acc-deep);border-radius:99px;padding:1px 8px;margin-left:4px;letter-spacing:0}
-.plist2{display:flex;flex-direction:column;gap:18px;margin:.4rem 0 1rem}
-.prow{display:grid;grid-template-columns:minmax(0,1fr) auto 6.5rem 28px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line2)}
-.prow .nm{font-weight:500}
-.prow.open .nm{color:var(--ink2)}
-.prow .pstep{background:var(--side);padding:3px;gap:2px} .prow .pstep button{background:var(--card)} .prow .pstep button:hover{background:var(--hover)} .pstep input{width:4.2rem;padding:4px 6px;text-align:right;font-weight:600;border:0;background:var(--card);border-radius:6px}
-.pstep .u{min-width:28px;font:500 13px var(--body);color:var(--muted);text-align:left;padding:0 4px}
-.prow .st{justify-self:start}
-details.pick2{border-top:1px solid var(--line2);padding-top:14px} details.pick2[open] summary{margin-bottom:14px}
-@media (max-width:640px){.prow{grid-template-columns:minmax(0,1fr) auto 28px}.prow>.st,.prow>span:empty{display:none}}
-
-/* ---------- Rezepte aus Vorrat ---------- */
-.combo{border-color:var(--acc)}
-.combolist{margin:.6rem 0;padding-left:1.3rem} .combolist li{margin:.25rem 0}
-.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:14px}
-.rc{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:.6rem;transition:transform .15s,box-shadow .15s}
-.rc[data-act]{cursor:pointer} .rc[data-act]:hover{border-color:var(--line3)}
-.rc:hover{box-shadow:0 8px 20px -14px rgba(20,50,35,.35)}
-.rc.sel{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc-soft)}
-.rc-top{display:flex;justify-content:space-between;gap:.6rem;align-items:flex-start}
-.pick{flex-direction:row;align-items:center;gap:.35rem;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap}
-.pick input{accent-color:var(--acc);width:1.1rem;height:1.1rem;padding:0}
-.meta{font-size:14px;color:var(--muted)}
-.tags{display:flex;gap:6px;flex-wrap:wrap}
-.tag{font:600 12px var(--body);background:var(--acc-soft);color:var(--acc-deep);border-radius:999px;padding:3px 9px}
-.meters{display:grid;gap:.45rem}
-.mlabel{font-size:13px;color:var(--muted);margin-bottom:.2rem}
-.mlabel b{color:var(--ink)}
-.bar{height:6px;background:var(--side);border-radius:99px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width .3s}
-.bar.alt i{background:var(--ink)}
-.steps{padding-left:1.2rem;margin:.6rem 0 0} .steps li{margin:.3rem 0}
-
-/* ---------- Einkaufsliste (Vorrat & Einkauf) ---------- */
-.slist{list-style:none;padding:0;margin:0}
-.slist li{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line2)}
-.slist li.off .nm,.slist li.off .am{text-decoration:line-through;color:var(--faint)}
-.slist .am{font-variant-numeric:tabular-nums;font-weight:600} .slist .pr{color:var(--muted);font-size:13px;min-width:4.2rem;text-align:right}
-.bul{color:var(--acc)}
-.chk input{position:absolute;opacity:0}
-.chk span{display:block;width:20px;height:20px;border:1.5px solid var(--line3);border-radius:6px;position:relative}
-.chk input:checked + span{background:var(--ink);border-color:var(--ink)} .chk input:checked + span::after{content:"✓";position:absolute;inset:0;color:var(--bg);font:700 12px var(--body);display:grid;place-items:center}
-.chk input:focus-visible + span{outline:2.5px solid var(--acc);outline-offset:2px}
-.total{margin-top:1rem;font-size:16px}
-.lh{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.4rem}
-.olines{list-style:none;padding:0;margin:.7rem 0 0;font-size:14px} .olines li{padding:5px 0;border-top:1px solid var(--line2)} .olines li.bad{color:var(--low)}
-.zip-err{color:var(--low);font-weight:600;margin:0;min-height:1.2em}
-/* Eigene Lebensmittel: Verweis-Knöpfe an unbekannten Zutaten und der Dialog */
-.lk{border:0;background:none;padding:0;cursor:pointer;font:600 13px var(--body);color:var(--acc);text-decoration:underline;text-underline-offset:2px}
-.lk:hover{color:var(--acc-h)}
-.fd-open{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin:.6rem 0}
-.fd-web{margin-top:14px} .fd-web .alts button{grid-template-columns:1fr auto}
-#dlg-body .seg{margin:.4rem 0 .2rem} #dlg-body details{margin-top:.6rem}
-pre.json{background:#10171a;color:#cfe8d8;border-radius:10px;padding:.9rem;overflow:auto;max-height:340px;font-size:12px;margin-top:.8rem}
-
-/* ---------- Wochenplan ---------- */
-.bar-actions{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem}
-.bar-actions .btnrow{margin:0}
-.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin-bottom:16px}
-.day{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
-.day.cur{border-color:var(--acc)}
-.day header{display:flex;justify-content:space-between;align-items:baseline;gap:.3rem;padding:10px 12px;background:var(--side);cursor:pointer;font:500 16px var(--head)}
-.day header b{font-weight:500} .day header span{font:500 12px var(--body);color:var(--muted)}
-.meal{padding:10px 12px;border-top:1px solid var(--line2);display:flex;flex-direction:column;gap:.25rem;flex:1}
-.meal.locked{background:var(--warm-soft)}
-.slot{font:600 11px var(--body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-.mname{all:unset;cursor:pointer;font:500 15px/1.25 var(--head);color:var(--ink)}
-.mname:hover{color:var(--acc)} .mname:focus-visible{outline:2.5px solid var(--acc)}
-.mmeta{font-size:12px;color:var(--muted)}
-.mbtn{display:flex;gap:4px;margin-top:.25rem}
-.mbtn button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:2px 8px;cursor:pointer;font-size:14px;color:var(--ink)}
-.mbtn button:hover{border-color:var(--acc);background:var(--acc-soft)} .mbtn button.on{border-color:var(--warm)}
-@media (max-width:1500px){.week{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}}
-
-.nrow{display:grid;grid-template-columns:8.5rem 1fr 3.2rem 9rem;gap:.7rem;align-items:center;padding:.3rem 0;font-size:14px}
-.nrow .np{text-align:right;font-weight:700;font-variant-numeric:tabular-nums} .nrow .na{font-size:12px}
-.bar.n{height:8px}
-.bar.n.ok i{background:var(--ok)} .bar.n.mid i{background:var(--mid)} .bar.n.low i{background:var(--low)}
-@media (max-width:640px){.nrow{grid-template-columns:7rem 1fr 3rem}.nrow .na{display:none}}
-
-/* ---------- Rezeptbuch: Bibliothek ---------- */
-.fchips{margin-bottom:24px}
-/* Küchenauswahl zum Ein- und Ausfahren */
-:root{interpolate-size:allow-keywords}
-details.ksel>summary{list-style:none;display:flex;align-items:center;gap:10px;margin:0;font-weight:500;border-radius:8px;user-select:none}
-details.ksel>summary::-webkit-details-marker{display:none}
-details.ksel>summary .flabel{margin:0}
-details.ksel>summary .ksel-cur{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 13px var(--body);color:var(--acc-deep);background:var(--acc-soft);padding:3px 10px;border-radius:999px}
-details.ksel>summary::after{content:"";flex:none;margin-left:auto;width:8px;height:8px;border:solid var(--muted);border-width:0 2px 2px 0;transform:translateY(-2px) rotate(45deg);transition:transform .22s}
-details.ksel[open]>summary::after{transform:translateY(2px) rotate(-135deg)}
-details.ksel>summary:hover::after{border-color:var(--ink)}
-details.ksel>summary:focus-visible{outline:2.5px solid var(--acc);outline-offset:4px}
-details.ksel::details-content{block-size:0;overflow:clip;transition:block-size .26s ease,content-visibility .26s allow-discrete}
-details.ksel[open]::details-content{block-size:auto}
-details.filt[open] details.ksel>summary{margin-bottom:0}
-.ksel-body{padding-top:12px} .ksel-body .fchips{margin-bottom:0} .ksel-body p{margin:.6rem 0 0}
-details.kbox{margin:-12px 0 24px;padding:12px 14px;background:var(--side);border-radius:14px}
-.kchips button{font-size:13px;padding:5px 12px;background:var(--card)}
-.kchips button i{font-style:normal;opacity:.6;margin-left:2px}
-.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:14px}
-.bcard{cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px 12px 12px;display:flex;gap:14px;align-items:center;transition:transform .15s,box-shadow .15s}
-.bcard:hover{transform:translateY(-1px);box-shadow:0 8px 20px -14px rgba(20,50,35,.35)}
-.thumb,.dt-img{background:repeating-linear-gradient(135deg,var(--a) 0 7px,var(--b) 7px 14px);overflow:hidden}
-.thumb{flex:none;width:68px;height:68px;border-radius:10px}
-.thumb img,.dt-img img{width:100%;height:100%;object-fit:cover;display:block}
-.bc-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.bc-t span{font:500 13px var(--body);color:var(--muted)} .bc-t span:first-child{font-weight:600}
-.bc-t b{font:500 17px/1.2 var(--head);text-wrap:pretty}
-.lbtn{flex:none;cursor:pointer;border:1px solid var(--line3);background:transparent;color:var(--ink);font:600 13px var(--body);padding:0 10px;height:34px;border-radius:8px}
-.lbtn .l-off{display:none}
-@media (hover:hover){.lbtn.on:hover .l-on{display:none} .lbtn.on:hover .l-off{display:inline} .lbtn.on:hover{background:transparent;border-color:var(--low);color:var(--low)}}
-.lbtn:hover{border-color:var(--ink)} .lbtn.on{background:var(--acc-soft);border-color:var(--acc-soft);color:var(--acc-deep)}
-
-/* ---------- Rezeptbuch: Detail ---------- */
-.detail{display:flex;flex-direction:column;gap:36px}
-.dt-top{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:32px;align-items:center}
-.dt-info{display:flex;flex-direction:column;gap:18px}
-.dt-info h1{font-size:48px;line-height:1.02;letter-spacing:-.02em}
-.facts{display:flex;gap:28px;flex-wrap:wrap}
-.facts div{display:flex;flex-direction:column;gap:2px}
-.facts span{font:600 13px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.facts b{font:500 18px var(--body)}
-.servbox{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
-.servbox .step span{min-width:110px} .servbox .btn{margin-left:auto}
-.dt-img{height:220px;border-radius:16px;background-size:auto}
-.dt-img.sm{height:150px;border-radius:12px}
-.dt-body{display:grid;grid-template-columns:340px minmax(0,1fr);gap:40px;align-items:start}
-.ingcard{padding:22px 22px 10px;margin:0}
-.irow{display:grid;grid-template-columns:86px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--line2);line-height:1.35}
-.irow span:first-child{font-weight:600;text-align:right} .irow .chg{color:var(--acc)}
-.nurow{display:grid;grid-template-columns:1fr auto 56px 44px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line2);font-size:14px}
-.nurow b{font-weight:600;font-variant-numeric:tabular-nums} .nurow .muted{text-align:right;font-size:12px}
-.dt-body .col{gap:16px} .dt-body .ingcard{padding-bottom:14px}
-.srow{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:16px 0;border-top:1px solid var(--line)}
-.srow span{font:500 28px/1 var(--head);color:var(--acc)}
-.srow p{margin:0;font-size:17px;line-height:1.6;max-width:60ch;text-wrap:pretty}
-@media (max-width:999px){.dt-top,.dt-body{grid-template-columns:minmax(0,1fr)} .dt-info h1{font-size:34px} .dt-img{height:120px;order:-1}}
-
-/* ---------- Rezeptbuch: Neues Rezept ---------- */
-.addtabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:24px}
-.addtabs button{cursor:pointer;text-align:left;border:1.5px solid var(--line);background:transparent;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px;color:var(--ink)}
-.addtabs button.on{border-color:var(--acc);background:var(--card)}
-.addtabs i{font:500 11px ui-monospace,Consolas,monospace;font-style:normal;color:var(--faint)} .addtabs .on i{color:var(--acc)}
-.addtabs b{font:500 21px/1.15 var(--head)} .addtabs span{font:400 13px/1.4 var(--body);color:var(--muted)}
-.addcard{border-radius:18px;padding:32px;display:flex;flex-direction:column;gap:28px}
-.col{display:flex;flex-direction:column;gap:12px;min-width:0}
-.am-top{display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:28px}
-.am-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}
-.title-in{border:0;border-bottom:1.5px solid var(--line3);border-radius:0;background:transparent;padding:6px 0 10px;font:500 30px var(--head)}
-.drop{border:1.5px dashed var(--line3);border-radius:14px;align-items:center;justify-content:center;text-align:center;gap:12px;padding:16px;color:var(--muted);font-weight:500}
-.drop input{width:100%;border:0;padding:0;font-size:12px;background:none} .drop img{max-width:100%;height:80px;object-fit:cover;border-radius:8px} .drop span{font-weight:400;font-size:12px}
-.prev{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font:500 14px var(--body);color:var(--muted);min-height:26px}
-.prev b{font-weight:500;background:var(--acc-soft);color:var(--acc-deep);padding:3px 8px;border-radius:6px}
-.lrow{display:grid;grid-template-columns:78px minmax(0,1fr) 28px;gap:10px;align-items:start;padding:9px 0;border-bottom:1px solid var(--line2);overflow-wrap:anywhere}
-.lrow b{font-weight:600;text-align:right}
-/* Schritt-Zeilen heißen bewusst nicht .st – das ist die Status-Plakette (ohne Zeilenumbruch) */
-.lrow.lstep{grid-template-columns:28px minmax(0,1fr) 28px} .lrow .no{font:500 20px/1.2 var(--head);color:var(--acc)}
-.big{font:500 28px/1.15 var(--head)}
-.dropbig{border:1.5px dashed var(--line3);border-radius:16px;padding:56px 32px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
-.scan{display:grid;grid-template-columns:320px minmax(0,1fr);gap:28px;align-items:center} .scan.done{align-items:start}
-.scanimg{position:relative;height:340px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:repeating-linear-gradient(0deg,#F5F7F4 0 26px,#E2E8E0 26px 27px)}
-.scanimg .cap{position:absolute;left:12px;top:12px;font:500 10px ui-monospace,Consolas,monospace;color:#44504A;background:rgba(255,255,255,.85);padding:3px 6px;border-radius:4px}
-.scanline{position:absolute;left:0;right:0;top:0;height:2px;background:var(--acc);box-shadow:0 0 18px 4px rgba(46,139,87,.35);animation:scanline 1s linear infinite alternate}
-.scanbar{width:0;animation:scanbar 2s linear forwards}
-@keyframes scanline{to{top:100%}} @keyframes scanbar{to{width:100%}}
-.bx{position:absolute;border:2px solid #1B2420;border-radius:4px}
-.bx.b1{left:8%;top:6%;width:70%;height:9%;border-color:#2E8B57} .bx.b2{left:8%;top:20%;width:52%;height:34%}
-.bx.b3{left:30%;top:31%;width:24%;height:5%;background:rgba(232,170,60,.35);border-color:#C98A1E} .bx.b4{left:8%;top:60%;width:84%;height:33%;border-color:#5C6862}
-input.flag{background:var(--warm-soft);border-color:var(--warm)} .note{font:500 13px var(--body);color:var(--warm-ink);padding-left:4px}
-.busy{border-top:1px solid var(--line2);padding-top:22px;margin:0;animation:pulse 1s ease-in-out infinite alternate}
-@keyframes pulse{to{opacity:.45}}
-.linkres{display:flex;flex-direction:column;gap:20px;border-top:1px solid var(--line2);padding-top:24px}
-.lk-top{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px}
-@media (max-width:999px){.addtabs,.am-top,.am-two,.scan,.lk-top{grid-template-columns:minmax(0,1fr)} .addtabs{gap:8px} .addcard{padding:20px} .scanimg{height:220px}}
-
-/* ---------- Einkaufsliste: Quellen (Rezepte, Rezept-Auswahl, Wochenplan) ---------- */
-.srcs{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
-.dr-rec{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:10px;padding:8px 8px 8px 12px}
-.dr-rec .t{flex:1;min-width:0;font:500 14px/1.25 var(--body);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dr-rec .t small{font-weight:400;margin-left:6px} .dr-rec .btn.sm{margin-top:0}
-.slist .nm small{display:block;font:400 12px/1.3 var(--body);color:var(--faint)}
-.slist li.off .nm small{text-decoration:none}
-@media print{.printable .slist .nm small{display:none}}
-
-/* ---------- Dialog & Hinweis ---------- */
-dialog{border:1px solid var(--line);border-radius:22px;padding:0;max-width:min(640px,94vw);width:100%;background:var(--card);color:var(--ink);overflow:hidden;
-  box-shadow:0 1px 2px rgba(0,0,0,.06),0 32px 80px -16px rgba(12,28,20,.45)}
-dialog[open]{animation:dlg-in .22s cubic-bezier(.2,.9,.3,1.15)}
-dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);animation:dlg-fade .2s ease-out}
-@keyframes dlg-in{from{opacity:0;transform:translateY(14px) scale(.96)}}
-@keyframes dlg-fade{from{opacity:0}}
-#dlg-body{padding:28px 28px 0;max-height:min(82vh,760px);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
-#dlg-body>h2:first-child{font:600 24px/1.2 var(--head);letter-spacing:-.01em;margin:0 44px 10px 0}
-#dlg-body>.btnrow:last-child{position:sticky;bottom:0;justify-content:flex-end;margin:22px -28px 0;padding:16px 28px;background:var(--card);border-top:1px solid var(--line2)}
-#dlg-body>:last-child:not(.btnrow){margin-bottom:28px}
-.dlg-x{position:absolute;top:18px;right:18px;z-index:2;width:36px;height:36px;border:0;border-radius:50%;background:var(--side);color:var(--muted);font:400 22px/1 var(--body);cursor:pointer;
-  display:grid;place-items:center;transition:background .15s,color .15s,transform .15s}
-.dlg-x:hover{background:var(--hover);color:var(--ink);transform:rotate(90deg)}
-.dlg-x:focus-visible,#ask .btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-/* Rückfrage (ersetzt das Browser-Fenster von confirm) */
-#ask{max-width:min(420px,92vw)}
-#ask-body{padding:30px 28px 24px;text-align:center}
-#ask-body h2{font:600 21px/1.25 var(--head);letter-spacing:-.01em;margin:0 0 8px}
-#ask-body p{color:var(--muted);margin:0;font-size:15px;line-height:1.5;overflow-wrap:anywhere}
-#ask-body .btnrow{margin-top:24px;flex-wrap:nowrap} #ask-body .btn{flex:1;border:1px solid transparent} #ask-body .btn.ghost{border-color:var(--line)}
-.ask-ic{width:54px;height:54px;border-radius:50%;margin:0 auto 16px;display:grid;place-items:center;background:var(--acc-soft);color:var(--acc-deep);font:700 26px/1 var(--head)}
-.ask-ic.danger{background:color-mix(in srgb,var(--low) 16%,var(--card));color:var(--low)}
-.btn.danger{background:var(--low);color:#fff} .btn.danger:hover{background:color-mix(in srgb,var(--low) 86%,#000)}
-@media (max-width:599px){
-  #dlg{margin:auto 0 0;max-width:100vw;border-radius:22px 22px 0 0;border-width:1px 0 0}
-  #dlg[open]{animation:dlg-up .26s cubic-bezier(.2,.9,.3,1)}
-  #dlg-body{padding:24px 20px 0;max-height:86vh}
-  #dlg-body>.btnrow:last-child{margin:20px -20px 0;padding:14px 20px} #dlg-body>.btnrow:last-child .btn{flex:1}
-}
-@keyframes dlg-up{from{transform:translateY(100%)}}
-.alts{list-style:none;padding:0;margin:.6rem 0}
-.alts button{width:100%;display:grid;grid-template-columns:1fr auto;gap:.1rem .8rem;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 14px;margin-bottom:6px;cursor:pointer}
-.alts button:hover{border-color:var(--acc);background:var(--acc-soft)}
-.alts .muted{grid-column:1} .alts .st{grid-row:1/3;grid-column:2;align-self:center}
-
-#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,1.4rem) scale(.96);display:flex;align-items:center;gap:10px;max-width:min(520px,calc(100vw - 32px));background:var(--ink);color:var(--bg);
-  padding:10px 20px 10px 10px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .22s,transform .28s cubic-bezier(.2,.9,.3,1.2);z-index:50;font:500 14px/1.35 var(--body);box-shadow:0 16px 36px -12px rgba(0,0,0,.5)}
-#toast i{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:var(--acc-ink);font:700 14px/1 var(--body);font-style:normal}
-#toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
-@media (max-width:999px){#toast{bottom:96px}}
-
-@media print{
-  .side,.mtop,.tabbar,.ph,.noprint,#toast,dialog,.card:not(.printable){display:none!important}
-  /* Einkaufsliste als Zettel zum Abhaken: leere Kästchen, Menge vor Artikel, zwei Spalten, ohne Preise */
-  @page{margin:14mm 16mm}
-  html,body{background:#fff!important}
-  body{font-size:11.5pt}
-  .shell{display:block} main{margin:0;padding:0} #view{max-width:none}
-  .card.printable{box-shadow:none;border:0;border-radius:0;background:none;padding:0;margin:0}
-  .card.printable,.card.printable *{color:#000!important}
-  .printable .lh{border-bottom:2pt solid #000;padding-bottom:3mm;margin-bottom:2mm}
-  .printable .lh h2{font-size:22pt;margin:0}
-  .printable .opt{background:none;border:0;padding:0;font-size:10pt;font-weight:400}
-  .printable .opt::before{content:"· "}
-  .plist{columns:2;column-gap:12mm}
-  .printable h4.cat{font-size:9.5pt;letter-spacing:.08em;margin:5mm 0 1mm;padding-bottom:1mm;border-bottom:.75pt solid #000;break-after:avoid}
-  .plist h4.cat:first-child{margin-top:0}
-  .btnrow{display:none!important}
-  .printable .slist li{grid-template-columns:auto 5.2em 1fr;gap:3mm;padding:1.6mm 0;border-bottom:.5pt dotted #999;break-inside:avoid}
-  .printable .slist .am{order:1;text-align:right;font-weight:600}
-  .printable .slist .nm{order:2}
-  .printable .x,.printable .pr{display:none}
-  /* abgewählte Artikel und dadurch leere Kategorien nicht drucken */
-  .printable .slist li.off{display:none}
-  .printable .slist:not(:has(li:not(.off))),.printable h4.cat:has(+ .slist:not(:has(li:not(.off)))){display:none}
-  .printable .chk span{width:4mm;height:4mm;border:1pt solid #000;border-radius:.6mm;background:none!important}
-  .printable .chk span::after{content:none!important}
-  .printable .total{margin-top:6mm;padding-top:2mm;border-top:.75pt solid #000;font-size:10pt;break-inside:avoid}
-}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important;animation-duration:.01s!important}}
-
-.linkres textarea{display:block;width:100%;min-height:180px;box-sizing:border-box;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px;font:inherit;resize:vertical}
-.tag.kueche{background:var(--side);color:var(--ink2);border:1px solid var(--line3)}
-.tag.warn{background:var(--warm-soft);color:var(--warm-ink)}
-.tag.neutral{background:var(--side);color:var(--muted)}
-
-.restore{margin-top:20px;text-align:center}
-.listbar{margin:0 0 1.1rem;padding-bottom:1rem;border-bottom:1px solid var(--line2)}
-.macros{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:.4rem 0 .6rem}
-.macros div{display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center;background:var(--side);border-radius:12px;padding:14px 8px}
-.macros b{font:600 20px/1.1 var(--head);font-variant-numeric:tabular-nums}
-.macros span{font:500 12px var(--body);color:var(--muted)}
-.macros .kcal{background:var(--acc-soft)} .macros .kcal b,.macros .kcal span{color:var(--acc-deep)}
-@media (max-width:480px){.macros{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.rc-more{align-self:flex-start}
-
+/* dAIlykitchen – Gestaltung im Küchenbuch-Stil: Seitenleiste, helle Karten, Bricolage Grotesque + Manrope */.macros .kcal{background:var(--acc-soft)}:root{.macros .kcal{background:var(--acc-soft)}  --bg:#F6F8F5; --card:#FFFFFF; --side:#EEF2EC; --hover:#E2EBDF; --ink:#1B2420; --ink2:#36423C; --muted:#5C6862; --faint:#8C978F;.macros .kcal{background:var(--acc-soft)}  --line:#E3E8E1; --line2:#EDF1EB; --line3:#D3DBD0;.macros .kcal{background:var(--acc-soft)}  --acc:#2E8B57; --acc-h:#257549; --acc-ink:#fff; --acc-soft:#E0F1E6; --acc-deep:#1D6A40;.macros .kcal{background:var(--acc-soft)}  --warm:#C98A1E; --warm-soft:#FBEFD9; --warm-ink:#6B4A12;.macros .kcal{background:var(--acc-soft)}  --ok:#2E8B57; --mid:#d9a21f; --low:#cf4b3f;.macros .kcal{background:var(--acc-soft)}  --head:'Bricolage Grotesque',ui-sans-serif,system-ui,"Segoe UI",sans-serif; --body:'Manrope',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;.macros .kcal{background:var(--acc-soft)}  --r:14px;.macros .kcal{background:var(--acc-soft)}}.macros .kcal{background:var(--acc-soft)}@media (prefers-color-scheme:dark){.macros .kcal{background:var(--acc-soft)}  :root{--bg:#141a17; --card:#1c2420; --side:#18201c; --hover:#26322c; --ink:#e8efe9; --ink2:#cfd9d2; --muted:#97a39b; --faint:#7d8a82;.macros .kcal{background:var(--acc-soft)}    --line:#2c3731; --line2:#273029; --line3:#3a4740; --acc:#5fb98a; --acc-h:#72c79a; --acc-ink:#0d1f16; --acc-soft:#23362c; --acc-deep:#8fd6ae;.macros .kcal{background:var(--acc-soft)}    --warm:#f09a55; --warm-soft:#3a2a1d; --warm-ink:#f3c79f}.macros .kcal{background:var(--acc-soft)}}.macros .kcal{background:var(--acc-soft)}*{box-sizing:border-box}.macros .kcal{background:var(--acc-soft)}html{scroll-behavior:smooth}.macros .kcal{background:var(--acc-soft)}body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--body);-webkit-font-smoothing:antialiased}.macros .kcal{background:var(--acc-soft)}h1,h2,h3,h4{margin:0;line-height:1.15}.macros .kcal{background:var(--acc-soft)}h1,h2,h3{font-family:var(--head);font-weight:500;letter-spacing:-.01em}.macros .kcal{background:var(--acc-soft)}h1{font-size:44px;line-height:1.05;letter-spacing:-.015em;text-wrap:balance}.macros .kcal{background:var(--acc-soft)}h2{font-size:24px;margin-bottom:.7rem}.macros .kcal{background:var(--acc-soft)}h2.sec{margin:1.8rem 0 .9rem}.macros .kcal{background:var(--acc-soft)}h3{font-size:18px}.macros .kcal{background:var(--acc-soft)}h4.cat,.slabel{font:600 13px var(--body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.macros .kcal{background:var(--acc-soft)}h4.cat{margin:1.2rem 0 .4rem}.macros .kcal{background:var(--acc-soft)}p{margin:.5rem 0}.macros .kcal{background:var(--acc-soft)}a{color:var(--acc)}.macros .kcal{background:var(--acc-soft)}.muted{color:var(--muted)} .sm{font-size:.86rem}.macros .kcal{background:var(--acc-soft)}.opt{font:600 12px var(--body);background:var(--acc-soft);color:var(--acc-deep);border-radius:99px;padding:.2rem .65rem;vertical-align:middle;margin-left:.4rem;letter-spacing:0}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}/* ---------- Grundgerüst ---------- */.macros .kcal{background:var(--acc-soft)}.shell{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}.macros .kcal{background:var(--acc-soft)}.side{background:var(--side);border-right:1px solid var(--line);padding:30px 16px;display:flex;flex-direction:column;gap:28px;position:sticky;top:0;height:100vh;overflow:auto}.macros .kcal{background:var(--acc-soft)}.side .brand{display:flex;flex-direction:column;gap:4px;padding:0 12px}.macros .kcal{background:var(--acc-soft)}.side .brand b{font:500 28px/1 var(--head);letter-spacing:-.01em}.macros .kcal{background:var(--acc-soft)}.side .brand span{font:500 14px/1.3 var(--body);color:var(--muted)}.macros .kcal{background:var(--acc-soft)}/* Markenname dAIlykitchen: das AI ist hervorgehoben */.macros .kcal{background:var(--acc-soft)}.side .brand b .ai,.mtop b .ai{font:inherit;font-weight:800;color:var(--acc);letter-spacing:.01em}.macros .kcal{background:var(--acc-soft)}.newbtn{border:0;cursor:pointer;background:var(--acc);color:var(--acc-ink);font:600 14px var(--body);padding:12px 14px;border-radius:10px;text-align:left;display:flex;align-items:center;gap:10px}.macros .kcal{background:var(--acc-soft)}.newbtn:hover{background:var(--acc-h)} .newbtn span{font-size:18px;line-height:1}.macros .kcal{background:var(--acc-soft)}.snav{display:flex;flex-direction:column;gap:2px}.macros .kcal{background:var(--acc-soft)}.snav .slabel{padding:0 12px 8px}.macros .kcal{background:var(--acc-soft)}.snav button{border:0;cursor:pointer;background:transparent;color:var(--ink);font:500 14px var(--body);padding:9px 12px;border-radius:8px;text-align:left;display:flex;justify-content:space-between;gap:8px}.macros .kcal{background:var(--acc-soft)}.snav button:hover,.snav button.on{background:var(--hover)} .snav button.on{font-weight:600}.macros .kcal{background:var(--acc-soft)}.snav button i{font-style:normal;color:var(--muted);font-weight:500}.macros .kcal{background:var(--acc-soft)}main{padding:40px 48px 90px;min-width:0}.macros .kcal{background:var(--acc-soft)}#view{max-width:1080px}.macros .kcal{background:var(--acc-soft)}.mtop,.tabbar{display:none}.macros .kcal{background:var(--acc-soft)}.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:24px}.macros .kcal{background:var(--acc-soft)}.ph>div{display:flex;flex-direction:column;gap:6px} .ph p{margin:0;color:var(--muted)}.macros .kcal{background:var(--acc-soft)}.search{width:300px;background:var(--card);padding:11px 14px}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}@media (max-width:999px){.macros .kcal{background:var(--acc-soft)}  .shell{grid-template-columns:minmax(0,1fr)} .side{display:none}.macros .kcal{background:var(--acc-soft)}  main{padding:18px 16px 110px}.macros .kcal{background:var(--acc-soft)}  h1{font-size:32px} .search{width:100%}.macros .kcal{background:var(--acc-soft)}  .mtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.macros .kcal{background:var(--acc-soft)}  .mtop b{font:600 24px/1 var(--head);letter-spacing:-.01em}.macros .kcal{background:var(--acc-soft)}  .mtop button{width:44px;height:44px;border:0;border-radius:12px;background:var(--acc);color:var(--acc-ink);cursor:pointer;font:500 22px/1 var(--body)}.macros .kcal{background:var(--acc-soft)}  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:8px 8px 18px}.macros .kcal{background:var(--acc-soft)}  .tabbar button{border:0;cursor:pointer;min-height:48px;border-radius:12px;background:transparent;color:var(--muted);font:600 13px var(--body);display:flex;align-items:center;justify-content:center;gap:5px}.macros .kcal{background:var(--acc-soft)}  .tabbar button.on{background:var(--acc-soft);color:var(--acc-deep)}.macros .kcal{background:var(--acc-soft)}  .tabbar i{font:700 11px var(--body);color:var(--acc);font-style:normal}.macros .kcal{background:var(--acc-soft)}}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}/* ---------- Karten, Knöpfe, Formulare ---------- */.macros .kcal{background:var(--acc-soft)}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px}.macros .kcal{background:var(--acc-soft)}.card.center{text-align:center;padding:2.6rem 1.2rem}.macros .kcal{background:var(--acc-soft)}.card.err{border-color:var(--low);background:color-mix(in srgb,var(--low) 9%,var(--card))}.macros .kcal{background:var(--acc-soft)}.card.okbox{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,var(--card));margin-top:.8rem}.macros .kcal{background:var(--acc-soft)}.card.warnbox,.warn{background:var(--warm-soft);border-color:transparent;color:var(--warm-ink)}.macros .kcal{background:var(--acc-soft)}.warn{padding:12px 14px;border-radius:10px;font:500 14px/1.4 var(--body)}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}button{font-family:inherit}.macros .kcal{background:var(--acc-soft)}.btn{border:0;background:var(--acc);color:var(--acc-ink);border-radius:10px;padding:12px 18px;font:600 14px var(--body);cursor:pointer;transition:transform .08s,background .15s}.macros .kcal{background:var(--acc-soft)}.btn:hover{background:var(--acc-h)} .btn:active{transform:scale(.97)}.macros .kcal{background:var(--acc-soft)}.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)} .btn.ghost:hover{background:var(--side)}.macros .kcal{background:var(--acc-soft)}.btn.dark{background:var(--ink);color:var(--bg)} .btn.dark:hover{background:var(--ink2)}.macros .kcal{background:var(--acc-soft)}.btn.big{font-size:16px;padding:15px 28px}.macros .kcal{background:var(--acc-soft)}.btn.sm{padding:8px 12px;font-size:13px;margin-top:.6rem}.macros .kcal{background:var(--acc-soft)}.btn:disabled{opacity:.45;cursor:not-allowed}.macros .kcal{background:var(--acc-soft)}.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:1rem}.macros .kcal{background:var(--acc-soft)}.btnrow.end{justify-content:flex-end;border-top:1px solid var(--line2);padding-top:20px}.macros .kcal{background:var(--acc-soft)}.x{border:0;background:none;color:var(--faint);cursor:pointer;font-size:16px;padding:.15rem .4rem;border-radius:6px}.macros .kcal{background:var(--acc-soft)}.x:hover{background:var(--line);color:var(--low)}.macros .kcal{background:var(--acc-soft)}.back{align-self:flex-start;border:0;background:none;cursor:pointer;font:500 14px var(--body);color:var(--muted);padding:0}.macros .kcal{background:var(--acc-soft)}.back:hover{color:var(--acc)}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}input,select{font:400 15px var(--body);color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;outline:none}.macros .kcal{background:var(--acc-soft)}input::placeholder{color:var(--faint)}.macros .kcal{background:var(--acc-soft)}input:focus,select:focus{border-color:var(--acc)} button:focus-visible,[role=button]:focus-visible{outline:2.5px solid var(--acc);outline-offset:2px}.macros .kcal{background:var(--acc-soft)}label{display:flex;flex-direction:column;gap:8px;font:600 13px var(--body);color:var(--ink)}.macros .kcal{background:var(--acc-soft)}input.narrow{width:6rem}.macros .kcal{background:var(--acc-soft)}.addrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:.7rem}.macros .kcal{background:var(--acc-soft)}.addrow input:first-child{flex:2 1 14rem} .addrow input[type=number]{flex:0 1 7rem}.macros .kcal{background:var(--acc-soft)}.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:.9rem 0}.macros .kcal{background:var(--acc-soft)}.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:.7rem 0}.macros .kcal{background:var(--acc-soft)}.dim{opacity:.45;pointer-events:none}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}.fgroup{margin-bottom:1rem} .flabel{font:600 13px var(--body);margin-bottom:8px} .flabel small{font-weight:400;color:var(--muted)}.macros .kcal{background:var(--acc-soft)}.frow{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end}.macros .kcal{background:var(--acc-soft)}.chips,.fchips{display:flex;flex-wrap:wrap;gap:8px}.macros .kcal{background:var(--acc-soft)}.chip{flex-direction:row;cursor:pointer;color:inherit;font-weight:500}.macros .kcal{background:var(--acc-soft)}.chip input{position:absolute;opacity:0;pointer-events:none}.macros .kcal{background:var(--acc-soft)}.chip span,.fchips button{display:inline-block;cursor:pointer;border:1px solid var(--line3);border-radius:999px;padding:7px 14px;font:500 14px var(--body);background:transparent;color:var(--ink);transition:all .12s}.macros .kcal{background:var(--acc-soft)}.chip:hover span,.fchips button:hover{border-color:var(--ink)}.macros .kcal{background:var(--acc-soft)}.chip input:checked + span,.fchips button.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}.macros .kcal{background:var(--acc-soft)}.chip input:focus-visible + span{outline:2.5px solid var(--acc);outline-offset:2px}.macros .kcal{background:var(--acc-soft)}.seg{display:inline-flex;gap:4px;background:var(--side);border-radius:10px;padding:4px}.macros .kcal{background:var(--acc-soft)}.seg.wrap{flex-wrap:wrap;margin-bottom:.5rem}.macros .kcal{background:var(--acc-soft)}.seg button{border:0;background:none;color:var(--ink);padding:7px 12px;border-radius:8px;font:500 13px var(--body);cursor:pointer}.macros .kcal{background:var(--acc-soft)}.seg button:hover{background:var(--hover)}.macros .kcal{background:var(--acc-soft)}/* gewählte Option wie bei den Ernährungs-Chips: in beiden Modi klar erkennbar */.macros .kcal{background:var(--acc-soft)}.seg button.on,.seg button.on:hover{background:var(--ink);color:var(--bg);font-weight:600}.macros .kcal{background:var(--acc-soft)}.step{display:inline-flex;align-items:center;gap:4px;background:var(--side);border-radius:10px;padding:4px}.macros .kcal{background:var(--acc-soft)}.step button{width:36px;height:36px;border:0;border-radius:8px;background:var(--card);cursor:pointer;font:500 18px var(--body);color:var(--ink)}.macros .kcal{background:var(--acc-soft)}.step span{min-width:44px;padding:0 8px;text-align:center;font:600 15px var(--body)}.macros .kcal{background:var(--acc-soft)}.step.sm{background:var(--card);padding:2px} .step.sm button{width:26px;height:26px;background:none;font-size:15px} .step.sm span{font-size:14px;min-width:52px;padding:0}.macros .kcal{background:var(--acc-soft)}.switch{flex-direction:row;align-items:center;gap:.6rem;color:var(--ink);font-weight:500;font-size:14px;cursor:pointer;margin:.4rem 0}.macros .kcal{background:var(--acc-soft)}.switch input{width:2.5rem;height:1.4rem;appearance:none;-webkit-appearance:none;border-radius:99px;background:var(--line3);border:0;padding:0;position:relative;cursor:pointer;flex:0 0 auto;transition:background .15s}.macros .kcal{background:var(--acc-soft)}.switch input::after{content:"";position:absolute;top:.15rem;left:.15rem;width:1.1rem;height:1.1rem;border-radius:50%;background:#fff;transition:transform .15s}.macros .kcal{background:var(--acc-soft)}.switch input:checked{background:var(--acc)} .switch input:checked::after{transform:translateX(1.1rem)}.macros .kcal{background:var(--acc-soft)}.pills{display:flex;gap:.4rem;flex-wrap:wrap}.macros .kcal{background:var(--acc-soft)}.pill{display:inline-flex;align-items:center;gap:.2rem;background:var(--warm-soft);color:var(--warm-ink);border-radius:99px;padding:.2rem .3rem .2rem .8rem;font-size:14px}.macros .kcal{background:var(--acc-soft)}.pills2{display:flex;gap:8px;flex-wrap:wrap}.macros .kcal{background:var(--acc-soft)}.pills2 span{font:600 14px var(--body);background:var(--side);color:var(--ink2);padding:5px 10px;border-radius:999px}.macros .kcal{background:var(--acc-soft)}.pills2 span.acc{background:var(--acc-soft);color:var(--acc-deep)}.macros .kcal{background:var(--acc-soft)}.tgt{background:var(--acc-soft);color:var(--acc-deep);border-radius:10px;padding:12px 14px;margin-top:.6rem}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}details.filt summary,details summary{cursor:pointer;font-weight:600}.macros .kcal{background:var(--acc-soft)}details.filt{padding:.8rem 1.2rem} details.filt[open] summary{margin-bottom:.9rem}.macros .kcal{background:var(--acc-soft)}details summary .muted{font-weight:400;margin-left:.5rem;font-size:.88rem}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}.ptable,.ings{width:100%;border-collapse:collapse}.macros .kcal{background:var(--acc-soft)}.ptable td,.ings td{padding:9px 4px;border-top:1px solid var(--line2)}.macros .kcal{background:var(--acc-soft)}.ptable input{width:6.5rem;padding:6px 10px}.macros .kcal{background:var(--acc-soft)}.ings .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}.macros .kcal{background:var(--acc-soft)}.st{font-size:12px;font-weight:600;border-radius:99px;padding:.15rem .6rem;white-space:nowrap}.macros .kcal{background:var(--acc-soft)}.st.ok{background:var(--acc-soft);color:var(--acc-deep)}.macros .kcal{background:var(--acc-soft)}.st.part{background:var(--warm-soft);color:var(--warm-ink)}.macros .kcal{background:var(--acc-soft)}.st.miss{background:color-mix(in srgb,var(--low) 14%,transparent);color:var(--low)}.macros .kcal{background:var(--acc-soft)}.st.basic{background:var(--side);color:var(--muted)}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}/* ---------- Vorrat ---------- */.macros .kcal{background:var(--acc-soft)}.pbar{display:flex;justify-content:space-between;align-items:center;gap:12px 20px;flex-wrap:wrap;padding:14px 18px}.macros .kcal{background:var(--acc-soft)}.pbar .muted{margin-left:.4rem}.macros .kcal{background:var(--acc-soft)}.pbar-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap} .pbar-r .btn.sm{margin:0}.macros .kcal{background:var(--acc-soft)}.prev b.bad{background:var(--warm-soft);color:var(--warm-ink)}.macros .kcal{background:var(--acc-soft)}.pgrid{display:flex;flex-direction:column;gap:16px}.macros .kcal{background:var(--acc-soft)}.pcat{display:flex;flex-direction:column;gap:8px}.macros .kcal{background:var(--acc-soft)}.pcat .slabel em{font-style:normal;background:var(--acc-soft);color:var(--acc-deep);border-radius:99px;padding:1px 8px;margin-left:4px;letter-spacing:0}.macros .kcal{background:var(--acc-soft)}.plist2{display:flex;flex-direction:column;gap:18px;margin:.4rem 0 1rem}.macros .kcal{background:var(--acc-soft)}.prow{display:grid;grid-template-columns:minmax(0,1fr) auto 6.5rem 28px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line2)}.macros .kcal{background:var(--acc-soft)}.prow .nm{font-weight:500}.macros .kcal{background:var(--acc-soft)}.prow.open .nm{color:var(--ink2)}.macros .kcal{background:var(--acc-soft)}.prow .pstep{background:var(--side);padding:3px;gap:2px} .prow .pstep button{background:var(--card)} .prow .pstep button:hover{background:var(--hover)} .pstep input{width:4.2rem;padding:4px 6px;text-align:right;font-weight:600;border:0;background:var(--card);border-radius:6px}.macros .kcal{background:var(--acc-soft)}.pstep .u{min-width:28px;font:500 13px var(--body);color:var(--muted);text-align:left;padding:0 4px}.macros .kcal{background:var(--acc-soft)}.prow .st{justify-self:start}.macros .kcal{background:var(--acc-soft)}details.pick2{border-top:1px solid var(--line2);padding-top:14px} details.pick2[open] summary{margin-bottom:14px}.macros .kcal{background:var(--acc-soft)}@media (max-width:640px){.prow{grid-template-columns:minmax(0,1fr) auto 28px}.prow>.st,.prow>span:empty{display:none}}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}/* ---------- Rezepte aus Vorrat ---------- */.macros .kcal{background:var(--acc-soft)}.combo{border-color:var(--acc)}.macros .kcal{background:var(--acc-soft)}.combolist{margin:.6rem 0;padding-left:1.3rem} .combolist li{margin:.25rem 0}.macros .kcal{background:var(--acc-soft)}.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:14px}.macros .kcal{background:var(--acc-soft)}.rc{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:.6rem;transition:transform .15s,box-shadow .15s}.macros .kcal{background:var(--acc-soft)}.rc[data-act]{cursor:pointer} .rc[data-act]:hover{border-color:var(--line3)}.macros .kcal{background:var(--acc-soft)}.rc:hover{box-shadow:0 8px 20px -14px rgba(20,50,35,.35)}.macros .kcal{background:var(--acc-soft)}.rc.sel{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}.rc-top{display:flex;justify-content:space-between;gap:.6rem;align-items:flex-start}.macros .kcal{background:var(--acc-soft)}.pick{flex-direction:row;align-items:center;gap:.35rem;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap}.macros .kcal{background:var(--acc-soft)}.pick input{accent-color:var(--acc);width:1.1rem;height:1.1rem;padding:0}.macros .kcal{background:var(--acc-soft)}.meta{font-size:14px;color:var(--muted)}.macros .kcal{background:var(--acc-soft)}.tags{display:flex;gap:6px;flex-wrap:wrap}.macros .kcal{background:var(--acc-soft)}.tag{font:600 12px var(--body);background:var(--acc-soft);color:var(--acc-deep);border-radius:999px;padding:3px 9px}.macros .kcal{background:var(--acc-soft)}.meters{display:grid;gap:.45rem}.macros .kcal{background:var(--acc-soft)}.mlabel{font-size:13px;color:var(--muted);margin-bottom:.2rem}.macros .kcal{background:var(--acc-soft)}.mlabel b{color:var(--ink)}.macros .kcal{background:var(--acc-soft)}.bar{height:6px;background:var(--side);border-radius:99px;overflow:hidden}.macros .kcal{background:var(--acc-soft)}.bar i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width .3s}.macros .kcal{background:var(--acc-soft)}.bar.alt i{background:var(--ink)}.macros .kcal{background:var(--acc-soft)}.steps{padding-left:1.2rem;margin:.6rem 0 0} .steps li{margin:.3rem 0}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}/* ---------- Einkaufsliste (Vorrat & Einkauf) ---------- */.macros .kcal{background:var(--acc-soft)}.slist{list-style:none;padding:0;margin:0}.macros .kcal{background:var(--acc-soft)}.slist li{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line2)}.macros .kcal{background:var(--acc-soft)}.slist li.off .nm,.slist li.off .am{text-decoration:line-through;color:var(--faint)}.macros .kcal{background:var(--acc-soft)}.slist .am{font-variant-numeric:tabular-nums;font-weight:600} .slist .pr{color:var(--muted);font-size:13px;min-width:4.2rem;text-align:right}.macros .kcal{background:var(--acc-soft)}.bul{color:var(--acc)}.macros .kcal{background:var(--acc-soft)}.chk input{position:absolute;opacity:0}.macros .kcal{background:var(--acc-soft)}.chk span{display:block;width:20px;height:20px;border:1.5px solid var(--line3);border-radius:6px;position:relative}.macros .kcal{background:var(--acc-soft)}.chk input:checked + span{background:var(--ink);border-color:var(--ink)} .chk input:checked + span::after{content:"✓";position:absolute;inset:0;color:var(--bg);font:700 12px var(--body);display:grid;place-items:center}.macros .kcal{background:var(--acc-soft)}.chk input:focus-visible + span{outline:2.5px solid var(--acc);outline-offset:2px}.macros .kcal{background:var(--acc-soft)}.total{margin-top:1rem;font-size:16px}.macros .kcal{background:var(--acc-soft)}.lh{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.4rem}.macros .kcal{background:var(--acc-soft)}.olines{list-style:none;padding:0;margin:.7rem 0 0;font-size:14px} .olines li{padding:5px 0;border-top:1px solid var(--line2)} .olines li.bad{color:var(--low)}.macros .kcal{background:var(--acc-soft)}.zip-err{color:var(--low);font-weight:600;margin:0;min-height:1.2em}.macros .kcal{background:var(--acc-soft)}/* Eigene Lebensmittel: Verweis-Knöpfe an unbekannten Zutaten und der Dialog */.macros .kcal{background:var(--acc-soft)}.lk{border:0;background:none;padding:0;cursor:pointer;font:600 13px var(--body);color:var(--acc);text-decoration:underline;text-underline-offset:2px}.macros .kcal{background:var(--acc-soft)}.lk:hover{color:var(--acc-h)}.macros .kcal{background:var(--acc-soft)}.fd-open{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin:.6rem 0}.macros .kcal{background:var(--acc-soft)}.fd-web{margin-top:14px} .fd-web .alts button{grid-template-columns:1fr auto}.macros .kcal{background:var(--acc-soft)}#dlg-body .seg{margin:.4rem 0 .2rem} #dlg-body details{margin-top:.6rem}.macros .kcal{background:var(--acc-soft)}pre.json{background:#10171a;color:#cfe8d8;border-radius:10px;padding:.9rem;overflow:auto;max-height:340px;font-size:12px;margin-top:.8rem}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}/* ---------- Wochenplan ---------- */.macros .kcal{background:var(--acc-soft)}.bar-actions{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem}.macros .kcal{background:var(--acc-soft)}.bar-actions .btnrow{margin:0}.macros .kcal{background:var(--acc-soft)}.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin-bottom:16px}.macros .kcal{background:var(--acc-soft)}.day{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}.macros .kcal{background:var(--acc-soft)}.day.cur{border-color:var(--acc)}.macros .kcal{background:var(--acc-soft)}.day header{display:flex;justify-content:space-between;align-items:baseline;gap:.3rem;padding:10px 12px;background:var(--side);cursor:pointer;font:500 16px var(--head)}.macros .kcal{background:var(--acc-soft)}.day header b{font-weight:500} .day header span{font:500 12px var(--body);color:var(--muted)}.macros .kcal{background:var(--acc-soft)}.meal{padding:10px 12px;border-top:1px solid var(--line2);display:flex;flex-direction:column;gap:.25rem;flex:1}.macros .kcal{background:var(--acc-soft)}.meal.locked{background:var(--warm-soft)}.macros .kcal{background:var(--acc-soft)}.slot{font:600 11px var(--body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.macros .kcal{background:var(--acc-soft)}.mname{all:unset;cursor:pointer;font:500 15px/1.25 var(--head);color:var(--ink)}.macros .kcal{background:var(--acc-soft)}.mname:hover{color:var(--acc)} .mname:focus-visible{outline:2.5px solid var(--acc)}.macros .kcal{background:var(--acc-soft)}.mmeta{font-size:12px;color:var(--muted)}.macros .kcal{background:var(--acc-soft)}.mbtn{display:flex;gap:4px;margin-top:.25rem}.macros .kcal{background:var(--acc-soft)}.mbtn button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:2px 8px;cursor:pointer;font-size:14px;color:var(--ink)}.macros .kcal{background:var(--acc-soft)}.mbtn button:hover{border-color:var(--acc);background:var(--acc-soft)} .mbtn button.on{border-color:var(--warm)}.macros .kcal{background:var(--acc-soft)}@media (max-width:1500px){.week{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}.nrow{display:grid;grid-template-columns:8.5rem 1fr 3.2rem 9rem;gap:.7rem;align-items:center;padding:.3rem 0;font-size:14px}.macros .kcal{background:var(--acc-soft)}.nrow .np{text-align:right;font-weight:700;font-variant-numeric:tabular-nums} .nrow .na{font-size:12px}.macros .kcal{background:var(--acc-soft)}.bar.n{height:8px}.macros .kcal{background:var(--acc-soft)}.bar.n.ok i{background:var(--ok)} .bar.n.mid i{background:var(--mid)} .bar.n.low i{background:var(--low)}.macros .kcal{background:var(--acc-soft)}@media (max-width:640px){.nrow{grid-template-columns:7rem 1fr 3rem}.nrow .na{display:none}}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}/* ---------- Rezeptbuch: Bibliothek ---------- */.macros .kcal{background:var(--acc-soft)}.fchips{margin-bottom:24px}.macros .kcal{background:var(--acc-soft)}/* Küchenauswahl zum Ein- und Ausfahren */.macros .kcal{background:var(--acc-soft)}:root{interpolate-size:allow-keywords}.macros .kcal{background:var(--acc-soft)}details.ksel>summary{list-style:none;display:flex;align-items:center;gap:10px;margin:0;font-weight:500;border-radius:8px;user-select:none}.macros .kcal{background:var(--acc-soft)}details.ksel>summary::-webkit-details-marker{display:none}.macros .kcal{background:var(--acc-soft)}details.ksel>summary .flabel{margin:0}.macros .kcal{background:var(--acc-soft)}details.ksel>summary .ksel-cur{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 13px var(--body);color:var(--acc-deep);background:var(--acc-soft);padding:3px 10px;border-radius:999px}.macros .kcal{background:var(--acc-soft)}details.ksel>summary::after{content:"";flex:none;margin-left:auto;width:8px;height:8px;border:solid var(--muted);border-width:0 2px 2px 0;transform:translateY(-2px) rotate(45deg);transition:transform .22s}.macros .kcal{background:var(--acc-soft)}details.ksel[open]>summary::after{transform:translateY(2px) rotate(-135deg)}.macros .kcal{background:var(--acc-soft)}details.ksel>summary:hover::after{border-color:var(--ink)}.macros .kcal{background:var(--acc-soft)}details.ksel>summary:focus-visible{outline:2.5px solid var(--acc);outline-offset:4px}.macros .kcal{background:var(--acc-soft)}details.ksel::details-content{block-size:0;overflow:clip;transition:block-size .26s ease,content-visibility .26s allow-discrete}.macros .kcal{background:var(--acc-soft)}details.ksel[open]::details-content{block-size:auto}.macros .kcal{background:var(--acc-soft)}details.filt[open] details.ksel>summary{margin-bottom:0}.macros .kcal{background:var(--acc-soft)}.ksel-body{padding-top:12px} .ksel-body .fchips{margin-bottom:0} .ksel-body p{margin:.6rem 0 0}.macros .kcal{background:var(--acc-soft)}details.kbox{margin:-12px 0 24px;padding:12px 14px;background:var(--side);border-radius:14px}.macros .kcal{background:var(--acc-soft)}.kchips button{font-size:13px;padding:5px 12px;background:var(--card)}.macros .kcal{background:var(--acc-soft)}.kchips button i{font-style:normal;opacity:.6;margin-left:2px}.macros .kcal{background:var(--acc-soft)}.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:14px}.macros .kcal{background:var(--acc-soft)}.bcard{cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px 12px 12px;display:flex;gap:14px;align-items:center;transition:transform .15s,box-shadow .15s}.macros .kcal{background:var(--acc-soft)}.bcard:hover{transform:translateY(-1px);box-shadow:0 8px 20px -14px rgba(20,50,35,.35)}.macros .kcal{background:var(--acc-soft)}.thumb,.dt-img{background:repeating-linear-gradient(135deg,var(--a) 0 7px,var(--b) 7px 14px);overflow:hidden}.macros .kcal{background:var(--acc-soft)}.thumb{flex:none;width:68px;height:68px;border-radius:10px}.macros .kcal{background:var(--acc-soft)}.thumb img,.dt-img img{width:100%;height:100%;object-fit:cover;display:block}.macros .kcal{background:var(--acc-soft)}.bc-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.macros .kcal{background:var(--acc-soft)}.bc-t span{font:500 13px var(--body);color:var(--muted)} .bc-t span:first-child{font-weight:600}.macros .kcal{background:var(--acc-soft)}.bc-t b{font:500 17px/1.2 var(--head);text-wrap:pretty}.macros .kcal{background:var(--acc-soft)}.lbtn{flex:none;cursor:pointer;border:1px solid var(--line3);background:transparent;color:var(--ink);font:600 13px var(--body);padding:0 10px;height:34px;border-radius:8px}.macros .kcal{background:var(--acc-soft)}.lbtn .l-off{display:none}.macros .kcal{background:var(--acc-soft)}@media (hover:hover){.lbtn.on:hover .l-on{display:none} .lbtn.on:hover .l-off{display:inline} .lbtn.on:hover{background:transparent;border-color:var(--low);color:var(--low)}}.macros .kcal{background:var(--acc-soft)}.lbtn:hover{border-color:var(--ink)} .lbtn.on{background:var(--acc-soft);border-color:var(--acc-soft);color:var(--acc-deep)}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}/* ---------- Rezeptbuch: Detail ---------- */.macros .kcal{background:var(--acc-soft)}.detail{display:flex;flex-direction:column;gap:36px}.macros .kcal{background:var(--acc-soft)}.dt-top{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:32px;align-items:center}.macros .kcal{background:var(--acc-soft)}.dt-info{display:flex;flex-direction:column;gap:18px}.macros .kcal{background:var(--acc-soft)}.dt-info h1{font-size:48px;line-height:1.02;letter-spacing:-.02em}.macros .kcal{background:var(--acc-soft)}.facts{display:flex;gap:28px;flex-wrap:wrap}.macros .kcal{background:var(--acc-soft)}.facts div{display:flex;flex-direction:column;gap:2px}.macros .kcal{background:var(--acc-soft)}.facts span{font:600 13px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.macros .kcal{background:var(--acc-soft)}.facts b{font:500 18px var(--body)}.macros .kcal{background:var(--acc-soft)}.servbox{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}.macros .kcal{background:var(--acc-soft)}.servbox .step span{min-width:110px} .servbox .btn{margin-left:auto}.macros .kcal{background:var(--acc-soft)}.dt-img{height:220px;border-radius:16px;background-size:auto}.macros .kcal{background:var(--acc-soft)}.dt-img.sm{height:150px;border-radius:12px}.macros .kcal{background:var(--acc-soft)}.dt-body{display:grid;grid-template-columns:340px minmax(0,1fr);gap:40px;align-items:start}.macros .kcal{background:var(--acc-soft)}.ingcard{padding:22px 22px 10px;margin:0}.macros .kcal{background:var(--acc-soft)}.irow{display:grid;grid-template-columns:86px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--line2);line-height:1.35}.macros .kcal{background:var(--acc-soft)}.irow span:first-child{font-weight:600;text-align:right} .irow .chg{color:var(--acc)}.macros .kcal{background:var(--acc-soft)}.nurow{display:grid;grid-template-columns:1fr auto 56px 44px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line2);font-size:14px}.macros .kcal{background:var(--acc-soft)}.nurow b{font-weight:600;font-variant-numeric:tabular-nums} .nurow .muted{text-align:right;font-size:12px}.macros .kcal{background:var(--acc-soft)}.dt-body .col{gap:16px} .dt-body .ingcard{padding-bottom:14px}.macros .kcal{background:var(--acc-soft)}.srow{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:16px 0;border-top:1px solid var(--line)}.macros .kcal{background:var(--acc-soft)}.srow span{font:500 28px/1 var(--head);color:var(--acc)}.macros .kcal{background:var(--acc-soft)}.srow p{margin:0;font-size:17px;line-height:1.6;max-width:60ch;text-wrap:pretty}.macros .kcal{background:var(--acc-soft)}@media (max-width:999px){.dt-top,.dt-body{grid-template-columns:minmax(0,1fr)} .dt-info h1{font-size:34px} .dt-img{height:120px;order:-1}}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}/* ---------- Rezeptbuch: Neues Rezept ---------- */.macros .kcal{background:var(--acc-soft)}.addtabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:24px}.macros .kcal{background:var(--acc-soft)}.addtabs button{cursor:pointer;text-align:left;border:1.5px solid var(--line);background:transparent;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:6px;color:var(--ink)}.macros .kcal{background:var(--acc-soft)}.addtabs button.on{border-color:var(--acc);background:var(--card)}.macros .kcal{background:var(--acc-soft)}.addtabs i{font:500 11px ui-monospace,Consolas,monospace;font-style:normal;color:var(--faint)} .addtabs .on i{color:var(--acc)}.macros .kcal{background:var(--acc-soft)}.addtabs b{font:500 21px/1.15 var(--head)} .addtabs span{font:400 13px/1.4 var(--body);color:var(--muted)}.macros .kcal{background:var(--acc-soft)}.addcard{border-radius:18px;padding:32px;display:flex;flex-direction:column;gap:28px}.macros .kcal{background:var(--acc-soft)}.col{display:flex;flex-direction:column;gap:12px;min-width:0}.macros .kcal{background:var(--acc-soft)}.am-top{display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:28px}.macros .kcal{background:var(--acc-soft)}.am-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}.macros .kcal{background:var(--acc-soft)}.title-in{border:0;border-bottom:1.5px solid var(--line3);border-radius:0;background:transparent;padding:6px 0 10px;font:500 30px var(--head)}.macros .kcal{background:var(--acc-soft)}.drop{border:1.5px dashed var(--line3);border-radius:14px;align-items:center;justify-content:center;text-align:center;gap:12px;padding:16px;color:var(--muted);font-weight:500}.macros .kcal{background:var(--acc-soft)}.drop input{width:100%;border:0;padding:0;font-size:12px;background:none} .drop img{max-width:100%;height:80px;object-fit:cover;border-radius:8px} .drop span{font-weight:400;font-size:12px}.macros .kcal{background:var(--acc-soft)}.prev{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font:500 14px var(--body);color:var(--muted);min-height:26px}.macros .kcal{background:var(--acc-soft)}.prev b{font-weight:500;background:var(--acc-soft);color:var(--acc-deep);padding:3px 8px;border-radius:6px}.macros .kcal{background:var(--acc-soft)}.lrow{display:grid;grid-template-columns:78px minmax(0,1fr) 28px;gap:10px;align-items:start;padding:9px 0;border-bottom:1px solid var(--line2);overflow-wrap:anywhere}.macros .kcal{background:var(--acc-soft)}.lrow b{font-weight:600;text-align:right}.macros .kcal{background:var(--acc-soft)}/* Schritt-Zeilen heißen bewusst nicht .st – das ist die Status-Plakette (ohne Zeilenumbruch) */.macros .kcal{background:var(--acc-soft)}.lrow.lstep{grid-template-columns:28px minmax(0,1fr) 28px} .lrow .no{font:500 20px/1.2 var(--head);color:var(--acc)}.macros .kcal{background:var(--acc-soft)}.big{font:500 28px/1.15 var(--head)}.macros .kcal{background:var(--acc-soft)}.dropbig{border:1.5px dashed var(--line3);border-radius:16px;padding:56px 32px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}.macros .kcal{background:var(--acc-soft)}.scan{display:grid;grid-template-columns:320px minmax(0,1fr);gap:28px;align-items:center} .scan.done{align-items:start}.macros .kcal{background:var(--acc-soft)}.scanimg{position:relative;height:340px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:repeating-linear-gradient(0deg,#F5F7F4 0 26px,#E2E8E0 26px 27px)}.macros .kcal{background:var(--acc-soft)}.scanimg .cap{position:absolute;left:12px;top:12px;font:500 10px ui-monospace,Consolas,monospace;color:#44504A;background:rgba(255,255,255,.85);padding:3px 6px;border-radius:4px}.macros .kcal{background:var(--acc-soft)}.scanline{position:absolute;left:0;right:0;top:0;height:2px;background:var(--acc);box-shadow:0 0 18px 4px rgba(46,139,87,.35);animation:scanline 1s linear infinite alternate}.macros .kcal{background:var(--acc-soft)}.scanbar{width:0;animation:scanbar 2s linear forwards}.macros .kcal{background:var(--acc-soft)}@keyframes scanline{to{top:100%}} @keyframes scanbar{to{width:100%}}.macros .kcal{background:var(--acc-soft)}.bx{position:absolute;border:2px solid #1B2420;border-radius:4px}.macros .kcal{background:var(--acc-soft)}.bx.b1{left:8%;top:6%;width:70%;height:9%;border-color:#2E8B57} .bx.b2{left:8%;top:20%;width:52%;height:34%}.macros .kcal{background:var(--acc-soft)}.bx.b3{left:30%;top:31%;width:24%;height:5%;background:rgba(232,170,60,.35);border-color:#C98A1E} .bx.b4{left:8%;top:60%;width:84%;height:33%;border-color:#5C6862}.macros .kcal{background:var(--acc-soft)}input.flag{background:var(--warm-soft);border-color:var(--warm)} .note{font:500 13px var(--body);color:var(--warm-ink);padding-left:4px}.macros .kcal{background:var(--acc-soft)}.busy{border-top:1px solid var(--line2);padding-top:22px;margin:0;animation:pulse 1s ease-in-out infinite alternate}.macros .kcal{background:var(--acc-soft)}@keyframes pulse{to{opacity:.45}}.macros .kcal{background:var(--acc-soft)}.linkres{display:flex;flex-direction:column;gap:20px;border-top:1px solid var(--line2);padding-top:24px}.macros .kcal{background:var(--acc-soft)}.lk-top{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px}.macros .kcal{background:var(--acc-soft)}@media (max-width:999px){.addtabs,.am-top,.am-two,.scan,.lk-top{grid-template-columns:minmax(0,1fr)} .addtabs{gap:8px} .addcard{padding:20px} .scanimg{height:220px}}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}/* ---------- Einkaufsliste: Quellen (Rezepte, Rezept-Auswahl, Wochenplan) ---------- */.macros .kcal{background:var(--acc-soft)}.srcs{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}.macros .kcal{background:var(--acc-soft)}.dr-rec{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:10px;padding:8px 8px 8px 12px}.macros .kcal{background:var(--acc-soft)}.dr-rec .t{flex:1;min-width:0;font:500 14px/1.25 var(--body);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.macros .kcal{background:var(--acc-soft)}.dr-rec .t small{font-weight:400;margin-left:6px} .dr-rec .btn.sm{margin-top:0}.macros .kcal{background:var(--acc-soft)}.slist .nm small{display:block;font:400 12px/1.3 var(--body);color:var(--faint)}.macros .kcal{background:var(--acc-soft)}.slist li.off .nm small{text-decoration:none}.macros .kcal{background:var(--acc-soft)}@media print{.printable .slist .nm small{display:none}}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}/* ---------- Dialog & Hinweis ---------- */.macros .kcal{background:var(--acc-soft)}dialog{border:1px solid var(--line);border-radius:22px;padding:0;max-width:min(640px,94vw);width:100%;background:var(--card);color:var(--ink);overflow:hidden;.macros .kcal{background:var(--acc-soft)}  box-shadow:0 1px 2px rgba(0,0,0,.06),0 32px 80px -16px rgba(12,28,20,.45)}.macros .kcal{background:var(--acc-soft)}dialog[open]{animation:dlg-in .22s cubic-bezier(.2,.9,.3,1.15)}.macros .kcal{background:var(--acc-soft)}dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);animation:dlg-fade .2s ease-out}.macros .kcal{background:var(--acc-soft)}@keyframes dlg-in{from{opacity:0;transform:translateY(14px) scale(.96)}}.macros .kcal{background:var(--acc-soft)}@keyframes dlg-fade{from{opacity:0}}.macros .kcal{background:var(--acc-soft)}#dlg-body{padding:28px 28px 0;max-height:min(82vh,760px);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}.macros .kcal{background:var(--acc-soft)}#dlg-body>h2:first-child{font:600 24px/1.2 var(--head);letter-spacing:-.01em;margin:0 44px 10px 0}.macros .kcal{background:var(--acc-soft)}#dlg-body>.btnrow:last-child{position:sticky;bottom:0;justify-content:flex-end;margin:22px -28px 0;padding:16px 28px;background:var(--card);border-top:1px solid var(--line2)}.macros .kcal{background:var(--acc-soft)}#dlg-body>:last-child:not(.btnrow){margin-bottom:28px}.macros .kcal{background:var(--acc-soft)}.dlg-x{position:absolute;top:18px;right:18px;z-index:2;width:36px;height:36px;border:0;border-radius:50%;background:var(--side);color:var(--muted);font:400 22px/1 var(--body);cursor:pointer;.macros .kcal{background:var(--acc-soft)}  display:grid;place-items:center;transition:background .15s,color .15s,transform .15s}.macros .kcal{background:var(--acc-soft)}.dlg-x:hover{background:var(--hover);color:var(--ink);transform:rotate(90deg)}.macros .kcal{background:var(--acc-soft)}.dlg-x:focus-visible,#ask .btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}.macros .kcal{background:var(--acc-soft)}/* Rückfrage (ersetzt das Browser-Fenster von confirm) */.macros .kcal{background:var(--acc-soft)}#ask{max-width:min(420px,92vw)}.macros .kcal{background:var(--acc-soft)}#ask-body{padding:30px 28px 24px;text-align:center}.macros .kcal{background:var(--acc-soft)}#ask-body h2{font:600 21px/1.25 var(--head);letter-spacing:-.01em;margin:0 0 8px}.macros .kcal{background:var(--acc-soft)}#ask-body p{color:var(--muted);margin:0;font-size:15px;line-height:1.5;overflow-wrap:anywhere}.macros .kcal{background:var(--acc-soft)}#ask-body .btnrow{margin-top:24px;flex-wrap:nowrap} #ask-body .btn{flex:1;border:1px solid transparent} #ask-body .btn.ghost{border-color:var(--line)}.macros .kcal{background:var(--acc-soft)}.ask-ic{width:54px;height:54px;border-radius:50%;margin:0 auto 16px;display:grid;place-items:center;background:var(--acc-soft);color:var(--acc-deep);font:700 26px/1 var(--head)}.macros .kcal{background:var(--acc-soft)}.ask-ic.danger{background:color-mix(in srgb,var(--low) 16%,var(--card));color:var(--low)}.macros .kcal{background:var(--acc-soft)}.btn.danger{background:var(--low);color:#fff} .btn.danger:hover{background:color-mix(in srgb,var(--low) 86%,#000)}.macros .kcal{background:var(--acc-soft)}@media (max-width:599px){.macros .kcal{background:var(--acc-soft)}  #dlg{margin:auto 0 0;max-width:100vw;border-radius:22px 22px 0 0;border-width:1px 0 0}.macros .kcal{background:var(--acc-soft)}  #dlg[open]{animation:dlg-up .26s cubic-bezier(.2,.9,.3,1)}.macros .kcal{background:var(--acc-soft)}  #dlg-body{padding:24px 20px 0;max-height:86vh}.macros .kcal{background:var(--acc-soft)}  #dlg-body>.btnrow:last-child{margin:20px -20px 0;padding:14px 20px} #dlg-body>.btnrow:last-child .btn{flex:1}.macros .kcal{background:var(--acc-soft)}}.macros .kcal{background:var(--acc-soft)}@keyframes dlg-up{from{transform:translateY(100%)}}.macros .kcal{background:var(--acc-soft)}.alts{list-style:none;padding:0;margin:.6rem 0}.macros .kcal{background:var(--acc-soft)}.alts button{width:100%;display:grid;grid-template-columns:1fr auto;gap:.1rem .8rem;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 14px;margin-bottom:6px;cursor:pointer}.macros .kcal{background:var(--acc-soft)}.alts button:hover{border-color:var(--acc);background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}.alts .muted{grid-column:1} .alts .st{grid-row:1/3;grid-column:2;align-self:center}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,1.4rem) scale(.96);display:flex;align-items:center;gap:10px;max-width:min(520px,calc(100vw - 32px));background:var(--ink);color:var(--bg);.macros .kcal{background:var(--acc-soft)}  padding:10px 20px 10px 10px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .22s,transform .28s cubic-bezier(.2,.9,.3,1.2);z-index:50;font:500 14px/1.35 var(--body);box-shadow:0 16px 36px -12px rgba(0,0,0,.5)}.macros .kcal{background:var(--acc-soft)}#toast i{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:var(--acc-ink);font:700 14px/1 var(--body);font-style:normal}.macros .kcal{background:var(--acc-soft)}#toast.show{opacity:1;transform:translate(-50%,0) scale(1)}.macros .kcal{background:var(--acc-soft)}@media (max-width:999px){#toast{bottom:96px}}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}@media print{.macros .kcal{background:var(--acc-soft)}  .side,.mtop,.tabbar,.ph,.noprint,#toast,dialog,.card:not(.printable){display:none!important}.macros .kcal{background:var(--acc-soft)}  /* Einkaufsliste als Zettel zum Abhaken: leere Kästchen, Menge vor Artikel, zwei Spalten, ohne Preise */.macros .kcal{background:var(--acc-soft)}  @page{margin:14mm 16mm}.macros .kcal{background:var(--acc-soft)}  html,body{background:#fff!important}.macros .kcal{background:var(--acc-soft)}  body{font-size:11.5pt}.macros .kcal{background:var(--acc-soft)}  .shell{display:block} main{margin:0;padding:0} #view{max-width:none}.macros .kcal{background:var(--acc-soft)}  .card.printable{box-shadow:none;border:0;border-radius:0;background:none;padding:0;margin:0}.macros .kcal{background:var(--acc-soft)}  .card.printable,.card.printable *{color:#000!important}.macros .kcal{background:var(--acc-soft)}  .printable .lh{border-bottom:2pt solid #000;padding-bottom:3mm;margin-bottom:2mm}.macros .kcal{background:var(--acc-soft)}  .printable .lh h2{font-size:22pt;margin:0}.macros .kcal{background:var(--acc-soft)}  .printable .opt{background:none;border:0;padding:0;font-size:10pt;font-weight:400}.macros .kcal{background:var(--acc-soft)}  .printable .opt::before{content:"· "}.macros .kcal{background:var(--acc-soft)}  .plist{columns:2;column-gap:12mm}.macros .kcal{background:var(--acc-soft)}  .printable h4.cat{font-size:9.5pt;letter-spacing:.08em;margin:5mm 0 1mm;padding-bottom:1mm;border-bottom:.75pt solid #000;break-after:avoid}.macros .kcal{background:var(--acc-soft)}  .plist h4.cat:first-child{margin-top:0}.macros .kcal{background:var(--acc-soft)}  .btnrow{display:none!important}.macros .kcal{background:var(--acc-soft)}  .printable .slist li{grid-template-columns:auto 5.2em 1fr;gap:3mm;padding:1.6mm 0;border-bottom:.5pt dotted #999;break-inside:avoid}.macros .kcal{background:var(--acc-soft)}  .printable .slist .am{order:1;text-align:right;font-weight:600}.macros .kcal{background:var(--acc-soft)}  .printable .slist .nm{order:2}.macros .kcal{background:var(--acc-soft)}  .printable .x,.printable .pr{display:none}.macros .kcal{background:var(--acc-soft)}  /* abgewählte Artikel und dadurch leere Kategorien nicht drucken */.macros .kcal{background:var(--acc-soft)}  .printable .slist li.off{display:none}.macros .kcal{background:var(--acc-soft)}  .printable .slist:not(:has(li:not(.off))),.printable h4.cat:has(+ .slist:not(:has(li:not(.off)))){display:none}.macros .kcal{background:var(--acc-soft)}  .printable .chk span{width:4mm;height:4mm;border:1pt solid #000;border-radius:.6mm;background:none!important}.macros .kcal{background:var(--acc-soft)}  .printable .chk span::after{content:none!important}.macros .kcal{background:var(--acc-soft)}  .printable .total{margin-top:6mm;padding-top:2mm;border-top:.75pt solid #000;font-size:10pt;break-inside:avoid}.macros .kcal{background:var(--acc-soft)}}.macros .kcal{background:var(--acc-soft)}@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important;animation-duration:.01s!important}}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}.linkres textarea{display:block;width:100%;min-height:180px;box-sizing:border-box;margin-top:8px;padding:12px;border:1px solid var(--line);border-radius:12px;font:inherit;resize:vertical}.macros .kcal{background:var(--acc-soft)}.tag.kueche{background:var(--side);color:var(--ink2);border:1px solid var(--line3)}.macros .kcal{background:var(--acc-soft)}.tag.warn{background:var(--warm-soft);color:var(--warm-ink)}.macros .kcal{background:var(--acc-soft)}.tag.neutral{background:var(--side);color:var(--muted)}.macros .kcal{background:var(--acc-soft)}.macros .kcal{background:var(--acc-soft)}.restore{margin-top:20px;text-align:center}.macros .kcal{background:var(--acc-soft)}.listbar{margin:0 0 1.1rem;padding-bottom:1rem;border-bottom:1px solid var(--line2)}.macros .kcal{background:var(--acc-soft)}.macros{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:10px;margin:.4rem 0 .6rem}.macros .kcal{background:var(--acc-soft)}.macros div{display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center;background:var(--side);border-radius:12px;padding:14px 8px}.macros .kcal{background:var(--acc-soft)}.macros b{font:600 20px/1.1 var(--head);font-variant-numeric:tabular-nums}.macros .kcal{background:var(--acc-soft)}.macros span{font:500 12px var(--body);color:var(--muted)}.macros .kcal{background:var(--acc-soft)}.macros .alc{background:var(--warm-soft)} .macros .alc b,.macros .alc span{color:var(--warm-ink)} .macros .kcal b,.macros .kcal span{color:var(--acc-deep)}.macros .kcal{background:var(--acc-soft)}@media (max-width:480px){.macros{grid-template-columns:repeat(2,minmax(0,1fr))}}.macros .kcal{background:var(--acc-soft)}.rc-more{align-self:flex-start}.macros .kcal{background:var(--acc-soft)}
 </style>
 </head>
 <body>
@@ -472,6 +50,8 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
     { k: 'mg',    label: 'Magnesium',   unit: 'mg',   group: 'micro' },
     { k: 'zn',    label: 'Zink',        unit: 'mg',   group: 'micro' },
     { k: 'k',     label: 'Kalium',      unit: 'mg',   group: 'micro' },
+    // Alkohol hat keinen Bedarf: kein Zielwert, keine Bewertung – wird nur ausgewiesen (Gehalt der rohen Zutaten)
+    { k: 'alc',   label: 'Alkohol',     unit: 'g',    group: 'macro', noTarget: true },
   ];
 
   KA.CATS = {
@@ -505,171 +85,186 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
   // [id, Name, Kategorie, Einheit, g pro Einheit, Preis €/kg|l|Stk, Flags, Nährwerte/100g, Basiszutat?]
   const ING_RAW = [
     // Getreide & Brot
-    ['haferflocken', 'Haferflocken', 'GB', 'g', 1, 2.0, ['gluten'], [381,13.5,59.5,7.5,10.5,0,0,0,0,20,54,3.5,130,3.2,390]],
-    ['vollkornnudeln', 'Vollkornnudeln', 'GB', 'g', 1, 2.8, ['gluten'], [338,12.6,60.6,2.5,11.5,0,0,0,0,40,34,3.9,120,3,390]],
-    ['nudeln', 'Nudeln', 'GB', 'g', 1, 1.6, ['gluten'], [353,12.6,70.5,1.2,5.1,0,0,0,0,31,22,1.5,56,1.5,200]],
-    ['reis', 'Reis', 'GB', 'g', 1, 2.5, [], [352,7.4,78,0.9,1,0,0,0,0,19,6,0.2,24,1.1,85]],
-    ['quinoa', 'Quinoa', 'GB', 'g', 1, 7.0, [], [362,13.3,58.2,6.6,8.3,0.5,1,0,0,135,41,3.6,180,2.9,800]],
-    ['couscous', 'Couscous', 'GB', 'g', 1, 3.0, ['gluten'], [376,12.8,72,0.6,5,0,0,0,0,20,24,1.1,44,0.8,166]],
-    ['kartoffeln', 'Kartoffeln', 'OG', 'g', 1, 1.5, [], [76,2,15.6,0.1,2.1,19.4,1,0,0,21,5,0.3,23,0.2,400]],
-    ['suesskartoffel', 'Süßkartoffel', 'OG', 'g', 1, 3.0, [], [81,1.6,17.1,0.1,3,19.3,373,0,0,11,41,0.6,26,0.3,420]],
-    ['vollkornbrot', 'Vollkornbrot', 'GB', 'g', 1, 4.0, ['gluten'], [213,8.6,38.3,1.3,7,0,0,0,0,22,20,3.1,82,2.2,250]],
-    ['tortilla', 'Weizen-Tortilla', 'GB', 'Stk', 60, 0.35, ['gluten'], [306,8.2,46,8,3.5,0,0,0,0,94,146,3.6,22,0.5,125]],
-    ['mehl', 'Weizenmehl', 'GB', 'g', 1, 1.2, ['gluten'], [344,12,69.5,1.3,3.2,0,0,0,0,16,11,1.5,34,1.1,180]],
+    ['haferflocken', 'Haferflocken', 'GB', 'g', 1, 2.0, ['gluten'], [381,13.5,59.5,7.5,10.5,0,0,0,0,20,54,3.5,130,3.2,390,0]],
+    ['vollkornnudeln', 'Vollkornnudeln', 'GB', 'g', 1, 2.8, ['gluten'], [338,12.6,60.6,2.5,11.5,0,0,0,0,40,34,3.9,120,3,390,0]],
+    ['nudeln', 'Nudeln', 'GB', 'g', 1, 1.6, ['gluten'], [353,12.6,70.5,1.2,5.1,0,0,0,0,31,22,1.5,56,1.5,200,0]],
+    ['reis', 'Reis', 'GB', 'g', 1, 2.5, [], [352,7.4,78,0.9,1,0,0,0,0,19,6,0.2,24,1.1,85,0]],
+    ['quinoa', 'Quinoa', 'GB', 'g', 1, 7.0, [], [362,13.3,58.2,6.6,8.3,0.5,1,0,0,135,41,3.6,180,2.9,800,0]],
+    ['couscous', 'Couscous', 'GB', 'g', 1, 3.0, ['gluten'], [376,12.8,72,0.6,5,0,0,0,0,20,24,1.1,44,0.8,166,0]],
+    ['kartoffeln', 'Kartoffeln', 'OG', 'g', 1, 1.5, [], [76,2,15.6,0.1,2.1,19.4,1,0,0,21,5,0.3,23,0.2,400,0]],
+    ['suesskartoffel', 'Süßkartoffel', 'OG', 'g', 1, 3.0, [], [81,1.6,17.1,0.1,3,19.3,373,0,0,11,41,0.6,26,0.3,420,0]],
+    ['vollkornbrot', 'Vollkornbrot', 'GB', 'g', 1, 4.0, ['gluten'], [213,8.6,38.3,1.3,7,0,0,0,0,22,20,3.1,82,2.2,250,0]],
+    ['tortilla', 'Weizen-Tortilla', 'GB', 'Stk', 60, 0.35, ['gluten'], [306,8.2,46,8,3.5,0,0,0,0,94,146,3.6,22,0.5,125,0]],
+    ['mehl', 'Weizenmehl', 'GB', 'g', 1, 1.2, ['gluten'], [344,12,69.5,1.3,3.2,0,0,0,0,16,11,1.5,34,1.1,180,0]],
     // Hülsenfrüchte, Nüsse, Samen
-    ['linsen', 'Rote Linsen', 'HN', 'g', 1, 3.0, [], [325,27,41.8,1.5,18.2,4.7,3,0,0,88,33,5.6,83,3,900]],
-    ['kichererbsen', 'Kichererbsen (Dose)', 'KO', 'g', 1, 2.8, [], [131,7.3,16.8,2,8.4,1.2,5,0,0,68,44,1.9,48,0.9,330]],
-    ['kidneybohnen', 'Kidneybohnen (Dose)', 'KO', 'g', 1, 2.5, [], [124,8,16,1,5.5,0.2,0,0,0,28,57,1.5,30,0.8,277]],
-    ['tofu', 'Tofu', 'HN', 'g', 1, 7.0, ['soja'], [148,14.7,2.9,8.5,0.5,0.5,0,0,0,25,120,2,100,1.3,150]],
-    ['erdnussmus', 'Erdnussmus', 'HN', 'g', 1, 8.0, ['erdnuss'], [636,26.1,12.5,51.8,7.6,0,0,0,0,53,37,2,180,3,700]],
-    ['mandeln', 'Mandeln', 'HN', 'g', 1, 10.0, ['nuss'], [624,25.6,7.8,52.1,10.6,0.5,0,0,0,56,270,3.3,240,3.3,740]],
-    ['walnuesse', 'Walnüsse', 'HN', 'g', 1, 12.0, ['nuss'], [709,15.7,6.9,67.3,6.7,0.8,2,0,0,112,78,2.6,140,2.7,420]],
-    ['chia', 'Chiasamen', 'HN', 'g', 1, 12.0, [], [482,21.4,1.8,34.1,40.9,1.6,0,0,0,71,550,6.5,320,5.1,640]],
-    ['leinsamen', 'Leinsamen', 'HN', 'g', 1, 5.0, [], [533,21.3,3.6,42.2,26.9,0,0,0,0,72,240,6.3,320,4.3,680]],
-    ['kuerbiskerne', 'Kürbiskerne', 'HN', 'g', 1, 12.0, [], [615,35.6,4.7,49.1,6,1.9,1,0,0,129,63,8.2,520,5,900]],
-    ['tahin', 'Tahin (Sesammus)', 'HN', 'g', 1, 12.0, ['sesam'], [595,17,12,53.8,9.3,0,3,0,0,98,426,9,95,4.6,414]],
+    ['linsen', 'Rote Linsen', 'HN', 'g', 1, 3.0, [], [325,27,41.8,1.5,18.2,4.7,3,0,0,88,33,5.6,83,3,900,0]],
+    ['kichererbsen', 'Kichererbsen (Dose)', 'KO', 'g', 1, 2.8, [], [131,7.3,16.8,2,8.4,1.2,5,0,0,68,44,1.9,48,0.9,330,0]],
+    ['kidneybohnen', 'Kidneybohnen (Dose)', 'KO', 'g', 1, 2.5, [], [124,8,16,1,5.5,0.2,0,0,0,28,57,1.5,30,0.8,277,0]],
+    ['tofu', 'Tofu', 'HN', 'g', 1, 7.0, ['soja'], [148,14.7,2.9,8.5,0.5,0.5,0,0,0,25,120,2,100,1.3,150,0]],
+    ['erdnussmus', 'Erdnussmus', 'HN', 'g', 1, 8.0, ['erdnuss'], [636,26.1,12.5,51.8,7.6,0,0,0,0,53,37,2,180,3,700,0]],
+    ['mandeln', 'Mandeln', 'HN', 'g', 1, 10.0, ['nuss'], [624,25.6,7.8,52.1,10.6,0.5,0,0,0,56,270,3.3,240,3.3,740,0]],
+    ['walnuesse', 'Walnüsse', 'HN', 'g', 1, 12.0, ['nuss'], [709,15.7,6.9,67.3,6.7,0.8,2,0,0,112,78,2.6,140,2.7,420,0]],
+    ['chia', 'Chiasamen', 'HN', 'g', 1, 12.0, [], [482,21.4,1.8,34.1,40.9,1.6,0,0,0,71,550,6.5,320,5.1,640,0]],
+    ['leinsamen', 'Leinsamen', 'HN', 'g', 1, 5.0, [], [533,21.3,3.6,42.2,26.9,0,0,0,0,72,240,6.3,320,4.3,680,0]],
+    ['kuerbiskerne', 'Kürbiskerne', 'HN', 'g', 1, 12.0, [], [615,35.6,4.7,49.1,6,1.9,1,0,0,129,63,8.2,520,5,900,0]],
+    ['tahin', 'Tahin (Sesammus)', 'HN', 'g', 1, 12.0, ['sesam'], [595,17,12,53.8,9.3,0,3,0,0,98,426,9,95,4.6,414,0]],
     // Milch & Eier
-    ['milch', 'Milch', 'MI', 'ml', 1, 1.1, ['milch'], [47,3.3,4.9,1.5,0,1.8,14,0,0.26,10,124,0,12,0.4,175]],
-    ['hafermilch', 'Hafermilch (angereichert)', 'MI', 'ml', 1, 1.8, [], [49,0.5,8,1.5,0.9,0,0,0.9,0.26,2,113,0,4,0,31]],
-    ['joghurt', 'Naturjoghurt', 'MI', 'g', 1, 2.0, ['milch'], [66,3.9,4.5,3.6,0,2,37,0.1,0.3,5,140,0,12,0.4,170]],
-    ['skyr', 'Skyr', 'MI', 'g', 1, 3.5, ['milch'], [63,11,4,0.2,0,0,0,0,0.5,7,120,0.1,11,0.4,150]],
-    ['quark', 'Magerquark', 'MI', 'g', 1, 2.6, ['milch'], [61,10.6,4.2,0.2,0,0.1,3,0,0.42,19,110,0,10,0.5,140]],
-    ['feta', 'Feta', 'MI', 'g', 1, 9.0, ['milch'], [281,14.8,0.7,24.3,0,0,218,0.1,0.41,19,220,0.1,12,1.2,66]],
-    ['mozzarella', 'Mozzarella', 'MI', 'g', 1, 7.0, ['milch'], [256,19.5,0.7,19.5,0,0,194,0.3,1.4,16,340,0.1,10,2.6,8]],
-    ['parmesan', 'Parmesan', 'MI', 'g', 1, 22.0, ['milch'], [401,30.5,3,31,0,0,288,0.8,1.75,20,1340,0.7,44,4,100]],
-    ['kaese', 'Gouda / Schnittkäse', 'MI', 'g', 1, 10.0, ['milch'], [395,26.6,0,32.1,0,0,318,0.6,1.49,13,910,0.3,32,4.3,86]],
-    ['butter', 'Butter', 'MI', 'g', 1, 8.0, ['milch'], [746,0.7,0.7,82.3,0,0,802,1.1,0.07,0,18,0,2,0.2,21]],
-    ['eier', 'Eier', 'MI', 'Stk', 55, 0.35, ['ei'], [140,12.6,0.3,9.8,0,0,112,2.8,1.31,67,48,1.8,12,1.2,150]],
-    ['kokosmilch', 'Kokosmilch', 'KO', 'ml', 1, 3.0, [], [214,2.4,3.1,21.3,0.1,1,0,0,0,14,18,3.3,46,0.6,220]],
+    ['milch', 'Milch', 'MI', 'ml', 1, 1.1, ['milch'], [47,3.3,4.9,1.5,0,1.8,14,0,0.26,10,124,0,12,0.4,175,0]],
+    ['hafermilch', 'Hafermilch (angereichert)', 'MI', 'ml', 1, 1.8, [], [49,0.5,8,1.5,0.9,0,0,0.9,0.26,2,113,0,4,0,31,0]],
+    ['joghurt', 'Naturjoghurt', 'MI', 'g', 1, 2.0, ['milch'], [66,3.9,4.5,3.6,0,2,37,0.1,0.3,5,140,0,12,0.4,170,0]],
+    ['skyr', 'Skyr', 'MI', 'g', 1, 3.5, ['milch'], [63,11,4,0.2,0,0,0,0,0.5,7,120,0.1,11,0.4,150,0]],
+    ['quark', 'Magerquark', 'MI', 'g', 1, 2.6, ['milch'], [61,10.6,4.2,0.2,0,0.1,3,0,0.42,19,110,0,10,0.5,140,0]],
+    ['feta', 'Feta', 'MI', 'g', 1, 9.0, ['milch'], [281,14.8,0.7,24.3,0,0,218,0.1,0.41,19,220,0.1,12,1.2,66,0]],
+    ['mozzarella', 'Mozzarella', 'MI', 'g', 1, 7.0, ['milch'], [256,19.5,0.7,19.5,0,0,194,0.3,1.4,16,340,0.1,10,2.6,8,0]],
+    ['parmesan', 'Parmesan', 'MI', 'g', 1, 22.0, ['milch'], [401,30.5,3,31,0,0,288,0.8,1.75,20,1340,0.7,44,4,100,0]],
+    ['kaese', 'Gouda / Schnittkäse', 'MI', 'g', 1, 10.0, ['milch'], [395,26.6,0,32.1,0,0,318,0.6,1.49,13,910,0.3,32,4.3,86,0]],
+    ['butter', 'Butter', 'MI', 'g', 1, 8.0, ['milch'], [746,0.7,0.7,82.3,0,0,802,1.1,0.07,0,18,0,2,0.2,21,0]],
+    ['eier', 'Eier', 'MI', 'Stk', 55, 0.35, ['ei'], [140,12.6,0.3,9.8,0,0,112,2.8,1.31,67,48,1.8,12,1.2,150,0]],
+    ['kokosmilch', 'Kokosmilch', 'KO', 'ml', 1, 3.0, [], [214,2.4,3.1,21.3,0.1,1,0,0,0,14,18,3.3,46,0.6,220,0]],
     // Fleisch & Fisch
-    ['haehnchen', 'Hähnchenbrust', 'FF', 'g', 1, 10.0, ['fleisch'], [107,24.6,0,1,0,0,6,1.5,0.29,12,3,0.3,27,0.5,350]],
-    ['rinderhack', 'Rinderhack', 'FF', 'g', 1, 11.0, ['fleisch'], [208,19.2,0,14.6,0,0,6,0.2,3,4,4,1.7,18,4.2,290]],
-    ['schinken', 'Schinkenwürfel', 'FF', 'g', 1, 12.0, ['fleisch', 'schwein'], [104,20.2,0.7,2.3,0,60.8,4,0.6,0.09,2,17,0.6,24,1.9,450]],
-    ['lachs', 'Lachsfilet', 'FF', 'g', 1, 20.0, ['fisch'], [223,19.9,0,15.9,0,1,11,8.3,6.9,13,12,0.4,28,0.4,440]],
-    ['thunfisch', 'Thunfisch (Dose)', 'KO', 'g', 1, 12.0, ['fisch'], [109,24.9,0,1,0,0,26,1.1,3.4,3,10,1.5,27,0.9,230]],
-    ['garnelen', 'Garnelen', 'FF', 'g', 1, 18.0, ['schalentier'], [74,16.6,0,0.8,0,0,0,0.1,2.07,11,46,0.5,32,1.1,110]],
+    ['haehnchen', 'Hähnchenbrust', 'FF', 'g', 1, 10.0, ['fleisch'], [107,24.6,0,1,0,0,6,1.5,0.29,12,3,0.3,27,0.5,350,0]],
+    ['rinderhack', 'Rinderhack', 'FF', 'g', 1, 11.0, ['fleisch'], [208,19.2,0,14.6,0,0,6,0.2,3,4,4,1.7,18,4.2,290,0]],
+    ['schinken', 'Schinkenwürfel', 'FF', 'g', 1, 12.0, ['fleisch', 'schwein'], [104,20.2,0.7,2.3,0,60.8,4,0.6,0.09,2,17,0.6,24,1.9,450,0]],
+    ['lachs', 'Lachsfilet', 'FF', 'g', 1, 20.0, ['fisch'], [223,19.9,0,15.9,0,1,11,8.3,6.9,13,12,0.4,28,0.4,440,0]],
+    ['thunfisch', 'Thunfisch (Dose)', 'KO', 'g', 1, 12.0, ['fisch'], [109,24.9,0,1,0,0,26,1.1,3.4,3,10,1.5,27,0.9,230,0]],
+    ['garnelen', 'Garnelen', 'FF', 'g', 1, 18.0, ['schalentier'], [74,16.6,0,0.8,0,0,0,0.1,2.07,11,46,0.5,32,1.1,110,0]],
     // Obst & Gemüse
-    ['zwiebel', 'Zwiebel', 'OG', 'Stk', 80, 0.3, [], [39,1.1,6.3,0.6,1.9,5,1,0,0,30,20,0.2,8,0.2,140]],
-    ['knoblauch', 'Knoblauchzehe', 'OG', 'Stk', 4, 0.1, [], [149,6.4,31,0.5,2.1,31.2,0,0,0,3,181,1.7,25,1.2,401]],
-    ['tomaten', 'Tomaten', 'OG', 'g', 1, 3.5, [], [21,0.9,3.3,0.3,1.2,25.5,39,0,0,18,8,0.1,8,0.1,240]],
-    ['dosentomaten', 'Dosentomaten (gehackt)', 'KO', 'g', 1, 1.6, [], [22,1.1,3.8,0.1,0.8,11,25,0,0,11,11,0.6,10,0.1,210]],
-    ['tomatenmark', 'Tomatenmark', 'KO', 'g', 1, 4.0, [], [77,4.5,12.9,0.2,2.8,38,38,0,0,54,48,1.6,48,0.7,1150]],
-    ['paprika', 'Paprika', 'OG', 'Stk', 160, 0.9, [], [32,0.9,5.9,0.1,1.7,149,36,0,0,41,7,0.3,12,0.1,240]],
-    ['zucchini', 'Zucchini', 'OG', 'Stk', 250, 0.9, [], [17,1.2,1.8,0.3,1.1,14.8,12,0,0,29,19,0.4,18,0.3,260]],
-    ['aubergine', 'Aubergine', 'OG', 'Stk', 300, 1.2, [], [21,1.1,2.4,0.1,2.7,1.9,4,0,0,24,12,0.3,14,0.1,240]],
-    ['gurke', 'Gurke', 'OG', 'Stk', 350, 0.8, [], [12,0.7,1.8,0,0.8,8.9,12,0,0,10,16,0.2,10,0.1,140]],
-    ['karotten', 'Karotten', 'OG', 'g', 1, 1.3, [], [42,0.6,7.6,0.4,2.7,3.1,692,0,0,59,29,0.1,7,0.2,220]],
-    ['brokkoli', 'Brokkoli', 'OG', 'g', 1, 3.0, [], [39,3.6,3.2,0.6,3.2,102.9,46,0,0,60,46,0.9,21,0.5,390]],
-    ['spinat', 'Spinat', 'OG', 'g', 1, 4.0, [], [25,2.6,1.3,0.6,1.9,51,284,0,0,94,100,1.8,89,0.6,590]],
-    ['blumenkohl', 'Blumenkohl', 'OG', 'g', 1, 2.5, [], [26,1.8,2.1,0.7,2,60.2,1,0,0,56,23,0.3,10,0.3,270]],
-    ['champignons', 'Champignons', 'OG', 'g', 1, 4.5, [], [25,3.7,1.1,0.3,1.9,2.1,0,1.9,0,22,7,1,11,0.5,370]],
-    ['rucola', 'Rucola', 'OG', 'g', 1, 10.0, [], [22,3.6,0.1,0.4,1.7,55.5,183,0,0,92,190,1.4,28,0.4,350]],
-    ['lauch', 'Lauch', 'OG', 'g', 1, 3.0, [], [32,2,4,0.2,3.2,14.5,23,0,0,23,25,0.3,8,0.2,220]],
-    ['kuerbis', 'Kürbis (Hokkaido)', 'OG', 'g', 1, 2.5, [], [28,1.1,4.6,0.1,2.2,14.9,340,0,0,20,41,0.2,8,0.1,400]],
-    ['mais', 'Mais (Dose)', 'KO', 'g', 1, 3.0, [], [86,2.6,15.1,1.5,2.2,1.4,6,0,0,36,4,0.4,18,0.4,166]],
-    ['erbsen', 'Erbsen (TK)', 'OG', 'g', 1, 2.8, [], [81,5.3,10.8,0.7,5.3,22,22,0,0,50,36,1.8,26,0.8,170]],
-    ['ingwer', 'Ingwer', 'OG', 'g', 1, 8.0, [], [56,1.5,9.7,0.9,2.4,2.8,2,0.2,0,11,14,0.5,34,0.3,368]],
-    ['avocado', 'Avocado', 'OG', 'Stk', 150, 1.2, [], [158,1.6,1.2,15.1,5.5,3.7,9,0,0,58,15,0.5,29,0.5,430]],
-    ['zitrone', 'Zitrone', 'OG', 'Stk', 80, 0.4, [], [24,0.8,2.9,0.6,2,54.7,1,0,0,11,25,0.5,16,0.1,150]],
-    ['bananen', 'Banane', 'OG', 'Stk', 120, 0.25, [], [90,1.1,19.7,0.2,2.7,11.9,7,0,0,26,5,0.2,28,0.1,320]],
-    ['aepfel', 'Apfel', 'OG', 'Stk', 180, 0.5, [], [52,0.3,11.6,0.3,1.4,7.2,2,0,0,6,5,0.1,6,0.1,120]],
-    ['beeren', 'Beeren (TK-Mix)', 'OG', 'g', 1, 5.5, [], [43,0.9,7,0.5,3.7,47.3,1,0,0,29,20,0.3,13,0.1,150]],
+    ['zwiebel', 'Zwiebel', 'OG', 'Stk', 80, 0.3, [], [39,1.1,6.3,0.6,1.9,5,1,0,0,30,20,0.2,8,0.2,140,0]],
+    ['knoblauch', 'Knoblauchzehe', 'OG', 'Stk', 4, 0.1, [], [149,6.4,31,0.5,2.1,31.2,0,0,0,3,181,1.7,25,1.2,401,0]],
+    ['tomaten', 'Tomaten', 'OG', 'g', 1, 3.5, [], [21,0.9,3.3,0.3,1.2,25.5,39,0,0,18,8,0.1,8,0.1,240,0]],
+    ['dosentomaten', 'Dosentomaten (gehackt)', 'KO', 'g', 1, 1.6, [], [22,1.1,3.8,0.1,0.8,11,25,0,0,11,11,0.6,10,0.1,210,0]],
+    ['tomatenmark', 'Tomatenmark', 'KO', 'g', 1, 4.0, [], [77,4.5,12.9,0.2,2.8,38,38,0,0,54,48,1.6,48,0.7,1150,0]],
+    ['paprika', 'Paprika', 'OG', 'Stk', 160, 0.9, [], [32,0.9,5.9,0.1,1.7,149,36,0,0,41,7,0.3,12,0.1,240,0]],
+    ['zucchini', 'Zucchini', 'OG', 'Stk', 250, 0.9, [], [17,1.2,1.8,0.3,1.1,14.8,12,0,0,29,19,0.4,18,0.3,260,0]],
+    ['aubergine', 'Aubergine', 'OG', 'Stk', 300, 1.2, [], [21,1.1,2.4,0.1,2.7,1.9,4,0,0,24,12,0.3,14,0.1,240,0]],
+    ['gurke', 'Gurke', 'OG', 'Stk', 350, 0.8, [], [12,0.7,1.8,0,0.8,8.9,12,0,0,10,16,0.2,10,0.1,140,0]],
+    ['karotten', 'Karotten', 'OG', 'g', 1, 1.3, [], [42,0.6,7.6,0.4,2.7,3.1,692,0,0,59,29,0.1,7,0.2,220,0]],
+    ['brokkoli', 'Brokkoli', 'OG', 'g', 1, 3.0, [], [39,3.6,3.2,0.6,3.2,102.9,46,0,0,60,46,0.9,21,0.5,390,0]],
+    ['spinat', 'Spinat', 'OG', 'g', 1, 4.0, [], [25,2.6,1.3,0.6,1.9,51,284,0,0,94,100,1.8,89,0.6,590,0]],
+    ['blumenkohl', 'Blumenkohl', 'OG', 'g', 1, 2.5, [], [26,1.8,2.1,0.7,2,60.2,1,0,0,56,23,0.3,10,0.3,270,0]],
+    ['champignons', 'Champignons', 'OG', 'g', 1, 4.5, [], [25,3.7,1.1,0.3,1.9,2.1,0,1.9,0,22,7,1,11,0.5,370,0]],
+    ['rucola', 'Rucola', 'OG', 'g', 1, 10.0, [], [22,3.6,0.1,0.4,1.7,55.5,183,0,0,92,190,1.4,28,0.4,350,0]],
+    ['lauch', 'Lauch', 'OG', 'g', 1, 3.0, [], [32,2,4,0.2,3.2,14.5,23,0,0,23,25,0.3,8,0.2,220,0]],
+    ['kuerbis', 'Kürbis (Hokkaido)', 'OG', 'g', 1, 2.5, [], [28,1.1,4.6,0.1,2.2,14.9,340,0,0,20,41,0.2,8,0.1,400,0]],
+    ['mais', 'Mais (Dose)', 'KO', 'g', 1, 3.0, [], [86,2.6,15.1,1.5,2.2,1.4,6,0,0,36,4,0.4,18,0.4,166,0]],
+    ['erbsen', 'Erbsen (TK)', 'OG', 'g', 1, 2.8, [], [81,5.3,10.8,0.7,5.3,22,22,0,0,50,36,1.8,26,0.8,170,0]],
+    ['ingwer', 'Ingwer', 'OG', 'g', 1, 8.0, [], [56,1.5,9.7,0.9,2.4,2.8,2,0.2,0,11,14,0.5,34,0.3,368,0]],
+    ['avocado', 'Avocado', 'OG', 'Stk', 150, 1.2, [], [158,1.6,1.2,15.1,5.5,3.7,9,0,0,58,15,0.5,29,0.5,430,0]],
+    ['zitrone', 'Zitrone', 'OG', 'Stk', 80, 0.4, [], [24,0.8,2.9,0.6,2,54.7,1,0,0,11,25,0.5,16,0.1,150,0]],
+    ['bananen', 'Banane', 'OG', 'Stk', 120, 0.25, [], [90,1.1,19.7,0.2,2.7,11.9,7,0,0,26,5,0.2,28,0.1,320,0]],
+    ['aepfel', 'Apfel', 'OG', 'Stk', 180, 0.5, [], [52,0.3,11.6,0.3,1.4,7.2,2,0,0,6,5,0.1,6,0.1,120,0]],
+    ['beeren', 'Beeren (TK-Mix)', 'OG', 'g', 1, 5.5, [], [43,0.9,7,0.5,3.7,47.3,1,0,0,29,20,0.3,13,0.1,150,0]],
     // Basics & Gewürze (Basiszutaten)
-    ['olivenoel', 'Olivenöl', 'BA', 'ml', 1, 9.0, [], [828,0,0,92,0,0,6,0,0,0,0,0.1,1,0,1], true],
-    ['salz', 'Salz', 'BA', 'g', 1, 0.8, [], [0,0,0,0,0,0,0,0,0,0,10,0.3,1,0.1,4], true],
-    ['pfeffer', 'Pfeffer', 'BA', 'g', 1, 30.0, [], [251,10.4,39,3.3,25.3,0,27,0,0,17,443,9.7,171,1.2,1329], true],
-    ['bruehe', 'Gemüsebrühe', 'BA', 'ml', 1, 1.0, [], [6,0.3,0.4,0.4,0,0,0,0,0,1,1,0.1,4,0,8], true],
+    ['olivenoel', 'Olivenöl', 'BA', 'ml', 1, 9.0, [], [828,0,0,92,0,0,6,0,0,0,0,0.1,1,0,1,0], true],
+    ['salz', 'Salz', 'BA', 'g', 1, 0.8, [], [0,0,0,0,0,0,0,0,0,0,10,0.3,1,0.1,4,0], true],
+    ['pfeffer', 'Pfeffer', 'BA', 'g', 1, 30.0, [], [251,10.4,39,3.3,25.3,0,27,0,0,17,443,9.7,171,1.2,1329,0], true],
+    ['bruehe', 'Gemüsebrühe', 'BA', 'ml', 1, 1.0, [], [6,0.3,0.4,0.4,0,0,0,0,0,1,1,0.1,4,0,8,0], true],
     ['wasser', 'Wasser', 'BA', 'ml', 1, 0, [], [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], true],
-    ['curry', 'Currypulver', 'BA', 'g', 1, 25.0, [], [325,14.3,3,14,53.2,0.7,1,0,0,56,525,19.1,255,4.7,1170], true],
-    ['zimt', 'Zimt', 'BA', 'g', 1, 20.0, [], [282,3.9,41.5,2.2,38.8,1.9,15,0,0,3,1116,23.2,58,1.9,466], true],
+    ['curry', 'Currypulver', 'BA', 'g', 1, 25.0, [], [325,14.3,3,14,53.2,0.7,1,0,0,56,525,19.1,255,4.7,1170,0], true],
+    ['zimt', 'Zimt', 'BA', 'g', 1, 20.0, [], [282,3.9,41.5,2.2,38.8,1.9,15,0,0,3,1116,23.2,58,1.9,466,0], true],
     ['kraeuter', 'Kräuter (italienisch)', 'BA', 'g', 1, 30.0, [], [265,11,40,4,25,50,100,0,0,200,1500,40,270,3,1500], true],
-    ['paprikapulver', 'Paprikapulver', 'BA', 'g', 1, 20.0, [], [320,14.5,27,12.9,27.9,0.4,2746,0,0,24,204,22.6,184,4.2,2310], true],
-    ['sojasauce', 'Sojasauce', 'BA', 'ml', 1, 4.0, ['soja', 'gluten'], [64,9.3,4.7,0.7,0.9,0,0,0,0,16,38,1.7,85,1,506]],
-    ['honig', 'Honig', 'BA', 'g', 1, 9.0, ['honig'], [306,0.4,76,0,0,1.7,0,0,0,5,5,0.5,3,0.4,47]],
+    ['paprikapulver', 'Paprikapulver', 'BA', 'g', 1, 20.0, [], [320,14.5,27,12.9,27.9,0.4,2746,0,0,24,204,22.6,184,4.2,2310,0], true],
+    ['sojasauce', 'Sojasauce', 'BA', 'ml', 1, 4.0, ['soja', 'gluten'], [64,9.3,4.7,0.7,0.9,0,0,0,0,16,38,1.7,85,1,506,0]],
+    ['honig', 'Honig', 'BA', 'g', 1, 9.0, ['honig'], [306,0.4,76,0,0,1.7,0,0,0,5,5,0.5,3,0.4,47,0]],
   ];
 
   // >>> generiert von tools/naehrwerte/verify.ps1 (Quellen und Prüfung: tools/naehrwerte/PRUEFBERICHT.md) – nicht von Hand ändern
   ING_RAW.push(
-    ['zucker', 'Zucker', 'BA', 'g', 1, 1.2, [], [400,0,100,0,0,0,0,0,0,0,1,0.1,0,0,2]],
-    ['vollkornmehl', 'Weizenvollkornmehl', 'GB', 'g', 1, 1.5, ['gluten'], [338,13.5,61,2,11,0,0,0,0,50,26,5,130,3.4,390]],
-    ['speisestaerke', 'Speisestärke', 'BA', 'g', 1, 3.0, [], [354,0.3,88,0,0.6,0,16,0,0,1,1,0.5,2,0.6,5]],
-    ['hefe', 'Hefe (frisch)', 'BA', 'g', 1, 6.0, [], [96,16.7,1.1,1.2,6.9,0,0,0,0,642,16,2.9,41,2.4,570]],
-    ['sahne', 'Sahne', 'MI', 'ml', 1, 5.0, ['milch'], [334,2,3.1,34.8,0,0.7,368,0.5,0.21,7,71,0.1,6,0.2,120]],
-    ['saure_sahne', 'Saure Sahne', 'MI', 'g', 1, 4.0, ['milch'], [186,2.6,4.1,18,0,0.9,161,0.2,0.22,8,100,0.1,10,0.4,128]],
-    ['frischkaese', 'Frischkäse', 'MI', 'g', 1, 7.0, ['milch'], [350,6.2,6,34.4,0,0,308,0,0.22,9,97,0.1,9,0.5,132]],
-    ['huettenkaese', 'Hüttenkäse', 'MI', 'g', 1, 5.0, ['milch'], [100,12.4,2.4,4.5,0,0,47,0.1,0.52,15,69,0,6,0.4,72]],
-    ['sonnenblumenoel', 'Sonnenblumenöl', 'BA', 'ml', 1, 2.5, [], [828,0,0,92,0,0,0,0,0,0,1,0.1,0,0.1,1]],
-    ['rapsoel', 'Rapsöl', 'BA', 'ml', 1, 2.5, [], [828,0,0,92,0,0,2,0,0,0,0,0,0,0,0]],
-    ['essig', 'Essig', 'BA', 'ml', 1, 2.0, [], [21,0.1,0.7,0,0,0,0,0,0,0,7,0.2,8,0.2,35]],
-    ['balsamico', 'Balsamicoessig', 'BA', 'ml', 1, 8.0, [], [113,0.6,22.5,0.3,0.5,0.3,0,0.3,0,6,24,0.9,13,0.1,143]],
-    ['senf', 'Senf', 'BA', 'g', 1, 5.0, [], [92,5.4,2.9,5.5,4.6,0.4,4,0,0,12,86,1.7,72,0.9,176]],
-    ['ketchup', 'Ketchup', 'BA', 'g', 1, 4.0, [], [117,2,26,0.4,0.9,15,17,0,0,10,19,0.9,19,0.1,480]],
-    ['mayonnaise', 'Mayonnaise', 'BA', 'g', 1, 6.0, ['ei'], [693,1.4,2.6,75.2,0.3,0.5,11,0.5,0.39,16,18,0.3,6,0.1,28]],
-    ['petersilie', 'Petersilie', 'OG', 'g', 1, 25.0, [], [58,3.9,7.4,0.5,4.3,182,385,0,0,132,210,5.9,37,0.8,850]],
-    ['schnittlauch', 'Schnittlauch', 'OG', 'g', 1, 40.0, [], [30,3,1.9,0.6,2.3,60,218,0,0,130,86,1.5,40,0.5,280]],
-    ['basilikum', 'Basilikum', 'OG', 'g', 1, 50.0, [], [46,3.1,5.1,0.8,3.1,26,405,0,0,50,250,5.5,11,0.7,300]],
-    ['thymian', 'Thymian', 'OG', 'g', 1, 60.0, [], [76,3.5,8.6,1.4,8.5,80,238,0,0,32,358,18.7,98,1.4,370]],
-    ['rosmarin', 'Rosmarin', 'OG', 'g', 1, 60.0, [], [96,2.1,7.4,4.2,8.5,19.2,96,0,0,54,264,5.7,64,0.7,414]],
-    ['orange', 'Orange', 'OG', 'Stk', 180, 0.5, [], [45,0.8,8,0.2,2.7,50.9,14,0,0,19,45,0.3,15,0.2,180]],
-    ['zitronensaft', 'Zitronensaft', 'OG', 'ml', 1, 6.0, [], [29,0.4,2.6,0.2,0.3,39.9,0,0,0,21,6,0.1,6,0.1,103]],
-    ['erdbeeren', 'Erdbeeren', 'OG', 'g', 1, 6.0, [], [38,0.6,6,0.4,3.8,55.8,0,0,0,41,18,0.2,12,0.1,140]],
-    ['himbeeren', 'Himbeeren', 'OG', 'g', 1, 14.0, [], [44,1.2,5.8,0.8,4.3,20.7,2,0,0,26,16,0.4,20,0.2,170]],
-    ['heidelbeeren', 'Heidelbeeren', 'OG', 'g', 1, 12.0, [], [51,0.9,10.6,0.2,1.5,7.5,2,0,0,9,10,0.6,5,0.1,66]],
-    ['birne', 'Birne', 'OG', 'Stk', 170, 0.5, [], [54,0.5,10.9,0.3,2.9,4.5,1,0,0,12,6,0.1,8,0.1,130]],
-    ['trauben', 'Weintrauben', 'OG', 'g', 1, 4.5, [], [69,0.7,15.2,0.3,1.5,2.9,1,0,0,16,12,0.4,8,0,200]],
-    ['mango', 'Mango', 'OG', 'Stk', 350, 1.5, [], [68,0.6,14.3,0.6,1.6,37.3,44,0,0,50,15,0.1,9,0.1,150]],
-    ['ananas', 'Ananas', 'OG', 'g', 1, 2.5, [], [52,0.5,11.7,0.1,1.2,56.5,4,0,0,9,14,0.2,11,0.1,120]],
-    ['rosinen', 'Rosinen', 'OG', 'g', 1, 6.0, [], [321,3,73.2,0.9,4.2,0.2,0,0,0,4,80,2.3,41,0.2,780]],
-    ['datteln', 'Datteln', 'OG', 'g', 1, 9.0, [], [287,2.4,64.7,0.4,7.5,0.2,1,0,0,18,68,2.2,55,0.4,730]],
-    ['fenchel', 'Fenchel', 'OG', 'g', 1, 3.5, [], [23,1,2.6,0.4,2.6,3.3,1,0,0,20,37,0.2,11,0.2,320]],
-    ['staudensellerie', 'Staudensellerie', 'OG', 'g', 1, 3.0, [], [18,0.6,2.4,0.2,2.2,9.8,5,0,0,57,46,0.1,11,0.1,390]],
-    ['knollensellerie', 'Knollensellerie', 'OG', 'g', 1, 2.5, [], [32,1.4,4,0.3,3.8,7.1,3,0,0,39,40,0.4,13,0.4,460]],
-    ['rote_bete', 'Rote Bete', 'OG', 'g', 1, 2.5, [], [48,1.7,8.4,0.3,2.3,4.8,1,0,0,91,18,0.3,20,0.3,410]],
-    ['weisskohl', 'Weißkohl', 'OG', 'g', 1, 1.2, [], [36,1.4,4.6,0.6,3.5,56.3,2,0,0,45,52,0.3,10,0.1,230]],
-    ['rotkohl', 'Rotkohl', 'OG', 'g', 1, 1.5, [], [29,1.1,4.3,0.2,2.6,52.7,1,0,0,23,34,0.4,11,0.2,280]],
-    ['rosenkohl', 'Rosenkohl', 'OG', 'g', 1, 4.0, [], [41,4,3.3,0.4,4,145.6,10,0,0,46,31,0.6,21,0.4,430]],
-    ['gruene_bohnen', 'Grüne Bohnen', 'OG', 'g', 1, 5.0, [], [32,1.9,4.1,0.2,3,10.8,29,0,0,53,52,1,25,0.4,260]],
-    ['spargel', 'Spargel', 'OG', 'g', 1, 9.0, [], [26,2.2,2.8,0.3,1.8,14.8,13,0,0,79,16,0.4,11,0.5,220]],
-    ['kopfsalat', 'Kopfsalat', 'OG', 'g', 1, 4.0, [], [16,1.3,1.1,0.4,1.3,8.2,92,0,0,50,41,0.5,12,0.3,230]],
-    ['eisbergsalat', 'Eisbergsalat', 'OG', 'g', 1, 2.5, [], [15,0.8,2.1,0.2,1,4,9,0,0,31,22,0.3,7,0.2,180]],
-    ['radieschen', 'Radieschen', 'OG', 'g', 1, 5.0, [], [14,0.9,1.5,0.1,1.4,16.3,1,0,0,45,32,0.3,10,0.1,300]],
-    ['kohlrabi', 'Kohlrabi', 'OG', 'g', 1, 3.0, [], [27,1.9,3.7,0.2,1.4,57.6,1,0,0,40,23,0.2,16,0.2,310]],
-    ['gruenkohl', 'Grünkohl', 'OG', 'g', 1, 4.0, [], [44,4.3,2.5,0.9,4.2,74,236,0,0,85,240,1.4,38,0.7,440]],
-    ['pastinake', 'Pastinake', 'OG', 'g', 1, 3.5, [], [62,1.3,12.1,0.4,2.1,19.7,2,0,0,43,42,0.4,21,0.5,430]],
-    ['schalotte', 'Schalotte', 'OG', 'Stk', 25, 0.2, [], [66,1.8,12.2,0.5,2.6,8,0,0,0,10,10,0.1,8,0.2,220]],
-    ['oliven', 'Oliven', 'KO', 'g', 1, 9.0, [], [176,1.4,0.8,17.2,6.2,0.5,22,0,0,5,80,8.5,16,0.1,19]],
-    ['putenbrust', 'Putenbrust', 'FF', 'g', 1, 11.0, ['fleisch'], [109,24,0,1.5,0,0,3,0.2,0.57,8,8,0.7,32,1.8,330]],
-    ['schweinefilet', 'Schweinefilet', 'FF', 'g', 1, 12.0, ['fleisch', 'schwein'], [121,22.2,0,3.6,0,0,3,0.7,0.7,4,8,1.2,25,2,420]],
-    ['schweinehack', 'Schweinehack', 'FF', 'g', 1, 8.0, ['fleisch', 'schwein'], [211,18.7,0,14.8,0,0.4,2,0.4,0.75,4,9,1,19,2.4,308]],
-    ['rindfleisch', 'Rindfleisch (Gulasch)', 'FF', 'g', 1, 14.0, ['fleisch'], [128,21.8,0,4.5,0,0,2,0.1,2.3,3,13,2.1,21,5.4,367]],
-    ['speck', 'Speck', 'FF', 'g', 1, 12.0, ['fleisch', 'schwein'], [358,15.7,0.3,32.4,0,12.2,8,0.5,0.42,2,8,0.4,14,1.6,236]],
-    ['kabeljau', 'Kabeljau', 'FF', 'g', 1, 18.0, ['fisch'], [78,18.1,0,0.6,0,0,2,1.8,1.4,11,13,0.2,23,0.4,410]],
-    ['forelle', 'Forelle', 'FF', 'g', 1, 15.0, ['fisch'], [127,17.7,0,6.2,0,2.9,12,5.9,5,9,14,2,30,0.4,470]],
-    ['raeucherlachs', 'Räucherlachs', 'FF', 'g', 1, 30.0, ['fisch'], [173,23.2,0,8.9,0,0,7,6.3,4.3,3,10,0,27,0.4,410]],
-    ['tempeh', 'Tempeh', 'HN', 'g', 1, 12.0, ['soja'], [174,18.9,8,7.8,6.2,0.2,0,0.2,0.05,31,100,2.2,74,1.3,376]],
-    ['kichererbsen_trocken', 'Kichererbsen (getrocknet)', 'HN', 'g', 1, 3.5, [], [338,18.6,44.3,4.9,21,5.1,13,0,0,340,120,5.4,140,2.4,1090]],
-    ['linsen_braun', 'Linsen (braun)', 'HN', 'g', 1, 3.0, [], [313,24.4,38.8,1.5,23.2,6.8,2,0,0,150,57,8,96,3.6,860]],
-    ['edamame', 'Edamame', 'OG', 'g', 1, 6.0, ['soja'], [143,11.5,5.1,7.4,5.5,15.4,4,0,0,108,70,1.9,60,1.2,400]],
-    ['haselnuesse', 'Haselnüsse', 'HN', 'g', 1, 12.0, ['nuss'], [661,16.4,10.1,59.5,9.7,2,0,0,0,77,160,3.6,160,2.9,720]],
-    ['cashew', 'Cashewkerne', 'HN', 'g', 1, 14.0, ['nuss'], [619,21.5,23.2,48.1,3.6,0.5,0,0,0,46,40,5.9,270,4,660]],
-    ['erdnuesse', 'Erdnüsse', 'HN', 'g', 1, 6.0, ['erdnuss'], [637,26.8,11.3,51.9,8.7,0,0,0,0,97,58,1.6,180,2.8,630]],
-    ['sonnenblumenkerne', 'Sonnenblumenkerne', 'HN', 'g', 1, 5.0, [], [621,25.1,3.6,54.5,8,1,3,0,0,227,86,5,330,5.8,750]],
-    ['sesam', 'Sesam', 'HN', 'g', 1, 8.0, ['sesam'], [619,23.1,4,53.8,13.3,0,0,0,0,171,930,7.7,330,5.5,500]],
-    ['pinienkerne', 'Pinienkerne', 'HN', 'g', 1, 40.0, ['nuss'], [688,16.5,13,61.9,6.3,0.5,0,0,0,63,20,6.5,370,5.8,810]],
-    ['kokosraspel', 'Kokosraspel', 'HN', 'g', 1, 7.0, [], [653,7.6,5.3,61.3,24.7,0,0,0,0,21,11,2.8,100,1.5,710]],
-    ['hirse', 'Hirse', 'GB', 'g', 1, 3.5, [], [360,10.6,68.8,3.9,3.8,0,0,0,0,20,10,6.9,120,2.9,170]],
-    ['buchweizen', 'Buchweizen', 'GB', 'g', 1, 4.5, [], [341,13.1,62.4,3.1,5.8,0,1,0,0,60,15,2.1,200,1.6,420]],
-    ['polenta', 'Polenta (Maisgrieß)', 'GB', 'g', 1, 2.5, [], [350,8.8,73.8,1.1,5,0,13,0,0,5,4,1,20,0.4,80]],
-    ['griess', 'Hartweizengrieß', 'GB', 'g', 1, 1.8, ['gluten'], [347,13.3,66.8,1.6,6.3,0,1,0,0,47,23,2.6,54,1.8,210]],
-    ['paniermehl', 'Paniermehl', 'GB', 'g', 1, 2.5, ['gluten'], [373,12.7,73.5,2.1,4.5,0,0,0,0,39,50,1.2,23,0.9,130]],
-    ['weissbrot', 'Weißbrot', 'GB', 'g', 1, 3.0, ['gluten'], [242,8.5,48.9,0.8,2.5,0,0,0,0,17,8,0.6,15,0.5,130]],
-    ['vollkornreis', 'Vollkornreis', 'GB', 'g', 1, 3.5, [], [350,7.4,71.4,2.8,5,0,0,0,0,48,11,1.1,120,1.6,220]],
-    ['schokolade', 'Zartbitterschokolade', 'BA', 'g', 1, 15.0, [], [537,5.7,53.4,31.8,7,0,2,0,0,7,48,6.7,120,2.2,830]],
-    ['kakao', 'Kakaopulver', 'BA', 'g', 1, 12.0, [], [380,22.4,11.6,20.6,29.5,0.5,0,2.7,0,107,140,49,500,6.4,3900]],
-    ['ahornsirup', 'Ahornsirup', 'BA', 'g', 1, 20.0, [], [271,0,67.2,0.2,0,0,0,0,0,0,73,0.1,23,2,220]],
-    ['konfituere', 'Konfitüre', 'BA', 'g', 1, 5.0, [], [246,0.5,58.7,0.5,2.2,4,5,0,0,11,18,1.4,2,0.2,100]],
-    ['sojadrink', 'Sojadrink', 'MI', 'ml', 1, 1.5, ['soja'], [41,3.7,1.5,2.2,0.6,0,0,0,0,18,12,0.5,21,0.3,165]],
-    ['orangensaft', 'Orangensaft', 'OG', 'ml', 1, 1.8, [], [44,0.6,10,0.1,0.3,38.5,2,0,0,31,8,0.1,10,0,177]],
+    ['zucker', 'Zucker', 'BA', 'g', 1, 1.2, [], [400,0,100,0,0,0,0,0,0,0,1,0.1,0,0,2,0]],
+    ['vollkornmehl', 'Weizenvollkornmehl', 'GB', 'g', 1, 1.5, ['gluten'], [338,13.5,61,2,11,0,0,0,0,50,26,5,130,3.4,390,0]],
+    ['speisestaerke', 'Speisestärke', 'BA', 'g', 1, 3.0, [], [354,0.3,88,0,0.6,0,16,0,0,1,1,0.5,2,0.6,5,0]],
+    ['hefe', 'Hefe (frisch)', 'BA', 'g', 1, 6.0, [], [96,16.7,1.1,1.2,6.9,0,0,0,0,642,16,2.9,41,2.4,570,0]],
+    ['sahne', 'Sahne', 'MI', 'ml', 1, 5.0, ['milch'], [334,2,3.1,34.8,0,0.7,368,0.5,0.21,7,71,0.1,6,0.2,120,0]],
+    ['saure_sahne', 'Saure Sahne', 'MI', 'g', 1, 4.0, ['milch'], [186,2.6,4.1,18,0,0.9,161,0.2,0.22,8,100,0.1,10,0.4,128,0]],
+    ['frischkaese', 'Frischkäse', 'MI', 'g', 1, 7.0, ['milch'], [350,6.2,6,34.4,0,0,308,0,0.22,9,97,0.1,9,0.5,132,0]],
+    ['huettenkaese', 'Hüttenkäse', 'MI', 'g', 1, 5.0, ['milch'], [100,12.4,2.4,4.5,0,0,47,0.1,0.52,15,69,0,6,0.4,72,0]],
+    ['sonnenblumenoel', 'Sonnenblumenöl', 'BA', 'ml', 1, 2.5, [], [828,0,0,92,0,0,0,0,0,0,1,0.1,0,0.1,1,0]],
+    ['rapsoel', 'Rapsöl', 'BA', 'ml', 1, 2.5, [], [828,0,0,92,0,0,2,0,0,0,0,0,0,0,0,0]],
+    ['essig', 'Essig', 'BA', 'ml', 1, 2.0, [], [21,0.1,0.7,0,0,0,0,0,0,0,7,0.2,8,0.2,35,0.1]],
+    ['balsamico', 'Balsamicoessig', 'BA', 'ml', 1, 8.0, [], [113,0.6,22.5,0.3,0.5,0.3,0,0.3,0,6,24,0.9,13,0.1,143,0]],
+    ['senf', 'Senf', 'BA', 'g', 1, 5.0, [], [92,5.4,2.9,5.5,4.6,0.4,4,0,0,12,86,1.7,72,0.9,176,0]],
+    ['ketchup', 'Ketchup', 'BA', 'g', 1, 4.0, [], [117,2,26,0.4,0.9,15,17,0,0,10,19,0.9,19,0.1,480,0]],
+    ['mayonnaise', 'Mayonnaise', 'BA', 'g', 1, 6.0, ['ei'], [693,1.4,2.6,75.2,0.3,0.5,11,0.5,0.39,16,18,0.3,6,0.1,28,0]],
+    ['petersilie', 'Petersilie', 'OG', 'g', 1, 25.0, [], [58,3.9,7.4,0.5,4.3,182,385,0,0,132,210,5.9,37,0.8,850,0]],
+    ['schnittlauch', 'Schnittlauch', 'OG', 'g', 1, 40.0, [], [30,3,1.9,0.6,2.3,60,218,0,0,130,86,1.5,40,0.5,280,0]],
+    ['basilikum', 'Basilikum', 'OG', 'g', 1, 50.0, [], [46,3.1,5.1,0.8,3.1,26,405,0,0,50,250,5.5,11,0.7,300,0]],
+    ['thymian', 'Thymian', 'OG', 'g', 1, 60.0, [], [76,3.5,8.6,1.4,8.5,80,238,0,0,32,358,18.7,98,1.4,370,0]],
+    ['rosmarin', 'Rosmarin', 'OG', 'g', 1, 60.0, [], [96,2.1,7.4,4.2,8.5,19.2,96,0,0,54,264,5.7,64,0.7,414,0]],
+    ['orange', 'Orange', 'OG', 'Stk', 180, 0.5, [], [45,0.8,8,0.2,2.7,50.9,14,0,0,19,45,0.3,15,0.2,180,0]],
+    ['zitronensaft', 'Zitronensaft', 'OG', 'ml', 1, 6.0, [], [29,0.4,2.6,0.2,0.3,39.9,0,0,0,21,6,0.1,6,0.1,103,0]],
+    ['erdbeeren', 'Erdbeeren', 'OG', 'g', 1, 6.0, [], [38,0.6,6,0.4,3.8,55.8,0,0,0,41,18,0.2,12,0.1,140,0]],
+    ['himbeeren', 'Himbeeren', 'OG', 'g', 1, 14.0, [], [44,1.2,5.8,0.8,4.3,20.7,2,0,0,26,16,0.4,20,0.2,170,0]],
+    ['heidelbeeren', 'Heidelbeeren', 'OG', 'g', 1, 12.0, [], [51,0.9,10.6,0.2,1.5,7.5,2,0,0,9,10,0.6,5,0.1,66,0]],
+    ['birne', 'Birne', 'OG', 'Stk', 170, 0.5, [], [54,0.5,10.9,0.3,2.9,4.5,1,0,0,12,6,0.1,8,0.1,130,0]],
+    ['trauben', 'Weintrauben', 'OG', 'g', 1, 4.5, [], [69,0.7,15.2,0.3,1.5,2.9,1,0,0,16,12,0.4,8,0,200,0]],
+    ['mango', 'Mango', 'OG', 'Stk', 350, 1.5, [], [68,0.6,14.3,0.6,1.6,37.3,44,0,0,50,15,0.1,9,0.1,150,0]],
+    ['ananas', 'Ananas', 'OG', 'g', 1, 2.5, [], [52,0.5,11.7,0.1,1.2,56.5,4,0,0,9,14,0.2,11,0.1,120,0]],
+    ['rosinen', 'Rosinen', 'OG', 'g', 1, 6.0, [], [321,3,73.2,0.9,4.2,0.2,0,0,0,4,80,2.3,41,0.2,780,0]],
+    ['datteln', 'Datteln', 'OG', 'g', 1, 9.0, [], [287,2.4,64.7,0.4,7.5,0.2,1,0,0,18,68,2.2,55,0.4,730,0]],
+    ['fenchel', 'Fenchel', 'OG', 'g', 1, 3.5, [], [23,1,2.6,0.4,2.6,3.3,1,0,0,20,37,0.2,11,0.2,320,0]],
+    ['staudensellerie', 'Staudensellerie', 'OG', 'g', 1, 3.0, [], [18,0.6,2.4,0.2,2.2,9.8,5,0,0,57,46,0.1,11,0.1,390,0]],
+    ['knollensellerie', 'Knollensellerie', 'OG', 'g', 1, 2.5, [], [32,1.4,4,0.3,3.8,7.1,3,0,0,39,40,0.4,13,0.4,460,0]],
+    ['rote_bete', 'Rote Bete', 'OG', 'g', 1, 2.5, [], [48,1.7,8.4,0.3,2.3,4.8,1,0,0,91,18,0.3,20,0.3,410,0]],
+    ['weisskohl', 'Weißkohl', 'OG', 'g', 1, 1.2, [], [36,1.4,4.6,0.6,3.5,56.3,2,0,0,45,52,0.3,10,0.1,230,0]],
+    ['rotkohl', 'Rotkohl', 'OG', 'g', 1, 1.5, [], [29,1.1,4.3,0.2,2.6,52.7,1,0,0,23,34,0.4,11,0.2,280,0]],
+    ['rosenkohl', 'Rosenkohl', 'OG', 'g', 1, 4.0, [], [41,4,3.3,0.4,4,145.6,10,0,0,46,31,0.6,21,0.4,430,0]],
+    ['gruene_bohnen', 'Grüne Bohnen', 'OG', 'g', 1, 5.0, [], [32,1.9,4.1,0.2,3,10.8,29,0,0,53,52,1,25,0.4,260,0]],
+    ['spargel', 'Spargel', 'OG', 'g', 1, 9.0, [], [26,2.2,2.8,0.3,1.8,14.8,13,0,0,79,16,0.4,11,0.5,220,0]],
+    ['kopfsalat', 'Kopfsalat', 'OG', 'g', 1, 4.0, [], [16,1.3,1.1,0.4,1.3,8.2,92,0,0,50,41,0.5,12,0.3,230,0]],
+    ['eisbergsalat', 'Eisbergsalat', 'OG', 'g', 1, 2.5, [], [15,0.8,2.1,0.2,1,4,9,0,0,31,22,0.3,7,0.2,180,0]],
+    ['radieschen', 'Radieschen', 'OG', 'g', 1, 5.0, [], [14,0.9,1.5,0.1,1.4,16.3,1,0,0,45,32,0.3,10,0.1,300,0]],
+    ['kohlrabi', 'Kohlrabi', 'OG', 'g', 1, 3.0, [], [27,1.9,3.7,0.2,1.4,57.6,1,0,0,40,23,0.2,16,0.2,310,0]],
+    ['gruenkohl', 'Grünkohl', 'OG', 'g', 1, 4.0, [], [44,4.3,2.5,0.9,4.2,74,236,0,0,85,240,1.4,38,0.7,440,0]],
+    ['pastinake', 'Pastinake', 'OG', 'g', 1, 3.5, [], [62,1.3,12.1,0.4,2.1,19.7,2,0,0,43,42,0.4,21,0.5,430,0]],
+    ['schalotte', 'Schalotte', 'OG', 'Stk', 25, 0.2, [], [66,1.8,12.2,0.5,2.6,8,0,0,0,10,10,0.1,8,0.2,220,0]],
+    ['oliven', 'Oliven', 'KO', 'g', 1, 9.0, [], [176,1.4,0.8,17.2,6.2,0.5,22,0,0,5,80,8.5,16,0.1,19,0]],
+    ['putenbrust', 'Putenbrust', 'FF', 'g', 1, 11.0, ['fleisch'], [109,24,0,1.5,0,0,3,0.2,0.57,8,8,0.7,32,1.8,330,0]],
+    ['schweinefilet', 'Schweinefilet', 'FF', 'g', 1, 12.0, ['fleisch', 'schwein'], [121,22.2,0,3.6,0,0,3,0.7,0.7,4,8,1.2,25,2,420,0]],
+    ['schweinehack', 'Schweinehack', 'FF', 'g', 1, 8.0, ['fleisch', 'schwein'], [211,18.7,0,14.8,0,0.4,2,0.4,0.75,4,9,1,19,2.4,308,0]],
+    ['rindfleisch', 'Rindfleisch (Gulasch)', 'FF', 'g', 1, 14.0, ['fleisch'], [128,21.8,0,4.5,0,0,2,0.1,2.3,3,13,2.1,21,5.4,367,0]],
+    ['speck', 'Speck', 'FF', 'g', 1, 12.0, ['fleisch', 'schwein'], [358,15.7,0.3,32.4,0,12.2,8,0.5,0.42,2,8,0.4,14,1.6,236,0]],
+    ['kabeljau', 'Kabeljau', 'FF', 'g', 1, 18.0, ['fisch'], [78,18.1,0,0.6,0,0,2,1.8,1.4,11,13,0.2,23,0.4,410,0]],
+    ['forelle', 'Forelle', 'FF', 'g', 1, 15.0, ['fisch'], [127,17.7,0,6.2,0,2.9,12,5.9,5,9,14,2,30,0.4,470,0]],
+    ['raeucherlachs', 'Räucherlachs', 'FF', 'g', 1, 30.0, ['fisch'], [173,23.2,0,8.9,0,0,7,6.3,4.3,3,10,0,27,0.4,410,0]],
+    ['tempeh', 'Tempeh', 'HN', 'g', 1, 12.0, ['soja'], [174,18.9,8,7.8,6.2,0.2,0,0.2,0.05,31,100,2.2,74,1.3,376,0]],
+    ['kichererbsen_trocken', 'Kichererbsen (getrocknet)', 'HN', 'g', 1, 3.5, [], [338,18.6,44.3,4.9,21,5.1,13,0,0,340,120,5.4,140,2.4,1090,0]],
+    ['linsen_braun', 'Linsen (braun)', 'HN', 'g', 1, 3.0, [], [313,24.4,38.8,1.5,23.2,6.8,2,0,0,150,57,8,96,3.6,860,0]],
+    ['edamame', 'Edamame', 'OG', 'g', 1, 6.0, ['soja'], [143,11.5,5.1,7.4,5.5,15.4,4,0,0,108,70,1.9,60,1.2,400,0]],
+    ['haselnuesse', 'Haselnüsse', 'HN', 'g', 1, 12.0, ['nuss'], [661,16.4,10.1,59.5,9.7,2,0,0,0,77,160,3.6,160,2.9,720,0]],
+    ['cashew', 'Cashewkerne', 'HN', 'g', 1, 14.0, ['nuss'], [619,21.5,23.2,48.1,3.6,0.5,0,0,0,46,40,5.9,270,4,660,0]],
+    ['erdnuesse', 'Erdnüsse', 'HN', 'g', 1, 6.0, ['erdnuss'], [637,26.8,11.3,51.9,8.7,0,0,0,0,97,58,1.6,180,2.8,630,0]],
+    ['sonnenblumenkerne', 'Sonnenblumenkerne', 'HN', 'g', 1, 5.0, [], [621,25.1,3.6,54.5,8,1,3,0,0,227,86,5,330,5.8,750,0]],
+    ['sesam', 'Sesam', 'HN', 'g', 1, 8.0, ['sesam'], [619,23.1,4,53.8,13.3,0,0,0,0,171,930,7.7,330,5.5,500,0]],
+    ['pinienkerne', 'Pinienkerne', 'HN', 'g', 1, 40.0, ['nuss'], [688,16.5,13,61.9,6.3,0.5,0,0,0,63,20,6.5,370,5.8,810,0]],
+    ['kokosraspel', 'Kokosraspel', 'HN', 'g', 1, 7.0, [], [653,7.6,5.3,61.3,24.7,0,0,0,0,21,11,2.8,100,1.5,710,0]],
+    ['hirse', 'Hirse', 'GB', 'g', 1, 3.5, [], [360,10.6,68.8,3.9,3.8,0,0,0,0,20,10,6.9,120,2.9,170,0]],
+    ['buchweizen', 'Buchweizen', 'GB', 'g', 1, 4.5, [], [341,13.1,62.4,3.1,5.8,0,1,0,0,60,15,2.1,200,1.6,420,0]],
+    ['polenta', 'Polenta (Maisgrieß)', 'GB', 'g', 1, 2.5, [], [350,8.8,73.8,1.1,5,0,13,0,0,5,4,1,20,0.4,80,0]],
+    ['griess', 'Hartweizengrieß', 'GB', 'g', 1, 1.8, ['gluten'], [347,13.3,66.8,1.6,6.3,0,1,0,0,47,23,2.6,54,1.8,210,0]],
+    ['paniermehl', 'Paniermehl', 'GB', 'g', 1, 2.5, ['gluten'], [373,12.7,73.5,2.1,4.5,0,0,0,0,39,50,1.2,23,0.9,130,0]],
+    ['weissbrot', 'Weißbrot', 'GB', 'g', 1, 3.0, ['gluten'], [242,8.5,48.9,0.8,2.5,0,0,0,0,17,8,0.6,15,0.5,130,0]],
+    ['vollkornreis', 'Vollkornreis', 'GB', 'g', 1, 3.5, [], [350,7.4,71.4,2.8,5,0,0,0,0,48,11,1.1,120,1.6,220,0]],
+    ['schokolade', 'Zartbitterschokolade', 'BA', 'g', 1, 15.0, [], [537,5.7,53.4,31.8,7,0,2,0,0,7,48,6.7,120,2.2,830,0]],
+    ['kakao', 'Kakaopulver', 'BA', 'g', 1, 12.0, [], [380,22.4,11.6,20.6,29.5,0.5,0,2.7,0,107,140,49,500,6.4,3900,0]],
+    ['ahornsirup', 'Ahornsirup', 'BA', 'g', 1, 20.0, [], [271,0,67.2,0.2,0,0,0,0,0,0,73,0.1,23,2,220,0]],
+    ['konfituere', 'Konfitüre', 'BA', 'g', 1, 5.0, [], [246,0.5,58.7,0.5,2.2,4,5,0,0,11,18,1.4,2,0.2,100,0]],
+    ['sojadrink', 'Sojadrink', 'MI', 'ml', 1, 1.5, ['soja'], [41,3.7,1.5,2.2,0.6,0,0,0,0,18,12,0.5,21,0.3,165,0]],
+    ['orangensaft', 'Orangensaft', 'OG', 'ml', 1, 1.8, [], [44,0.6,10,0.1,0.3,38.5,2,0,0,31,8,0.1,10,0,177,0]],
+    ['rotwein', 'Rotwein', 'SO', 'ml', 1, 6.0, ['alkohol'], [69,0.2,0.3,0,0,0,0,0,0,1,8,0.9,15,0.1,119,9.6]],
+    ['weisswein', 'Weißwein', 'SO', 'ml', 1, 6.0, ['alkohol'], [71,0.2,0.1,0,0,0,0,0,0.1,1,10,0.6,10,0.2,95,10]],
+    ['prosecco', 'Prosecco', 'SO', 'ml', 1, 9.0, ['alkohol'], [70,0.2,1.5,0,0,0,0,0,0,0,10,0.8,6,0,48,9]],
+    ['bier', 'Bier', 'SO', 'ml', 1, 2.0, ['alkohol', 'gluten'], [42,0.5,3.1,0,0,0,0,0,0.02,6,4,0,10,0,56,4]],
+    ['brandy', 'Brandy', 'SO', 'ml', 1, 18.0, ['alkohol'], [228,0,1.9,0,0,0,0,0,0,0,0,0,1,0,2,31.4]],
+    ['kirschwasser', 'Kirschwasser', 'SO', 'ml', 1, 25.0, ['alkohol'], [233,0,0,0,0,0,0,0,0,0,2,0,0,0,3,33.2]],
+    ['rum', 'Rum', 'SO', 'ml', 1, 16.0, ['alkohol'], [222,0,0,0,0,0,0,0,0,0,0,0.1,0,0.1,2,31.7]],
+    ['wodka', 'Wodka', 'SO', 'ml', 1, 14.0, ['alkohol'], [222,0,0,0,0,0,0,0,0,0,0,0,0,0,4,31.7]],
+    ['whisky', 'Whisky', 'SO', 'ml', 1, 22.0, ['alkohol'], [235,0,0.1,0,0,0,0,0,0,0,2,0,1,0.1,3,33.4]],
+    ['sherry', 'Sherry', 'SO', 'ml', 1, 12.0, ['alkohol'], [117,0.1,3.6,0,0,0,0,0,0.1,1,9,0.5,8,0.3,88,14.7]],
+    ['portwein', 'Portwein', 'SO', 'ml', 1, 14.0, ['alkohol'], [151,0.2,11.9,0,0,0,0,0,0.1,1,7,0.4,9,0.3,74,14.7]],
+    ['marsala', 'Marsala', 'SO', 'ml', 1, 12.0, ['alkohol'], [151,0.2,11.9,0,0,0,0,0,0.1,1,7,0.4,9,0.3,74,14.7]],
+    ['amaretto', 'Amaretto', 'SO', 'ml', 1, 16.0, ['alkohol'], [282,0,30,0,0,0,0,0,0,0,0,0,0,0,0,22.1]],
+    ['aperol', 'Aperol', 'SO', 'ml', 1, 16.0, ['alkohol'], [160,0,26,0,0,0,0,0,0,0,0,0,0,0,0,8.7]],
+    ['mirin', 'Mirin', 'SO', 'ml', 1, 15.0, ['alkohol'], [235,0.5,45,0,0,0,0,0,0,0,0,0,0,0,0,11]],
   );
   // Andere Namen (a) und Haushaltsmaße je Lebensmittel: Gramm bzw. ml pro Teelöffel (tl), Stück (stk), Bund, Dose, Becher, Packung (pck)
   KA.ING_META = {
@@ -808,6 +403,12 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
     ahornsirup: { tl: 6.5 },
     konfituere: { a: ['Marmelade'], tl: 7 },
     sojadrink: { a: ['Sojamilch'] },
+    prosecco: { a: ['Sekt', 'Schaumwein', 'Champagner'] },
+    bier: { a: ['Pils', 'Lagerbier'] },
+    brandy: { a: ['Cognac', 'Weinbrand'] },
+    kirschwasser: { a: ['Kirsch', 'Obstbrand'] },
+    wodka: { a: ['Vodka', 'Gin'] },
+    whisky: { a: ['Whiskey'] },
   };
   // <<< generiert
 
@@ -815,7 +416,7 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
   ING_RAW.forEach((r) => {
     KA.ING[r[0]] = {
       id: r[0], name: r[1], cat: r[2], unit: r[3], gpu: r[4], price: r[5],
-      flags: r[6], n: r[7], staple: !!r[8], meta: KA.ING_META[r[0]] || {},
+      flags: r[6], n: KA.NUTRIENTS.map((x, i) => r[7][i] || 0), staple: !!r[8], meta: KA.ING_META[r[0]] || {},
     };
   });
 
@@ -2345,7 +1946,7 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
     });
     const share = opt && opt.full ? 1 : KA.dayShare(prefs);
     if (share < 1) {
-      NK.forEach((k) => { T[k] = k === 'kcal' ? Math.round((T[k] * share) / 10) * 10 : Math.round(T[k] * share * 10) / 10; });
+      NK.forEach((k) => { if (T[k] == null) return; T[k] = k === 'kcal' ? Math.round((T[k] * share) / 10) * 10 : Math.round(T[k] * share * 10) / 10; });
       ['prot', 'carb', 'fat', 'fiber'].forEach((k) => { T[k] = Math.round(T[k]); });
       T.share = share;
     }
@@ -3321,7 +2922,7 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
     const tile = (label, v, unit, cls) => `<div class="${cls || ''}"><b>${KA.fmtNum(v, v < 10 && unit === 'g' ? 1 : 0)}${unit === 'g' ? ' g' : ''}</b><span>${label}</span></div>`;
     return `<h2>${esc(r.name)}</h2><div class="meta">${recipeFacts(r)}</div><div class="tags">${recipeTags(r)}</div>
       <h4 class="cat">Nährwerte pro Portion</h4>
-      <div class="macros">${tile('Kalorien (kcal)', n[0], 'kcal', 'kcal')}${tile('Eiweiß', n[1], 'g')}${tile('Kohlenhydrate', n[2], 'g')}${tile('Fett', n[3], 'g')}</div>
+      <div class="macros">${tile('Kalorien (kcal)', n[0], 'kcal', 'kcal')}${tile('Eiweiß', n[1], 'g')}${tile('Kohlenhydrate', n[2], 'g')}${tile('Fett', n[3], 'g')}${n[KA.IDX.alc] > 0.05 ? tile('Alkohol', n[KA.IDX.alc], 'g', 'alc') : ''}</div>
       ${r.partial ? '<p class="muted sm">Mindestwerte: Nicht alle Zutaten dieses Rezepts sind in den Lebensmitteldaten erfasst.</p>' : ''}
       <h4 class="cat">Zutaten für ${servings} Portion${servings > 1 ? 'en' : ''}</h4>${ingTable(r, servings, e)}
       <h4 class="cat">Zubereitung</h4><ol class="steps">${r.st.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
@@ -3414,6 +3015,10 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
     const day = ui.nutDay;
     const vec = day < 0 ? KA.weekAvg(plan) : KA.dayVec(plan.days[day]);
     const row = (n, i) => {
+      if (n.noTarget) { // Alkohol: nur ausweisen, wenn im Plan welcher vorkommt – ohne Ziel und Bewertung
+        return avg[i] > 0.05 || vec[i] > 0.05 ? `<div class="nrow"><span class="nl">${n.label}</span><span class="muted sm">kein Zielwert – Gehalt der rohen Zutaten</span>
+          <span class="np">${KA.fmtNum(vec[i], vec[i] < 10 ? 1 : 0)} ${n.unit}</span><span class="na muted"></span></div>` : '';
+      }
       const t = T[n.k];
       const pct = (vec[i] / t) * 100;
       let cls = 'ok';
@@ -3422,10 +3027,10 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
       return `<div class="nrow"><span class="nl">${n.label}</span><div class="bar n ${cls}"><i style="width:${Math.min(100, pct)}%"></i></div>
         <span class="np">${r0(pct)} %</span><span class="na muted">${KA.fmtNum(vec[i], vec[i] < 10 ? 1 : 0)} / ${KA.fmtNum(t, t < 10 ? 1 : 0)} ${n.unit}</span></div>`;
     };
+    const avg = KA.weekAvg(plan);
     const idx = (g) => NUTRIENTS.map((n, i) => [n, i]).filter(([n]) => n.group === g);
     const tabs = ['Ø Woche'].concat(KA.DAYS.map((d) => d.slice(0, 2))).map((l, i) =>
       `<button class="${ui.nutDay === i - 1 ? 'on' : ''}" data-act="nutday" data-v="${i - 1}">${l}</button>`).join('');
-    const avg = KA.weekAvg(plan);
     const lacks = NUTRIENTS.filter((n, i) => n.group === 'micro' && avg[i] / T[n.k] < 0.7).map((n) => n.label);
     const vegan = S.prefs.diets.includes('vegan');
     return `<section class="card"><h2>Nährstoff-Bilanz <span class="opt">pro Person</span></h2>
@@ -3710,7 +3315,7 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
     Object.keys(ING).forEach((id) => { if (ING[id].custom) delete ING[id]; });
     S.foods.forEach((f) => {
       if (ING[f.id]) return;
-      ING[f.id] = { id: f.id, name: f.name, cat: 'SO', unit: f.unit, gpu: f.unit === 'Stk' ? f.gpu : 1, price: 0, flags: f.flags || [], n: f.n,
+      ING[f.id] = { id: f.id, name: f.name, cat: 'SO', unit: f.unit, gpu: f.unit === 'Stk' ? f.gpu : 1, price: 0, flags: f.flags || [], n: NUTRIENTS.map((x, i) => f.n[i] || 0),
         staple: false, meta: f.tl ? { tl: f.tl } : {}, custom: true, src: f.src || '' };
     });
     nameIndex = null; bookMap = null;
@@ -3798,6 +3403,7 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
     const n = KA.recipeNutr(base);
     const T = KA.targets(S.prefs, { full: true });
     const rows = NUTRIENTS.map((nu, i) => {
+      if (nu.noTarget) return n[i] > 0.05 ? `<div class="nurow"><span>${nu.label}</span><b>${KA.fmtNum(n[i], n[i] < 10 ? 1 : 0)} ${nu.unit}</b><span></span><span class="muted">–</span></div>` : '';
       const pct = (n[i] / T[nu.k]) * 100;
       return `<div class="nurow"><span>${nu.label}</span><b>${KA.fmtNum(n[i], n[i] < 10 ? 1 : 0)} ${nu.unit}</b><div class="bar"><i style="width:${Math.min(100, pct)}%"></i></div><span class="muted">${r0(pct)} %</span></div>`;
     }).join('');
@@ -3807,6 +3413,7 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
       open.length ? ` – nicht eingerechnet: ${esc(open.join(', '))}. Die tatsächlichen Werte liegen höher.` : '.'}</p>`;
     const own = r.ings.some((i) => i.id && ING[i.id] && ING[i.id].custom);
     return `<div class="card ingcard"><div class="lh"><h2>Nährwerte</h2><span class="muted sm">pro Portion · % vom Tagesbedarf</span></div>${rows}${counted}${unknownFoods(r)}
+      ${n[KA.IDX.alc] > 0.05 ? '<p class="muted sm">Alkohol: Gehalt der rohen Zutaten, ohne Tagesbedarf. Beim Kochen verfliegt ein Teil davon – bei kalt gemischten Getränken bleibt er vollständig.</p>' : ''}
       <p class="muted sm">Berechnet aus den Zutaten. Lebensmittelwerte: Schweizer Nährwertdatenbank (BLV), geprüft gegen USDA FoodData Central${own ? '; eigene Lebensmittel nach deinen Angaben bzw. Open Food Facts' : ''}. Näherungswerte, keine Ernährungsberatung.</p></div>`;
   }
   // Zutaten eigener Rezepte, die die App nicht kennt: Nährwerte lassen sich nachtragen oder im Internet suchen
@@ -3959,7 +3566,7 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
   // Open Food Facts gibt Vitamine und Mineralstoffe in Gramm je 100 g an -> Faktor in die Einheit der App (mg bzw. µg)
   const OFF_KEYS = [['energy-kcal_100g', 1], ['proteins_100g', 1], ['carbohydrates_100g', 1], ['fat_100g', 1], ['fiber_100g', 1], ['vitamin-c_100g', 1e3],
     ['vitamin-a_100g', 1e6], ['vitamin-d_100g', 1e6], ['vitamin-b12_100g', 1e6], ['vitamin-b9_100g', 1e6], ['calcium_100g', 1e3], ['iron_100g', 1e3],
-    ['magnesium_100g', 1e3], ['zinc_100g', 1e3], ['potassium_100g', 1e3]];
+    ['magnesium_100g', 1e3], ['zinc_100g', 1e3], ['potassium_100g', 1e3], ['alcohol_100g', 0.789]]; // Alkohol: Vol.-% -> g je 100 ml
   const numIn = (v) => { const x = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isFinite(x) ? x : null; };
   const fmtIn = (x) => (x == null ? '' : String(Math.round(x * 100) / 100).replace('.', ','));
 
@@ -3992,7 +3599,7 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
         ${f.unit === 'Stk' ? `<label>Gewicht pro Stück (g)<input data-fd="gpu" inputmode="decimal" value="${esc(f.gpu)}" placeholder="z. B. 60" autocomplete="off"></label>`
           : `<label>1 Teelöffel wiegt (g) <input data-fd="tl" inputmode="decimal" value="${esc(f.tl)}" placeholder="optional – für Angaben in TL/EL" autocomplete="off"></label>`}</div>
       <h4 class="cat">Nährwerte je ${per}</h4>
-      <div class="grid4">${[0, 1, 2, 3, 4].map(field).join('')}</div>
+      <div class="grid4">${[0, 1, 2, 3, 4, KA.IDX.alc].map(field).join('')}</div>
       <details data-key="fdmore" ${ui.open.has('fdmore') ? 'open' : ''}><summary>Vitamine & Mineralstoffe <span class="muted">optional – leer zählt als 0</span></summary><div class="grid4">${[5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(field).join('')}</div></details>
       <h4 class="cat">Enthält <span class="opt">für die Ernährungsfilter</span></h4>
       <div class="fchips">${FOOD_FLAGS.map(([k, l]) => `<button class="${f.flags.includes(k) ? 'on' : ''}" data-act="fdflag" data-v="${k}">${l}</button>`).join('')}</div>
@@ -4005,7 +3612,7 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
 
   function openFood(name, food) {
     ui.food = food
-      ? { id: food.id, name: food.name, unit: food.unit, gpu: food.unit === 'Stk' ? fmtIn(food.gpu) : '', tl: fmtIn(food.tl), n: food.n.map((x, i) => (x || i < 5 ? fmtIn(x) : '')), flags: (food.flags || []).slice(), src: food.src || '',
+      ? { id: food.id, name: food.name, unit: food.unit, gpu: food.unit === 'Stk' ? fmtIn(food.gpu) : '', tl: fmtIn(food.tl), n: NUTRIENTS.map((nu, i) => (food.n[i] || i < 5 ? fmtIn(food.n[i] || 0) : '')), flags: (food.flags || []).slice(), src: food.src || '',
         mode: 'manual', q: food.name, results: null, busy: false, error: '', warn: '' }
       : { id: null, name: name || '', unit: 'g', gpu: '', tl: '', n: NUTRIENTS.map(() => ''), flags: [], src: '', mode: 'manual', q: name || '', results: null, busy: false, error: '', warn: '' };
     openDlg(foodDialog());
@@ -4061,13 +3668,14 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
     if (n.some((x) => x != null && x < 0)) return fail('Nährwerte können nicht negativ sein.');
     if (n[0] > 900) return fail('Mehr als 900 kcal je 100 g sind nicht möglich – bitte prüfen.');
     const vals = n.map((x) => x || 0);
-    if (vals[1] + vals[2] + vals[3] + vals[4] > 101) return fail('Eiweiß, Kohlenhydrate, Fett und Ballaststoffe ergeben zusammen mehr als 100 g – bitte prüfen.');
+    const alc = vals[KA.IDX.alc] || 0;
+    if (vals[1] + vals[2] + vals[3] + vals[4] + alc > 101) return fail('Eiweiß, Kohlenhydrate, Fett, Ballaststoffe und Alkohol ergeben zusammen mehr als 100 g – bitte prüfen.');
     const gpu = numIn(f.gpu), tl = numIn(f.tl);
     if (f.unit === 'Stk' && !(gpu > 0)) return fail('Bitte das Gewicht pro Stück angeben.');
     // Plausibilität: Energie sollte ungefähr zu den Makronährstoffen passen (4/4/9 kcal je g, Ballaststoffe 2)
-    const calc = 4 * vals[1] + 4 * vals[2] + 9 * vals[3] + 2 * vals[4];
-    if (!f.warn && (vals[1] || vals[2] || vals[3]) && Math.abs(calc - vals[0]) > Math.max(40, vals[0] * 0.3)) {
-      f.warn = `Die Energie (${KA.fmtNum(vals[0], 0)} kcal) passt nicht zu Eiweiß, Kohlenhydraten und Fett (ergäbe etwa ${KA.fmtNum(calc, 0)} kcal). Bitte prüfen – oder trotzdem speichern.`;
+    const calc = 4 * vals[1] + 4 * vals[2] + 9 * vals[3] + 2 * vals[4] + 7 * alc;
+    if (!f.warn && (vals[1] || vals[2] || vals[3] || alc) && Math.abs(calc - vals[0]) > Math.max(40, vals[0] * 0.3)) {
+      f.warn = `Die Energie (${KA.fmtNum(vals[0], 0)} kcal) passt nicht zu Eiweiß, Kohlenhydraten, Fett${alc ? ' und Alkohol' : ''} (ergäbe etwa ${KA.fmtNum(calc, 0)} kcal). Bitte prüfen – oder trotzdem speichern.`;
       redrawFood(); return;
     }
     const food = { id: f.id || 'x_' + KA.norm(name).replace(/[^a-z0-9]+/g, '_').slice(0, 24) + '_' + Date.now().toString(36), name, unit: f.unit,
@@ -4211,7 +3819,7 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
     const r = REC[id];
     const n = KA.recipeNutr(r).map((x) => x * f);
     return `<h2>${esc(r.name)}</h2><div class="meta">${recipeFacts(r)}</div><div class="tags">${recipeTags(r)}</div>
-      <p class="muted">Menge für 1 Person: ${portion(f)}× Portion (${r0(n[0])} kcal, ${r0(n[1])} g Eiweiß, ${r0(n[2])} g KH, ${r0(n[3])} g Fett). Rezept ergibt ${r.s} Portion${r.s > 1 ? 'en' : ''}.</p>
+      <p class="muted">Menge für 1 Person: ${portion(f)}× Portion (${r0(n[0])} kcal, ${r0(n[1])} g Eiweiß, ${r0(n[2])} g KH, ${r0(n[3])} g Fett${n[KA.IDX.alc] > 0.05 ? `, ${KA.fmtNum(n[KA.IDX.alc], 1)} g Alkohol` : ''}). Rezept ergibt ${r.s} Portion${r.s > 1 ? 'en' : ''}.</p>
       <h4 class="cat">Zutaten für ${r.s} Portion${r.s > 1 ? 'en' : ''}</h4>${ingTable(r, r.s, null)}
       <h4 class="cat">Zubereitung</h4><ol class="steps">${r.st.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
       <div class="btnrow"><button class="btn" data-act="closedlg">Schließen</button></div>`;

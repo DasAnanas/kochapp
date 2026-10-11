@@ -1,4 +1,4 @@
-id	ch	usda	dens	name	cat	unit	gpu	price	flags	alias	tl	stk	bund	dose	becher	pck	pick
+id	ch	usda	dens	name	cat	unit	gpu	price	flags	alias	tl	stk	bund	dose	becher	pck	pick	est
 haferflocken	198	Cereals, oats, regular and quick, not fortified, dry								Hafer	3.3						
 vollkornnudeln	801	Pasta, whole-wheat, dry								Vollkornpasta;Vollkornspaghetti							
 nudeln	800	Pasta, dry, unenriched								Pasta;Spaghetti;Penne;Fusilli;Teigwaren							
@@ -153,3 +153,18 @@ ahornsirup	14093	Syrups, maple		Ahornsirup	BA	g	1	20.0			6.5
 konfituere	696	Jams and preserves		Konfitüre	BA	g	1	5.0		Marmelade	7						
 sojadrink	72	Soymilk, original and vanilla, unfortified	1.03	Sojadrink	MI	ml	1	1.5	soja	Sojamilch							
 orangensaft	576	Orange juice, raw	1.04	Orangensaft	OG	ml	1	1.8									
+rotwein	509	Alcoholic beverage, wine, table, red	0.99	Rotwein	SO	ml	1	6.0	alkohol									
+weisswein	511	Alcoholic beverage, wine, table, white	0.99	Weißwein	SO	ml	1	6.0	alkohol									
+prosecco	551		0.99	Prosecco	SO	ml	1	9.0	alkohol	Sekt;Schaumwein;Champagner								
+bier	816	Alcoholic beverage, beer, regular, all	1.01	Bier	SO	ml	1	2.0	alkohol,gluten	Pils;Lagerbier								
+brandy	519	Alcoholic beverage, distilled, all (gin, rum, vodka, whiskey) 80 proof	0.95	Brandy	SO	ml	1	18.0	alkohol	Cognac;Weinbrand								
+kirschwasser	644	Alcoholic beverage, distilled, all (gin, rum, vodka, whiskey) 80 proof	0.95	Kirschwasser	SO	ml	1	25.0	alkohol	Kirsch;Obstbrand								
+rum	520	Alcoholic beverage, distilled, rum, 80 proof	0.95	Rum	SO	ml	1	16.0	alkohol									
+wodka	646	Alcoholic beverage, distilled, vodka, 80 proof	0.95	Wodka	SO	ml	1	14.0	alkohol	Vodka;Gin								
+whisky	518	Alcoholic beverage, distilled, whiskey, 86 proof	0.95	Whisky	SO	ml	1	22.0	alkohol	Whiskey								
+sherry	515	Alcoholic beverage, wine, dessert, dry	0.99	Sherry	SO	ml	1	12.0	alkohol									
+portwein	516	Alcoholic beverage, wine, dessert, sweet	1.02	Portwein	SO	ml	1	14.0	alkohol									
+marsala	516	Alcoholic beverage, wine, dessert, sweet	1.02	Marsala	SO	ml	1	12.0	alkohol									
+amaretto				Amaretto	SO	ml	1	16.0	alkohol									kcal=282;carb=30;alc=22.1
+aperol				Aperol	SO	ml	1	16.0	alkohol									kcal=160;carb=26;alc=8.7
+mirin				Mirin	SO	ml	1	15.0	alkohol									kcal=235;prot=0.5;carb=45;alc=11

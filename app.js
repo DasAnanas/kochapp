@@ -356,7 +356,7 @@
     const tile = (label, v, unit, cls) => `<div class="${cls || ''}"><b>${KA.fmtNum(v, v < 10 && unit === 'g' ? 1 : 0)}${unit === 'g' ? ' g' : ''}</b><span>${label}</span></div>`;
     return `<h2>${esc(r.name)}</h2><div class="meta">${recipeFacts(r)}</div><div class="tags">${recipeTags(r)}</div>
       <h4 class="cat">Nährwerte pro Portion</h4>
-      <div class="macros">${tile('Kalorien (kcal)', n[0], 'kcal', 'kcal')}${tile('Eiweiß', n[1], 'g')}${tile('Kohlenhydrate', n[2], 'g')}${tile('Fett', n[3], 'g')}</div>
+      <div class="macros">${tile('Kalorien (kcal)', n[0], 'kcal', 'kcal')}${tile('Eiweiß', n[1], 'g')}${tile('Kohlenhydrate', n[2], 'g')}${tile('Fett', n[3], 'g')}${n[KA.IDX.alc] > 0.05 ? tile('Alkohol', n[KA.IDX.alc], 'g', 'alc') : ''}</div>
       ${r.partial ? '<p class="muted sm">Mindestwerte: Nicht alle Zutaten dieses Rezepts sind in den Lebensmitteldaten erfasst.</p>' : ''}
       <h4 class="cat">Zutaten für ${servings} Portion${servings > 1 ? 'en' : ''}</h4>${ingTable(r, servings, e)}
       <h4 class="cat">Zubereitung</h4><ol class="steps">${r.st.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
@@ -449,6 +449,10 @@
     const day = ui.nutDay;
     const vec = day < 0 ? KA.weekAvg(plan) : KA.dayVec(plan.days[day]);
     const row = (n, i) => {
+      if (n.noTarget) { // Alkohol: nur ausweisen, wenn im Plan welcher vorkommt – ohne Ziel und Bewertung
+        return avg[i] > 0.05 || vec[i] > 0.05 ? `<div class="nrow"><span class="nl">${n.label}</span><span class="muted sm">kein Zielwert – Gehalt der rohen Zutaten</span>
+          <span class="np">${KA.fmtNum(vec[i], vec[i] < 10 ? 1 : 0)} ${n.unit}</span><span class="na muted"></span></div>` : '';
+      }
       const t = T[n.k];
       const pct = (vec[i] / t) * 100;
       let cls = 'ok';
@@ -457,10 +461,10 @@
       return `<div class="nrow"><span class="nl">${n.label}</span><div class="bar n ${cls}"><i style="width:${Math.min(100, pct)}%"></i></div>
         <span class="np">${r0(pct)} %</span><span class="na muted">${KA.fmtNum(vec[i], vec[i] < 10 ? 1 : 0)} / ${KA.fmtNum(t, t < 10 ? 1 : 0)} ${n.unit}</span></div>`;
     };
+    const avg = KA.weekAvg(plan);
     const idx = (g) => NUTRIENTS.map((n, i) => [n, i]).filter(([n]) => n.group === g);
     const tabs = ['Ø Woche'].concat(KA.DAYS.map((d) => d.slice(0, 2))).map((l, i) =>
       `<button class="${ui.nutDay === i - 1 ? 'on' : ''}" data-act="nutday" data-v="${i - 1}">${l}</button>`).join('');
-    const avg = KA.weekAvg(plan);
     const lacks = NUTRIENTS.filter((n, i) => n.group === 'micro' && avg[i] / T[n.k] < 0.7).map((n) => n.label);
     const vegan = S.prefs.diets.includes('vegan');
     return `<section class="card"><h2>Nährstoff-Bilanz <span class="opt">pro Person</span></h2>
@@ -745,7 +749,7 @@
     Object.keys(ING).forEach((id) => { if (ING[id].custom) delete ING[id]; });
     S.foods.forEach((f) => {
       if (ING[f.id]) return;
-      ING[f.id] = { id: f.id, name: f.name, cat: 'SO', unit: f.unit, gpu: f.unit === 'Stk' ? f.gpu : 1, price: 0, flags: f.flags || [], n: f.n,
+      ING[f.id] = { id: f.id, name: f.name, cat: 'SO', unit: f.unit, gpu: f.unit === 'Stk' ? f.gpu : 1, price: 0, flags: f.flags || [], n: NUTRIENTS.map((x, i) => f.n[i] || 0),
         staple: false, meta: f.tl ? { tl: f.tl } : {}, custom: true, src: f.src || '' };
     });
     nameIndex = null; bookMap = null;
@@ -833,6 +837,7 @@
     const n = KA.recipeNutr(base);
     const T = KA.targets(S.prefs, { full: true });
     const rows = NUTRIENTS.map((nu, i) => {
+      if (nu.noTarget) return n[i] > 0.05 ? `<div class="nurow"><span>${nu.label}</span><b>${KA.fmtNum(n[i], n[i] < 10 ? 1 : 0)} ${nu.unit}</b><span></span><span class="muted">–</span></div>` : '';
       const pct = (n[i] / T[nu.k]) * 100;
       return `<div class="nurow"><span>${nu.label}</span><b>${KA.fmtNum(n[i], n[i] < 10 ? 1 : 0)} ${nu.unit}</b><div class="bar"><i style="width:${Math.min(100, pct)}%"></i></div><span class="muted">${r0(pct)} %</span></div>`;
     }).join('');
@@ -842,6 +847,7 @@
       open.length ? ` – nicht eingerechnet: ${esc(open.join(', '))}. Die tatsächlichen Werte liegen höher.` : '.'}</p>`;
     const own = r.ings.some((i) => i.id && ING[i.id] && ING[i.id].custom);
     return `<div class="card ingcard"><div class="lh"><h2>Nährwerte</h2><span class="muted sm">pro Portion · % vom Tagesbedarf</span></div>${rows}${counted}${unknownFoods(r)}
+      ${n[KA.IDX.alc] > 0.05 ? '<p class="muted sm">Alkohol: Gehalt der rohen Zutaten, ohne Tagesbedarf. Beim Kochen verfliegt ein Teil davon – bei kalt gemischten Getränken bleibt er vollständig.</p>' : ''}
       <p class="muted sm">Berechnet aus den Zutaten. Lebensmittelwerte: Schweizer Nährwertdatenbank (BLV), geprüft gegen USDA FoodData Central${own ? '; eigene Lebensmittel nach deinen Angaben bzw. Open Food Facts' : ''}. Näherungswerte, keine Ernährungsberatung.</p></div>`;
   }
   // Zutaten eigener Rezepte, die die App nicht kennt: Nährwerte lassen sich nachtragen oder im Internet suchen
@@ -994,7 +1000,7 @@
   // Open Food Facts gibt Vitamine und Mineralstoffe in Gramm je 100 g an -> Faktor in die Einheit der App (mg bzw. µg)
   const OFF_KEYS = [['energy-kcal_100g', 1], ['proteins_100g', 1], ['carbohydrates_100g', 1], ['fat_100g', 1], ['fiber_100g', 1], ['vitamin-c_100g', 1e3],
     ['vitamin-a_100g', 1e6], ['vitamin-d_100g', 1e6], ['vitamin-b12_100g', 1e6], ['vitamin-b9_100g', 1e6], ['calcium_100g', 1e3], ['iron_100g', 1e3],
-    ['magnesium_100g', 1e3], ['zinc_100g', 1e3], ['potassium_100g', 1e3]];
+    ['magnesium_100g', 1e3], ['zinc_100g', 1e3], ['potassium_100g', 1e3], ['alcohol_100g', 0.789]]; // Alkohol: Vol.-% -> g je 100 ml
   const numIn = (v) => { const x = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isFinite(x) ? x : null; };
   const fmtIn = (x) => (x == null ? '' : String(Math.round(x * 100) / 100).replace('.', ','));
 
@@ -1027,7 +1033,7 @@
         ${f.unit === 'Stk' ? `<label>Gewicht pro Stück (g)<input data-fd="gpu" inputmode="decimal" value="${esc(f.gpu)}" placeholder="z. B. 60" autocomplete="off"></label>`
           : `<label>1 Teelöffel wiegt (g) <input data-fd="tl" inputmode="decimal" value="${esc(f.tl)}" placeholder="optional – für Angaben in TL/EL" autocomplete="off"></label>`}</div>
       <h4 class="cat">Nährwerte je ${per}</h4>
-      <div class="grid4">${[0, 1, 2, 3, 4].map(field).join('')}</div>
+      <div class="grid4">${[0, 1, 2, 3, 4, KA.IDX.alc].map(field).join('')}</div>
       <details data-key="fdmore" ${ui.open.has('fdmore') ? 'open' : ''}><summary>Vitamine & Mineralstoffe <span class="muted">optional – leer zählt als 0</span></summary><div class="grid4">${[5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(field).join('')}</div></details>
       <h4 class="cat">Enthält <span class="opt">für die Ernährungsfilter</span></h4>
       <div class="fchips">${FOOD_FLAGS.map(([k, l]) => `<button class="${f.flags.includes(k) ? 'on' : ''}" data-act="fdflag" data-v="${k}">${l}</button>`).join('')}</div>
@@ -1040,7 +1046,7 @@
 
   function openFood(name, food) {
     ui.food = food
-      ? { id: food.id, name: food.name, unit: food.unit, gpu: food.unit === 'Stk' ? fmtIn(food.gpu) : '', tl: fmtIn(food.tl), n: food.n.map((x, i) => (x || i < 5 ? fmtIn(x) : '')), flags: (food.flags || []).slice(), src: food.src || '',
+      ? { id: food.id, name: food.name, unit: food.unit, gpu: food.unit === 'Stk' ? fmtIn(food.gpu) : '', tl: fmtIn(food.tl), n: NUTRIENTS.map((nu, i) => (food.n[i] || i < 5 ? fmtIn(food.n[i] || 0) : '')), flags: (food.flags || []).slice(), src: food.src || '',
         mode: 'manual', q: food.name, results: null, busy: false, error: '', warn: '' }
       : { id: null, name: name || '', unit: 'g', gpu: '', tl: '', n: NUTRIENTS.map(() => ''), flags: [], src: '', mode: 'manual', q: name || '', results: null, busy: false, error: '', warn: '' };
     openDlg(foodDialog());
@@ -1096,13 +1102,14 @@
     if (n.some((x) => x != null && x < 0)) return fail('Nährwerte können nicht negativ sein.');
     if (n[0] > 900) return fail('Mehr als 900 kcal je 100 g sind nicht möglich – bitte prüfen.');
     const vals = n.map((x) => x || 0);
-    if (vals[1] + vals[2] + vals[3] + vals[4] > 101) return fail('Eiweiß, Kohlenhydrate, Fett und Ballaststoffe ergeben zusammen mehr als 100 g – bitte prüfen.');
+    const alc = vals[KA.IDX.alc] || 0;
+    if (vals[1] + vals[2] + vals[3] + vals[4] + alc > 101) return fail('Eiweiß, Kohlenhydrate, Fett, Ballaststoffe und Alkohol ergeben zusammen mehr als 100 g – bitte prüfen.');
     const gpu = numIn(f.gpu), tl = numIn(f.tl);
     if (f.unit === 'Stk' && !(gpu > 0)) return fail('Bitte das Gewicht pro Stück angeben.');
     // Plausibilität: Energie sollte ungefähr zu den Makronährstoffen passen (4/4/9 kcal je g, Ballaststoffe 2)
-    const calc = 4 * vals[1] + 4 * vals[2] + 9 * vals[3] + 2 * vals[4];
-    if (!f.warn && (vals[1] || vals[2] || vals[3]) && Math.abs(calc - vals[0]) > Math.max(40, vals[0] * 0.3)) {
-      f.warn = `Die Energie (${KA.fmtNum(vals[0], 0)} kcal) passt nicht zu Eiweiß, Kohlenhydraten und Fett (ergäbe etwa ${KA.fmtNum(calc, 0)} kcal). Bitte prüfen – oder trotzdem speichern.`;
+    const calc = 4 * vals[1] + 4 * vals[2] + 9 * vals[3] + 2 * vals[4] + 7 * alc;
+    if (!f.warn && (vals[1] || vals[2] || vals[3] || alc) && Math.abs(calc - vals[0]) > Math.max(40, vals[0] * 0.3)) {
+      f.warn = `Die Energie (${KA.fmtNum(vals[0], 0)} kcal) passt nicht zu Eiweiß, Kohlenhydraten, Fett${alc ? ' und Alkohol' : ''} (ergäbe etwa ${KA.fmtNum(calc, 0)} kcal). Bitte prüfen – oder trotzdem speichern.`;
       redrawFood(); return;
     }
     const food = { id: f.id || 'x_' + KA.norm(name).replace(/[^a-z0-9]+/g, '_').slice(0, 24) + '_' + Date.now().toString(36), name, unit: f.unit,
@@ -1246,7 +1253,7 @@
     const r = REC[id];
     const n = KA.recipeNutr(r).map((x) => x * f);
     return `<h2>${esc(r.name)}</h2><div class="meta">${recipeFacts(r)}</div><div class="tags">${recipeTags(r)}</div>
-      <p class="muted">Menge für 1 Person: ${portion(f)}× Portion (${r0(n[0])} kcal, ${r0(n[1])} g Eiweiß, ${r0(n[2])} g KH, ${r0(n[3])} g Fett). Rezept ergibt ${r.s} Portion${r.s > 1 ? 'en' : ''}.</p>
+      <p class="muted">Menge für 1 Person: ${portion(f)}× Portion (${r0(n[0])} kcal, ${r0(n[1])} g Eiweiß, ${r0(n[2])} g KH, ${r0(n[3])} g Fett${n[KA.IDX.alc] > 0.05 ? `, ${KA.fmtNum(n[KA.IDX.alc], 1)} g Alkohol` : ''}). Rezept ergibt ${r.s} Portion${r.s > 1 ? 'en' : ''}.</p>
       <h4 class="cat">Zutaten für ${r.s} Portion${r.s > 1 ? 'en' : ''}</h4>${ingTable(r, r.s, null)}
       <h4 class="cat">Zubereitung</h4><ol class="steps">${r.st.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
       <div class="btnrow"><button class="btn" data-act="closedlg">Schließen</button></div>`;
