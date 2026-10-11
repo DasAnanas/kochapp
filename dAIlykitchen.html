@@ -3555,7 +3555,7 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
     const list = `<section class="card printable"><div class="lh"><h2>Einkaufsliste</h2><span class="muted sm">${new Date().toLocaleDateString('de-DE')}</span></div>
       <div class="plist">${cartHTML(items)}</div>
       <div class="total">Geschätzt (${open.length} Artikel offen): <b>${KA.fmtEUR(listTotal(items))}</b> <span class="muted sm">· Preise sind grobe Richtwerte</span></div>
-      <div class="btnrow noprint"><button class="btn ghost" data-act="copy">Kopieren</button><button class="btn ghost" data-act="csv">CSV</button><button class="btn ghost" data-act="print">Drucken</button>
+      <div class="btnrow noprint">${open.length ? '<button class="btn" data-act="listall">✓ Alle abhaken</button>' : ''}<button class="btn ghost" data-act="copy">Kopieren</button><button class="btn ghost" data-act="csv">CSV</button><button class="btn ghost" data-act="print">Drucken</button>
         ${items.length > open.length ? '<button class="btn ghost" data-act="listreset">Häkchen zurücksetzen</button>' : ''}
         <button class="btn ghost" data-act="listclean" ${items.length === open.length ? 'disabled' : ''}>Aufräumen</button></div></section>`;
     return pageHead('Einkaufsliste', `${open.length} von ${items.length} Artikeln offen – abhaken, drucken oder bei REWE in den Warenkorb legen.`) + sources + list + (open.length ? orderPanel() : '');
@@ -4368,6 +4368,7 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
       toast(`${completed.size} eingekaufte Artikel entfernt`);
     },
     listreset: () => { S.done = {}; update(); },
+    listall: () => { const open = cartOpen(); open.forEach((i) => { S.done[i.key] = true; }); update(); toast(open.length + ' Artikel abgehakt'); },
 
     setTime: (el) => { S.prefs.maxTime = Number(el.dataset.v); update(); },
     setDiff: (el) => { S.prefs.maxDiff = Number(el.dataset.v); update(); },
