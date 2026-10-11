@@ -334,7 +334,6 @@
   function recipeCard(e, selected) {
     const r = e.r;
     const mode = pMode();
-    const key = 'rc-' + r.id;
     return `<article class="rc ${selected ? 'sel' : ''}">
       <div class="rc-top"><h3>${esc(r.name)}</h3>
         <label class="pick" title="Für die Einkaufsliste auswählen"><input type="checkbox" data-act="togglesel" data-id="${r.id}" ${selected ? 'checked' : ''}><span>Auswählen</span></label></div>
@@ -344,10 +343,24 @@
         <div><div class="mlabel">Zutaten vorhanden <b>${r0(e.cover * 100)} %</b></div><div class="bar"><i style="width:${r0(e.cover * 100)}%"></i></div></div>
         <div><div class="mlabel">Verbraucht <b>${e.touched} von ${e.pantryCount}</b> Vorratsartikeln</div><div class="bar alt"><i style="width:${r0((e.touched / Math.max(1, e.pantryCount)) * 100)}%"></i></div></div>
       </div>`}
-      <details data-key="${key}" ${ui.open.has(key) ? 'open' : ''}><summary>Zutaten & Zubereitung (${e.servings} Portion${e.servings > 1 ? 'en' : ''})</summary>
-        ${ingTable(r, e.servings, mode === 'off' ? null : e)}<ol class="steps">${r.st.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
-        ${mode === 'exact' ? `<button class="btn ghost sm" data-act="cook" data-id="${r.id}">✔ Gekocht – Vorrat abziehen</button>` : ''}</details>
+      <button class="btn ghost sm rc-more" data-act="fview" data-id="${r.id}" data-serv="${e.servings}">Zutaten, Zubereitung & Nährwerte</button>
     </article>`;
+  }
+
+  // Pop-up zu einem Rezept im Rezept-Finder: Kalorien und Makronährstoffe pro Portion, Zutaten (mit Vorratsabgleich), Zubereitung
+  function finderDialog(id, servings) {
+    const r = REC[id];
+    const mode = pMode();
+    const e = mode === 'off' ? null : KA.evalRecipe(r, pantryEff(), servings, S.prefs);
+    const n = KA.recipeNutr(r);
+    const tile = (label, v, unit, cls) => `<div class="${cls || ''}"><b>${KA.fmtNum(v, v < 10 && unit === 'g' ? 1 : 0)}${unit === 'g' ? ' g' : ''}</b><span>${label}</span></div>`;
+    return `<h2>${esc(r.name)}</h2><div class="meta">${recipeFacts(r)}</div><div class="tags">${recipeTags(r)}</div>
+      <h4 class="cat">Nährwerte pro Portion</h4>
+      <div class="macros">${tile('Kalorien (kcal)', n[0], 'kcal', 'kcal')}${tile('Eiweiß', n[1], 'g')}${tile('Kohlenhydrate', n[2], 'g')}${tile('Fett', n[3], 'g')}</div>
+      ${r.partial ? '<p class="muted sm">Mindestwerte: Nicht alle Zutaten dieses Rezepts sind in den Lebensmitteldaten erfasst.</p>' : ''}
+      <h4 class="cat">Zutaten für ${servings} Portion${servings > 1 ? 'en' : ''}</h4>${ingTable(r, servings, e)}
+      <h4 class="cat">Zubereitung</h4><ol class="steps">${r.st.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>
+      <div class="btnrow">${mode === 'exact' ? `<button class="btn ghost" data-act="cook" data-id="${r.id}">✔ Gekocht – Vorrat abziehen</button>` : ''}<button class="btn" data-act="closedlg">Schließen</button></div>`;
   }
 
   function selectionCard(sel, pantry, title, empty) {
@@ -1484,7 +1497,7 @@
         if (next[id] == null) delete S.pantry[id]; else S.pantry[id] = Math.round(next[id] * 100) / 100;
       });
       S.sel = S.sel.filter((x) => x !== el.dataset.id);
-      update(); toast('Vorrat aktualisiert');
+      closeDlg(); update(); toast('Vorrat aktualisiert');
     },
     // Rezept-Auswahl bzw. Wochenplan auf die Einkaufsliste übernehmen (ersetzt den vorher übernommenen Stand)
     tofinderlist: () => {
@@ -1515,6 +1528,7 @@
       const m = S.plan.days[Number(el.dataset.d)].find((x) => x.slot === el.dataset.s);
       m.lock = !m.lock; update();
     },
+    fview: (el) => openDlg(finderDialog(el.dataset.id, Number(el.dataset.serv) || 1)),
     view: (el) => openDlg(recipeDialog(el.dataset.id, Number(el.dataset.f) || 1)),
     closedlg: closeDlg,
 
