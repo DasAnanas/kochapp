@@ -410,3 +410,4 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
 .tag.neutral{background:var(--side);color:var(--muted)}
 
 .restore{margin-top:20px;text-align:center}
+.listbar{margin:0 0 1.1rem;padding-bottom:1rem;border-bottom:1px solid var(--line2)}
