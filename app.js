@@ -334,7 +334,7 @@
   function recipeCard(e, selected) {
     const r = e.r;
     const mode = pMode();
-    return `<article class="rc ${selected ? 'sel' : ''}">
+    return `<article class="rc ${selected ? 'sel' : ''}" data-act="fview" data-id="${r.id}" data-serv="${e.servings}">
       <div class="rc-top"><h3>${esc(r.name)}</h3>
         <label class="pick" title="Für die Einkaufsliste auswählen"><input type="checkbox" data-act="togglesel" data-id="${r.id}" ${selected ? 'checked' : ''}><span>Auswählen</span></label></div>
       <div class="meta">${recipeFacts(r)}</div>
@@ -1528,7 +1528,8 @@
       const m = S.plan.days[Number(el.dataset.d)].find((x) => x.slot === el.dataset.s);
       m.lock = !m.lock; update();
     },
-    fview: (el) => openDlg(finderDialog(el.dataset.id, Number(el.dataset.serv) || 1)),
+    // Klick irgendwo auf die Rezeptkarte öffnet das Pop-up – außer auf „Auswählen“
+    fview: (el, e) => { if (e && e.target.closest('.pick')) return; openDlg(finderDialog(el.dataset.id, Number(el.dataset.serv) || 1)); },
     view: (el) => openDlg(recipeDialog(el.dataset.id, Number(el.dataset.f) || 1)),
     closedlg: closeDlg,
 
