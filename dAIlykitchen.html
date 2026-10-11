@@ -313,9 +313,10 @@ details.kbox{margin:-12px 0 24px;padding:12px 14px;background:var(--side);border
 .drop input{width:100%;border:0;padding:0;font-size:12px;background:none} .drop img{max-width:100%;height:80px;object-fit:cover;border-radius:8px} .drop span{font-weight:400;font-size:12px}
 .prev{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font:500 14px var(--body);color:var(--muted);min-height:26px}
 .prev b{font-weight:500;background:var(--acc-soft);color:var(--acc-deep);padding:3px 8px;border-radius:6px}
-.lrow{display:grid;grid-template-columns:78px 1fr 28px;gap:10px;align-items:start;padding:9px 0;border-bottom:1px solid var(--line2)}
+.lrow{display:grid;grid-template-columns:78px minmax(0,1fr) 28px;gap:10px;align-items:start;padding:9px 0;border-bottom:1px solid var(--line2);overflow-wrap:anywhere}
 .lrow b{font-weight:600;text-align:right}
-.lrow.st{grid-template-columns:28px 1fr 28px} .lrow .no{font:500 20px/1.2 var(--head);color:var(--acc)}
+/* Schritt-Zeilen heißen bewusst nicht .st – das ist die Status-Plakette (ohne Zeilenumbruch) */
+.lrow.lstep{grid-template-columns:28px minmax(0,1fr) 28px} .lrow .no{font:500 20px/1.2 var(--head);color:var(--acc)}
 .big{font:500 28px/1.15 var(--head)}
 .dropbig{border:1.5px dashed var(--line3);border-radius:16px;padding:56px 32px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
 .scan{display:grid;grid-template-columns:320px minmax(0,1fr);gap:28px;align-items:center} .scan.done{align-items:start}
@@ -3867,7 +3868,7 @@ dialog::backdrop{background:rgba(16,28,22,.48);backdrop-filter:blur(5px);-webkit
     return `<span>Erkannt:</span><b>${esc(p.qty != null ? fmtQ(p.qty, '') : '–')}</b><b>${esc(p.unit || '–')}</b><b>${esc(p.name)}</b>
       <span>${linkHint(linkIng(p))}</span>`;
   };
-  const stepList = (steps, removable) => steps.map((s, k) => `<div class="lrow st"><span class="no">${k + 1}</span><span>${esc(s)}</span>${removable ? `<button class="x" data-act="delstep" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
+  const stepList = (steps, removable) => steps.map((s, k) => `<div class="lrow lstep"><span class="no">${k + 1}</span><span>${esc(s)}</span>${removable ? `<button class="x" data-act="delstep" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
   const ingList = (ings, removable) => ings.map((i, k) => `<div class="lrow"><b>${esc(ingQty(i, 1))}</b><span>${esc(i.name)}${
     removable && !linkIng(i).id ? ` <button class="lk" data-act="fdnew" data-n="${esc(i.name)}">+ Nährwerte</button>` : ''}</span>${removable ? `<button class="x" data-act="deling" data-i="${k}" title="Entfernen">×</button>` : ''}</div>`).join('');
 
