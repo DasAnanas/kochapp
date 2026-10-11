@@ -258,6 +258,8 @@ details.kbox{margin:-12px 0 24px;padding:12px 14px;background:var(--side);border
 .bc-t span{font:500 13px var(--body);color:var(--muted)} .bc-t span:first-child{font-weight:600}
 .bc-t b{font:500 17px/1.2 var(--head);text-wrap:pretty}
 .lbtn{flex:none;cursor:pointer;border:1px solid var(--line3);background:transparent;color:var(--ink);font:600 13px var(--body);padding:0 10px;height:34px;border-radius:8px}
+.lbtn .l-off{display:none}
+@media (hover:hover){.lbtn.on:hover .l-on{display:none} .lbtn.on:hover .l-off{display:inline} .lbtn.on:hover{background:transparent;border-color:var(--low);color:var(--low)}}
 .lbtn:hover{border-color:var(--ink)} .lbtn.on{background:var(--acc-soft);border-color:var(--acc-soft);color:var(--acc-deep)}
 
 /* ---------- Rezeptbuch: Detail ---------- */
