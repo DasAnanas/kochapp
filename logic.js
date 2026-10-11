@@ -118,8 +118,13 @@
   KA.setUserRecipes = (list) => setRecipes(list, 'user');
   KA.setBookRecipes = (list) => setRecipes(list, 'book');
 
+  // Vom Nutzer gelöschte mitgelieferte Rezepte: bleiben in den Stammdaten, werden aber nirgends mehr vorgeschlagen
+  KA.hidden = new Set();
+  KA.setHidden = (ids) => { KA.hidden = new Set(ids || []); };
+
   /* ---------- Präferenzen / Filter ---------- */
   KA.recipeMatches = (r, prefs, slot) => {
+    if (KA.hidden.has(r.id)) return false;
     if (slot && !r.types.includes(slot)) return false;
     if (prefs.onlyMine && !r.user) return false;
     if (prefs.maxTime && r.time > prefs.maxTime) return false;
