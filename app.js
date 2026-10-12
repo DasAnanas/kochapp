@@ -146,7 +146,7 @@
   function recipeFacts(r) {
     if (r.partial) return `⏱ ${r.time} Min. · <span title="${DIFF[r.diff]}">${dots(r.diff)}</span> · ${esc(r.cat || '')} · <span title="Nicht alle Zutaten sind in den Lebensmitteldaten erfasst">Nährwerte unvollständig</span>`;
     const n = KA.recipeNutr(r);
-    return `⏱ ${r.time} Min. · <span title="${DIFF[r.diff]}">${dots(r.diff)}</span> · ${r0(n[0])} kcal · ${r0(n[1])} g Eiweiß · ca. ${KA.fmtEUR(KA.recipeCost(r))} p. P.`;
+    return `⏱ ${r.time} Min. · <span title="${DIFF[r.diff]}">${dots(r.diff)}</span> · ${r0(n[0])} kcal · ${r0(n[1])} g Eiweiß`;
   }
 
   function listHTML(items, opts) {
@@ -163,12 +163,10 @@
       html += `<li class="${it.checked === false ? 'off' : ''}">
         ${opts.editable ? `<label class="chk"><input type="checkbox" data-act="chk" data-i="${i}" ${it.checked === false ? '' : 'checked'}><span></span></label>` : '<span class="bul">•</span>'}
         <span class="nm">${esc(it.name)}</span><span class="am">${it.id ? KA.fmtAmount(it.id, it.amount) : esc(it.label || '')}</span>
-        <span class="pr">${it.id ? KA.fmtEUR(it.price) : ''}</span>
         ${opts.editable ? `<button class="x" data-act="delitem" data-i="${i}" title="Entfernen">✕</button>` : ''}</li>`;
     });
     return html + '</ul>';
   }
-  const listTotal = (items) => items.filter((i) => i.checked !== false).reduce((s, i) => s + i.price, 0);
 
   /* ---------- Präferenzen (direkt vor jeder Funktion) ---------- */
   function prefsCard() {
@@ -368,7 +366,6 @@
     return `<section class="card"><h2>${title}</h2>${
       sel.length
         ? `<p class="muted">Für ${sel.length} ausgewählte${sel.length > 1 ? '' : 's'} Gericht${sel.length > 1 ? 'e' : ''}: ${sel.map((id) => esc(REC[id].name)).join(' · ')}</p>${listHTML(list)}
-           <div class="total">Geschätzt: <b>${KA.fmtEUR(listTotal(list))}</b></div>
            <div class="btnrow"><button class="btn" data-act="tofinderlist">Auf die Einkaufsliste →</button><button class="btn ghost" data-act="clearsel">Auswahl leeren</button></div>`
         : `<p class="muted">${empty}</p>`}</section>`;
   }
@@ -593,7 +590,6 @@
       html += `<li class="${it.checked ? '' : 'off'}">
         <label class="chk" title="Abhaken, wenn erledigt"><input type="checkbox" data-act="listchk" data-k="${esc(it.key)}" ${it.checked ? '' : 'checked'}><span></span></label>
         <span class="nm">${esc(it.name)}<small>${esc(it.from.join(', '))}</small></span><span class="am">${it.id ? KA.fmtAmount(it.id, it.amount) : esc(it.label)}</span>
-        <span class="pr">${it.id ? KA.fmtEUR(it.price) : ''}</span>
         ${it.extra ? `<button class="x" data-act="extradel" data-n="${esc(it.name)}" title="Entfernen">✕</button>` : '<span class="x"></span>'}</li>`;
     });
     return html + (cat ? '</ul>' : '');
@@ -620,8 +616,7 @@
       <div class="btnrow noprint listbar">${open.length ? '<button class="btn" data-act="listall">✓ Alle abhaken</button>' : ''}<button class="btn ghost" data-act="copy">Kopieren</button><button class="btn ghost" data-act="csv">CSV</button><button class="btn ghost" data-act="print">Drucken</button>
         ${items.length > open.length ? '<button class="btn ghost" data-act="listreset">Häkchen zurücksetzen</button>' : ''}
         <button class="btn ghost" data-act="listclean" ${items.length === open.length ? 'disabled' : ''}>Aufräumen</button></div>
-      <div class="plist">${cartHTML(items)}</div>
-      <div class="total">Geschätzt (${open.length} Artikel offen): <b>${KA.fmtEUR(listTotal(items))}</b> <span class="muted sm">· Preise sind grobe Richtwerte</span></div></section>`;
+      <div class="plist">${cartHTML(items)}</div></section>`;
     return pageHead('Einkaufsliste', `${open.length} von ${items.length} Artikeln offen – abhaken, drucken oder bei REWE in den Warenkorb legen.`) + sources + list + (open.length ? orderPanel() : '');
   }
 
@@ -1565,8 +1560,8 @@
     },
     copy: async () => { toast((await copyText(KA.listToText(cartOpen(), null))) ? 'Liste kopiert' : 'Kopieren nicht möglich'); },
     csv: () => {
-      const rows = [['Kategorie', 'Artikel', 'Menge', 'Einheit', 'Preis (EUR)']].concat(
-        cartOpen().map((i) => [CATS[i.cat], i.name, i.amount == null ? '' : String(i.amount).replace('.', ','), i.unit, i.price.toFixed(2).replace('.', ',')]));
+      const rows = [['Kategorie', 'Artikel', 'Menge', 'Einheit']].concat(
+        cartOpen().map((i) => [CATS[i.cat], i.name, i.amount == null ? '' : String(i.amount).replace('.', ','), i.unit]));
       const csv = '﻿' + rows.map((r) => r.map((c) => '"' + String(c).replace(/"/g, '""') + '"').join(';')).join('\r\n');
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));

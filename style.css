@@ -185,7 +185,7 @@ details.pick2{border-top:1px solid var(--line2);padding-top:14px} details.pick2[
 
 /* ---------- Einkaufsliste (Vorrat & Einkauf) ---------- */
 .slist{list-style:none;padding:0;margin:0}
-.slist li{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line2)}
+.slist li{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line2)}
 .slist li.off .nm,.slist li.off .am{text-decoration:line-through;color:var(--faint)}
 .slist .am{font-variant-numeric:tabular-nums;font-weight:600} .slist .pr{color:var(--muted);font-size:13px;min-width:4.2rem;text-align:right}
 .bul{color:var(--acc)}

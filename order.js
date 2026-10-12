@@ -25,9 +25,7 @@
         category: KA.CATS[i.cat],
         quantity: i.amount,
         unit: i.unit,
-        estimatedPrice: Math.round(i.price * 100) / 100,
       })),
-      estimatedTotal: Math.round(lines.reduce((s, i) => s + i.price, 0) * 100) / 100,
     };
   }
   KA.orderPayload = payload;

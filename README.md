@@ -103,4 +103,4 @@ Unter „Liste → Bestellen“ steht ausschließlich **REWE** zur Verfügung. D
 - Neu erzeugen: `tools\naehrwerte\fetch.ps1 -Out <Ordner>` lädt beide Datenbanken, `tools\naehrwerte\verify.ps1 -Data <Ordner> -Apply` vergleicht und trägt die Werte in `data.js` ein. Die Zuordnung der Lebensmittel steht in `tools\naehrwerte\foods.tsv`.
 
 ## Hinweise
-Nährwerte und Preise sind gerundete Näherungswerte, keine Ernährungsberatung. Vitamin D (und bei veganer Kost B12) werden im Plan ehrlich als Lücke angezeigt.
+Nährwerte sind gerundete Näherungswerte, keine Ernährungsberatung. Vitamin D (und bei veganer Kost B12) werden im Plan ehrlich als Lücke angezeigt.
